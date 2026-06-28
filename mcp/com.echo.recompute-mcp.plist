@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.echo.recompute-mcp</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/merliniferrao/recompute-kit/.venv/bin/python</string>
+        <string>/Users/merliniferrao/recompute-kit/mcp/server.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/merliniferrao/recompute-kit</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/merliniferrao/.foundry/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/merliniferrao/.claude/logs/recompute-mcp.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/merliniferrao/.claude/logs/recompute-mcp.log</string>
+</dict>
+</plist>
