@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# recheck-ci <owner/repo> <pr-number> [config-path-in-head-repo]
+#
+# Pull the REAL CI verdict (gh pr checks) instead of trusting a pasted summary, and
+# optionally fetch a lint/CI config file from the PR's head branch so you can
+# re-derive a failing rule by hand. Needs the `gh` CLI authenticated.
+#
+#   recheck-ci ethereum/ERCs 1810
+#   recheck-ci ethereum/ERCs 1810 config/eipw.toml
+set -euo pipefail
+
+repo="${1:-}"; pr="${2:-}"; cfg="${3:-}"
+if [ -z "$repo" ] || [ -z "$pr" ]; then
+  echo "usage: recheck-ci <owner/repo> <pr#> [config-path]" >&2; exit 64
+fi
+command -v gh >/dev/null || { echo "need the gh CLI" >&2; exit 69; }
+
+echo "→ CI checks for $repo #$pr (the real verdict, not the summary):"
+echo "─────────────────────────────────────────────"
+gh pr checks "$pr" --repo "$repo" || true   # gh exits non-zero if any check failed
+
+if [ -n "$cfg" ]; then
+  echo
+  echo "→ $cfg from the PR head — read the source, not the diagnosis:"
+  echo "─────────────────────────────────────────────"
+  owner="$(gh pr view "$pr" --repo "$repo" --json headRepositoryOwner -q .headRepositoryOwner.login)"
+  rname="$(gh pr view "$pr" --repo "$repo" --json headRepository      -q .headRepository.name)"
+  ref="$(gh pr view "$pr"   --repo "$repo" --json headRefName         -q .headRefName)"
+  gh api "repos/$owner/$rname/contents/$cfg?ref=$ref" -q '.content' 2>/dev/null \
+    | base64 --decode 2>/dev/null \
+    || echo "(couldn't fetch $cfg @ $owner/$rname:$ref)"
+fi

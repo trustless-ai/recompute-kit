@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# recompute-repo <git-url> <ref> [test-cmd...]
+#
+# Pull a repo at an EXACT ref (commit SHA / branch / tag) and run its tests yourself.
+# The atomic unit of recomputation: green only counts when you saw it green, against
+# a ref you can name. Defaults the test command to `forge test`.
+#
+#   recompute-repo https://github.com/owner/repo c4100e5 forge test
+#   recompute-repo https://github.com/owner/repo main "npm ci && npm test"
+set -euo pipefail
+
+url="${1:-}"; ref="${2:-}"
+if [ -z "$url" ] || [ -z "$ref" ]; then
+  echo "usage: recompute-repo <git-url> <ref> [test-cmd...]" >&2; exit 64
+fi
+shift 2
+if [ "$#" -gt 0 ]; then cmd=("$@"); else cmd=(forge test); fi
+
+dir="$(mktemp -d)"
+trap 'rm -rf "$dir"' EXIT
+echo "→ cloning $url"
+git clone --quiet "$url" "$dir"
+echo "→ checking out $ref"
+git -C "$dir" -c advice.detachedHead=false checkout --quiet "$ref"
+sha="$(git -C "$dir" rev-parse HEAD)"
+echo "→ HEAD pinned at $sha"
+echo "→ running: ${cmd[*]}"
+echo "─────────────────────────────────────────────"
+set +e
+# run through a shell so both `forge test --match X` (separate args) and
+# `"npm ci && npm test"` (one string with shell operators) work
+( cd "$dir" && bash -c "${cmd[*]}" ); rc=$?
+set -e
+echo "─────────────────────────────────────────────"
+if [ "$rc" -eq 0 ]; then
+  echo "✓ RECOMPUTED GREEN  —  $url @ $sha  —  ${cmd[*]}"
+else
+  echo "✗ RECOMPUTE FAILED (exit $rc)  —  $url @ $sha  —  ${cmd[*]}"
+fi
+exit "$rc"

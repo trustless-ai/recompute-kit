@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# verify-claim <url | file.pdf | file> <term> [term...]
+#
+# Fetch a primary source and report which claim-terms actually appear in it, with the
+# first matching line as context. Recompute a citation/claim against the source —
+# don't trust the abstract, the summary, or the suggestion. Exits non-zero if any
+# term is missing.
+#
+#   verify-claim https://arxiv.org/abs/2509.24257 "publicly verifiable" "1%"
+#   verify-claim ./paper.pdf Merkle VRF "hidden state"
+set -euo pipefail
+
+src="${1:-}"; shift || true
+if [ -z "$src" ] || [ "$#" -eq 0 ]; then
+  echo "usage: verify-claim <url|file.pdf|file> <term> [term...]" >&2; exit 64
+fi
+
+txt="$(mktemp)"; trap 'rm -f "$txt"' EXIT
+case "$src" in
+  *.pdf)
+    command -v pdftotext >/dev/null || { echo "need poppler: brew install poppler" >&2; exit 69; }
+    pdftotext "$src" "$txt" ;;
+  http://*|https://*)
+    command -v curl >/dev/null || { echo "need curl" >&2; exit 69; }
+    curl -fsSL "$src" > "$txt" ;;
+  *)
+    cp "$src" "$txt" ;;
+esac
+
+echo "→ source: $src  ($(wc -c < "$txt" | tr -d ' ') bytes)"
+echo "─────────────────────────────────────────────"
+missing=0
+for t in "$@"; do
+  n="$(grep -ic -- "$t" "$txt" || true)"
+  if [ "$n" -gt 0 ]; then
+    printf "✓ %-30s %sx\n" "$t" "$n"
+    grep -in -- "$t" "$txt" | head -1 | cut -c1-118 | sed 's/^/    /'
+  else
+    printf "✗ %-30s NOT FOUND\n" "$t"; missing=1
+  fi
+done
+echo "─────────────────────────────────────────────"
+[ "$missing" -eq 0 ] && echo "✓ all terms confirmed in source" || echo "✗ some terms NOT in source — do not cite as-is"
+exit "$missing"
