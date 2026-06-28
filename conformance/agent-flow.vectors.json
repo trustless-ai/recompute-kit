@@ -1,7 +1,7 @@
 {
   "name": "agent-flow conformance vectors",
   "version": "0.1",
-  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector).",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing.",
   "vectors": [
     {
       "id": "8004-agent-id",
@@ -73,6 +73,36 @@
         "volumeCap": 50
       },
       "expected": 0.3303
+    },
+    {
+      "id": "bond-standing-valid",
+      "step": "scope/bond-standing",
+      "spec": "scope-contestation Layer3 / ICompletenessBond.survival()",
+      "desc": "standing = (not slashed) and (not challenged) \u2014 recomputed from public bond state, not asserted",
+      "inputs": {
+        "amount": "10000000000000000000",
+        "bondStart": 1782000000,
+        "termEnd": 1790000000,
+        "resolvedAt": 0,
+        "slashed": false,
+        "challenged": false
+      },
+      "expected": true
+    },
+    {
+      "id": "bond-standing-slashed",
+      "step": "scope/bond-standing",
+      "spec": "scope-contestation Layer3 / ICompletenessBond.survival()",
+      "desc": "a slashed/challenged bond is NOT standing \u2014 its completeness claim was falsified",
+      "inputs": {
+        "amount": "10000000000000000000",
+        "bondStart": 1782000000,
+        "termEnd": 1790000000,
+        "resolvedAt": 1782650000,
+        "slashed": true,
+        "challenged": true
+      },
+      "expected": false
     }
   ]
 }

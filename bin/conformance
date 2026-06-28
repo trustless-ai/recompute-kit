@@ -40,6 +40,9 @@ def recompute(v):
     if s == "8275/reputation":
         w, l, c, cap = i["wins"], i["losses"], i["closedOutcomes"], i["volumeCap"]
         return round(w / (w + l) * min(c, cap) / cap, 4)
+    if s == "scope/bond-standing":
+        # Layer 3: standing recomputed from public survival(bondId), never asserted.
+        return (not i["slashed"]) and (not i["challenged"])
     raise SystemExit(f"unknown step: {s}")
 
 

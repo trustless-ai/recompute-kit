@@ -57,7 +57,13 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      OTS digest → Bitcoin block → merkleroot cross-checked off a public
                      explorer (no node, no trust); strict block_time < outcome if given
 
-  — all 7 flow steps + the value-fidelity precedence anchor, recomputable end-to-end —
+  DEFENSE STANDING — Layer 3 completeness bond (damonzwicker/scope-contestation)
+    scope/bond-standing  <rpc> <bond_addr> <bondId> [as_of]
+                     recompute(survival(bondId)) → standing = (not slashed ∧ not challenged);
+                     bounty=amount, age=as_of−bondStart (Lindy strength). "which agent is good?"
+                     recomputed from public bond state, not asserted.
+
+  — 7 flow steps + value-fidelity precedence + Layer-3 standing, recomputable end-to-end —
 EOF
     ;;
 
@@ -198,6 +204,44 @@ if outcome:
     print("✓ RECOMPUTED — anchor Bitcoin-confirmed AND strictly precedes the outcome")
 else:
     print("✓ RECOMPUTED — anchor Bitcoin-confirmed (merkleroot matches explorer); pass an outcome_ts for the strict < check")
+PY
+    ;;
+
+  scope/bond-standing)
+    # Layer 3 (damonzwicker/scope-contestation, ICompletenessBond): recompute an agent's
+    # completeness STANDING from the public bond state — survival(bondId) — never from an
+    # asserted score. standing = (not slashed) and (not challenged): the bond was never
+    # falsified by a material-omission proof. bounty + age are the Lindy strength signal.
+    rpc="${2:?need rpc-url}"; bond="${3:?need bond contract addr}"
+    bondId="${4:?need bondId (bytes32)}"; asof="${5:-}"
+    python3 - "$rpc" "$bond" "$bondId" "$asof" <<'PY'
+import sys, subprocess, time
+rpc, bond, bondId, asof = sys.argv[1], sys.argv[2], sys.argv[3], (sys.argv[4] or None)
+# exact ABI from ICompletenessBond.sol survival(bytes32):
+sig = "survival(bytes32)(uint256,uint64,uint64,uint64,bool,bool)"
+r = subprocess.run(["cast","call",bond,sig,bondId,"--rpc-url",rpc],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    print("✗ survival() call failed:", (r.stderr or r.stdout).strip()[:200]); sys.exit(1)
+v = r.stdout.split()
+amount, bondStart, termEnd, resolvedAt = int(v[0]), int(v[1]), int(v[2]), int(v[3])
+slashed, challenged = v[4].lower()=="true", v[5].lower()=="true"
+# the recompute (Point: standing-as-survival, not asserted):
+standing = (not slashed) and (not challenged)
+state = "live" if resolvedAt==0 else ("survived (reclaimed)" if not slashed else "slashed")
+now = int(asof) if asof else int(time.time())
+age = now - bondStart
+print(f"→ scope/bond-standing: recompute(survival({bondId[:12]}…)) — Layer 3 completeness bond")
+print("─"*58)
+print(f"bounty (amount):     {amount}")
+print(f"age (now−bondStart): {age}s  (termEnd in {termEnd-now}s)")
+print(f"state:               {state}")
+print(f"slashed / challenged: {slashed} / {challenged}")
+print(f"STANDING:            {standing}")
+print("✓ STANDING — recomputed from public bond state: unslashed, unchallenged "
+      "(bounty×age = Lindy strength)" if standing else
+      "✗ NOT STANDING — bond falsified (slashed or successfully challenged)")
+sys.exit(0 if standing else 1)
 PY
     ;;
 
