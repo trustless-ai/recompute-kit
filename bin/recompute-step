@@ -230,11 +230,14 @@ slashed, challenged = v[4].lower()=="true", v[5].lower()=="true"
 standing = (not slashed) and (not challenged)
 state = "live" if resolvedAt==0 else ("survived (reclaimed)" if not slashed else "slashed")
 now = int(asof) if asof else int(time.time())
-age = now - bondStart
+# Damon's canonical "age under open bounty": freezes at resolvedAt — a dead/reclaimed
+# bond stops accruing standing. age = min(now, resolvedAt or now) − bondStart.
+end = resolvedAt if resolvedAt != 0 else now
+age = end - bondStart
 print(f"→ scope/bond-standing: recompute(survival({bondId[:12]}…)) — Layer 3 completeness bond")
 print("─"*58)
-print(f"bounty (amount):     {amount}")
-print(f"age (now−bondStart): {age}s  (termEnd in {termEnd-now}s)")
+print(f"bounty (amount):     {amount}  (note: contract zeroes amount on resolve; 0 ⇒ read historical bounty from BondPosted)")
+print(f"age under bounty:    {age}s  (termEnd in {termEnd-now}s)")
 print(f"state:               {state}")
 print(f"slashed / challenged: {slashed} / {challenged}")
 print(f"STANDING:            {standing}")
