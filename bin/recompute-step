@@ -34,9 +34,17 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8004/agent-id    <agentRef> <expected_agentId>
                      agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation)
 
-  (next, pending each spec's exact construction:
-   8301 dispatch (jobId — Jimmy) · 8274/8263 verify (deployed BIP-340 verifier)
-   · ReceiptOS eligibility (receiptRoot — Pavlo) · 8275 reputation (f — babyblue /ledger))
+  ELIGIBILITY — ReceiptOS (Step 5)
+    receiptos/receipt-hash  <receipt.json>
+                     receipt_sha256 = sha256(decision_sha256 ‖ prev)   (receiptos-mvp hash-chain)
+
+  REPUTATION — ERC-8275 (Step 7)
+    8275/reputation  [ledger_url]
+                     winRate*min(closedOutcomes,volumeCap)/volumeCap  (live api.babyblueviper.com/ledger)
+
+  (next, pending each spec's exact shape:
+   8301 dispatch — taskHash formula in hand (note §90), needs exact abi.encode field types (Jimmy's AgentTask)
+   8274/8263 verify — deployed BIP-340 verifier 0xd8a0…18a09, needs the verify() ABI)
 EOF
     ;;
 
@@ -45,6 +53,54 @@ EOF
     command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
     echo "→ 8004/agent-id: agentId = keccak256(utf8(\"$ref\"))"
     exec "$BIN/recompute-commitment" keccak "$exp" "$(cast from-utf8 "$ref")" ;;
+
+  receiptos/receipt-hash)
+    f="${2:?need a receipt .json file}"
+    python3 - "$f" <<'PY'
+import sys, json, hashlib
+r = json.load(open(sys.argv[1]))
+canon = lambda o: json.dumps(o, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
+sha = lambda b: hashlib.sha256(b).hexdigest()
+unsigned = {k: v for k, v in r.items() if k not in ('hashes', 'signature')}
+decision = sha(canon(unsigned))
+prev = (r.get('hashes') or {}).get('prev_receipt_sha256')
+receipt = sha(f"{decision}|{prev or ''}".encode())
+exp = (r.get('hashes') or {}).get('receipt_sha256')
+print("→ receiptos/receipt-hash: receipt_sha256 = sha256(decision_sha256 ‖ prev)  [receiptos-mvp]")
+print("─" * 45)
+print("decision_sha256 (recomputed):", decision)
+print("receipt_sha256  (recomputed):", receipt)
+print("receipt_sha256  (published) :", exp)
+ok = receipt == exp
+print("✓ RECOMPUTED — receipt hash matches the published chain" if ok
+      else "✗ MISMATCH — recomputed receipt hash ≠ published")
+sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  8275/reputation)
+    url="${2:-https://api.babyblueviper.com/ledger}"
+    python3 - "$url" <<'PY'
+import sys, json, urllib.request
+d = json.load(urllib.request.urlopen(sys.argv[1], timeout=15))
+r = d['reputation_axis']; dv = r['derivation']; inp = r['inputs']
+wins, losses, closed = dv['commit_gated_wins'], dv['commit_gated_losses'], dv['commit_gated_closed']
+cap = inp['volumeCap']
+winRate = wins / (wins + losses)
+rep = winRate * min(closed, cap) / cap
+pub_rep, pub_wr = r['reputation'], inp['winRate']
+print("→ 8275/reputation: winRate*min(closedOutcomes,volumeCap)/volumeCap  [ERC-8275 axis, live /ledger]")
+print("─" * 45)
+print(f"from published derivation: wins={wins} losses={losses} closed={closed} cap={cap}")
+print(f"winRate    recomputed {winRate:.4f}  vs published {pub_wr}")
+print(f"reputation recomputed {rep:.4f}  vs published {pub_rep}")
+ok = abs(winRate - pub_wr) < 5e-4 and abs(rep - pub_rep) < 5e-4
+print("✓ RECOMPUTED — reputation recomputes from its published counts" if ok
+      else "✗ MISMATCH — published reputation ≠ recomputed")
+print("  (deeper tier: re-derive wins/losses/closed by verifying each entry's schnorr sig + 8263 anchor)")
+sys.exit(0 if ok else 1)
+PY
+    ;;
 
   wyriwe/raw)
     raw="${2:?need raw_input hex}"; exp="${3:?need expected raw_input_hash}"
