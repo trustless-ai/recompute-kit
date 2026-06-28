@@ -30,9 +30,21 @@ recompute-step recipes (start: the two steps we built end-to-end)
     scope/suite      [ref]
                      run the contest() four-guard reference suite (TMerlini/hack-ens-recovery)
 
-  (next: 8004 identity · 8301 dispatch · 8274/8263 verify · ReceiptOS · 8275 reputation)
+  IDENTITY — ERC-8004 (Step 1)
+    8004/agent-id    <agentRef> <expected_agentId>
+                     agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation)
+
+  (next, pending each spec's exact construction:
+   8301 dispatch (jobId — Jimmy) · 8274/8263 verify (deployed BIP-340 verifier)
+   · ReceiptOS eligibility (receiptRoot — Pavlo) · 8275 reputation (f — babyblue /ledger))
 EOF
     ;;
+
+  8004/agent-id)
+    ref="${2:?need agentRef}"; exp="${3:?need expected agentId}"
+    command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
+    echo "→ 8004/agent-id: agentId = keccak256(utf8(\"$ref\"))"
+    exec "$BIN/recompute-commitment" keccak "$exp" "$(cast from-utf8 "$ref")" ;;
 
   wyriwe/raw)
     raw="${2:?need raw_input hex}"; exp="${3:?need expected raw_input_hash}"
