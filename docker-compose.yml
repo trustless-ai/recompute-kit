@@ -1,0 +1,14 @@
+# Containerized recompute-kit MCP server — isolated, deployable to the NAS via Coolify.
+# Build mirrors the repo (Dockerfile COPYs bin/ + mcp/). Other NAS services (e.g. the
+# ENS Boiler / dinamic kit) can point their MCP client at http://<host>:7079/mcp.
+services:
+  recompute-kit:
+    build: .
+    image: recompute-kit:latest
+    container_name: recompute-kit
+    restart: unless-stopped
+    ports:
+      - "7079:7079"
+    environment:
+      # gh auth — needed by recheck_ci and for private clones; optional for public repos
+      - GH_TOKEN=${GH_TOKEN:-}
