@@ -1,0 +1,78 @@
+{
+  "name": "agent-flow conformance vectors",
+  "version": "0.1",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector).",
+  "vectors": [
+    {
+      "id": "8004-agent-id",
+      "step": "8004/agent-id",
+      "spec": "ERC-8299 \u00a7Step3",
+      "desc": "agentId = keccak256(utf8(agentRef))",
+      "inputs": {
+        "agentRef": "agent.eth"
+      },
+      "expected": "0x3ad75de71f32339becb08e4de837df6a125578acd79a70638923545ac4a2055e"
+    },
+    {
+      "id": "wyriwe-raw",
+      "step": "wyriwe/raw",
+      "spec": "ERC-8299 \u00a745",
+      "desc": "raw_input_hash = keccak256(raw_user_input)",
+      "inputs": {
+        "raw_input_hex": "0x68656c6c6f"
+      },
+      "expected": "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+    },
+    {
+      "id": "wyriwe-pipeline",
+      "step": "wyriwe/pipeline",
+      "spec": "ERC-8299 \u00a746",
+      "desc": "sanitization_pipeline_hash = keccak256(utf8(cid) || raw_input_hash)",
+      "inputs": {
+        "spec_cid": "ipfs://QmccvoM6aRVgZ2dtFWvT6Wm3DmTvoAUHHotK7uQufnStVR",
+        "raw_input_hash": "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8"
+      },
+      "expected": "0x5798efed4aa92f96a0622fc30268042b067294bdb5fd06f599bf8d84fd5d734b"
+    },
+    {
+      "id": "scope-binding",
+      "step": "scope/binding",
+      "spec": "scope-contestation Guarantee 4",
+      "desc": "scopeRoot = keccak256(abi.encode(merkleRoot, count))",
+      "inputs": {
+        "merkleRoot": "0x00000000000000000000000000000000000000000000000000000000deadbeef",
+        "count": 4
+      },
+      "expected": "0x36d975060e33224d20b5b4277dd6c8025812812e010c2889b72c3ed4e0d75dd5"
+    },
+    {
+      "id": "8301-task-hash",
+      "step": "8301/task-hash",
+      "spec": "ERC-8301 \u00a784",
+      "desc": "taskHash = keccak256(abi.encode(uint8 stage,uint256 taskSeq,bytes32 inputHash,uint256 timestamp,uint256 expiresAt,keccak256(abi.encodePacked(prevReplyHashes)),bytes32 workflowRunId))",
+      "inputs": {
+        "stage": 1,
+        "taskSeq": 0,
+        "inputHash": "0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8",
+        "timestamp": 1700000000,
+        "expiresAt": 1700001000,
+        "prevReplyHashesPacked": "0x",
+        "workflowRunId": "0x00000000000000000000000000000000000000000000000000000000deadbeef"
+      },
+      "expected": "0xf1f404c844a4aff1d0d7d17cebb518a2d386197aad09ab86517eaa01448301ec"
+    },
+    {
+      "id": "8275-reputation",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis",
+      "desc": "reputation = (wins/(wins+losses)) * min(closedOutcomes,volumeCap)/volumeCap",
+      "inputs": {
+        "wins": 16,
+        "losses": 15,
+        "closedOutcomes": 32,
+        "volumeCap": 50
+      },
+      "expected": 0.3303
+    }
+  ]
+}

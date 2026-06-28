@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""conformance — verify an implementation reproduces the agent-flow GOLDEN VECTORS.
+
+The vectors (`conformance/agent-flow.vectors.json`) are the canonical authority:
+public inputs → expected recompute, for each step of the composed flow. "Conformant"
+means an implementation reproduces every `expected` from the same `inputs` — NOT that
+it matches any one SDK's output. This file is the *reference* recompute (via `cast`); a
+language SDK runs the SAME vectors through its own code and compares. CI-gate every SDK,
+TS reference included, against these — no trusted implementation in the loop.
+
+(The on-chain 8274 verify is a contract call, identical for every SDK, so it is not a
+pure-recompute vector — checked separately via recompute-step 8274/verify.)
+"""
+import sys, json, subprocess
+from pathlib import Path
+
+VEC = Path(__file__).resolve().parent.parent / "conformance" / "agent-flow.vectors.json"
+
+
+def cast(*a):
+    return subprocess.run(["cast", *map(str, a)], capture_output=True, text=True).stdout.strip()
+
+
+def recompute(v):
+    s, i = v["step"], v["inputs"]
+    if s == "8004/agent-id":
+        return cast("keccak", cast("from-utf8", i["agentRef"]))
+    if s == "wyriwe/raw":
+        return cast("keccak", i["raw_input_hex"])
+    if s == "wyriwe/pipeline":
+        return cast("keccak", cast("concat-hex", cast("from-utf8", i["spec_cid"]), i["raw_input_hash"]))
+    if s == "scope/binding":
+        return cast("keccak", cast("abi-encode", "f(bytes32,uint256)", i["merkleRoot"], i["count"]))
+    if s == "8301/task-hash":
+        inner = cast("keccak", i["prevReplyHashesPacked"])
+        enc = cast("abi-encode", "f(uint8,uint256,bytes32,uint256,uint256,bytes32,bytes32)",
+                   i["stage"], i["taskSeq"], i["inputHash"], i["timestamp"],
+                   i["expiresAt"], inner, i["workflowRunId"])
+        return cast("keccak", enc)
+    if s == "8275/reputation":
+        w, l, c, cap = i["wins"], i["losses"], i["closedOutcomes"], i["volumeCap"]
+        return round(w / (w + l) * min(c, cap) / cap, 4)
+    raise SystemExit(f"unknown step: {s}")
+
+
+def main():
+    d = json.load(open(VEC))
+    print(f"{d['name']} v{d['version']} — {len(d['vectors'])} vectors")
+    print("─" * 56)
+    fails = 0
+    for v in d["vectors"]:
+        got, exp = recompute(v), v["expected"]
+        ok = str(got).lower() == str(exp).lower()
+        print(f"{'✓' if ok else '✗'} {v['id']:<17} {v['step']:<17} = {str(exp)[:30]}")
+        if not ok:
+            print(f"    expected {exp}\n    got      {got}")
+            fails += 1
+    print("─" * 56)
+    print("✓ CONFORMANT — all vectors reproduced" if not fails else f"✗ {fails} vector(s) FAILED")
+    sys.exit(1 if fails else 0)
+
+
+if __name__ == "__main__":
+    main()
