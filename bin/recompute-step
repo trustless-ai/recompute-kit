@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# recompute-step <recipe> <args...>
+#
+# Recompute a named step of the agent-standards flow from PUBLIC inputs, composing the
+# kit's primitives (recompute-commitment / recompute-repo / recompute-onchain). Each
+# recipe encodes one step's recompute recipe — the ERC-specific knowledge lives here,
+# thin, not in the generic primitives.
+#
+#   recompute-step list
+#   recompute-step wyriwe/pipeline ipfs://Qm... 0x<raw_input_hash> 0x<expected>
+#   recompute-step scope/binding   0x<merkleRoot> 4 0x<expected_scopeRoot>
+set -euo pipefail
+BIN="$(cd "$(dirname "$0")" && pwd)"
+recipe="${1:-list}"
+
+case "$recipe" in
+  list)
+    cat <<'EOF'
+recompute-step recipes (start: the two steps we built end-to-end)
+
+  INPUT PROVENANCE — ERC-8299 / WYRIWE (Step 3, behavioral)
+    wyriwe/raw       <raw_input_hex> <expected>
+                     raw_input_hash = keccak256(raw_user_input)
+    wyriwe/pipeline  <spec_cid> <raw_input_hash> <expected>
+                     sanitization_pipeline_hash = keccak256(utf8(cid) ‖ raw_input_hash)
+
+  OBSERVATION COMPLETENESS — scope-contestation
+    scope/binding    <merkleRoot> <count> <expected_scopeRoot>
+                     scopeRoot = keccak256(abi.encode(root, N))   (Guarantee 4 — truncation-resistant)
+    scope/suite      [ref]
+                     run the contest() four-guard reference suite (TMerlini/hack-ens-recovery)
+
+  (next: 8004 identity · 8301 dispatch · 8274/8263 verify · ReceiptOS · 8275 reputation)
+EOF
+    ;;
+
+  wyriwe/raw)
+    raw="${2:?need raw_input hex}"; exp="${3:?need expected raw_input_hash}"
+    echo "→ wyriwe/raw: raw_input_hash = keccak256(raw_user_input)"
+    exec "$BIN/recompute-commitment" keccak "$exp" "$raw" ;;
+
+  wyriwe/pipeline)
+    cid="${2:?need sanitization_spec_cid}"; rawhash="${3:?need raw_input_hash}"; exp="${4:?need expected}"
+    command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
+    cidhex="$(cast from-utf8 "$cid")"
+    packed="$(cast concat-hex "$cidhex" "$rawhash")"
+    echo "→ wyriwe/pipeline: keccak256( utf8(\"$cid\") ‖ $rawhash )"
+    exec "$BIN/recompute-commitment" keccak "$exp" "$packed" ;;
+
+  scope/binding)
+    root="${2:?need merkleRoot}"; n="${3:?need count}"; exp="${4:?need expected scopeRoot}"
+    echo "→ scope/binding: bind(root,N) = keccak256(abi.encode(root, $n))"
+    exec "$BIN/recompute-commitment" abi-keccak "$exp" "f(bytes32,uint256)" "$root" "$n" ;;
+
+  scope/suite)
+    ref="${2:-main}"
+    exec "$BIN/recompute-repo" https://github.com/TMerlini/hack-ens-recovery "$ref" \
+      "cd scope-contestation-demo/contracts && (ls lib/forge-std >/dev/null 2>&1 || git clone -q --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std) && forge test" ;;
+
+  *)
+    echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;
+esac

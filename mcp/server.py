@@ -157,5 +157,24 @@ def recompute_commitment(scheme: str, expect: str, args: list[str]) -> dict:
     }
 
 
+@mcp.tool()
+def recompute_step(recipe: str = "list", args: list[str] = []) -> dict:
+    """Recompute a named step of the agent-standards flow from public inputs, composing
+    the kit's primitives — the ERC-specific recompute recipe per step.
+
+    Args:
+        recipe: "list" to see recipes, or a recipe name. Seed recipes:
+            wyriwe/raw, wyriwe/pipeline (input-provenance, ERC-8299);
+            scope/binding, scope/suite (observation-completeness, scope-contestation).
+        args: the recipe's inputs (see `list`).
+    Returns {recipe, pass, evidence}.
+    """
+    rc, out, err = _run("recompute-step", recipe, *args)
+    return {
+        "recipe": recipe, "pass": rc == 0,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 20),
+    }
+
+
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")
