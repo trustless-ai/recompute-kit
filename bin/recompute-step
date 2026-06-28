@@ -52,7 +52,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
                        uint256 timestamp, uint256 expiresAt, keccak256(abi.encodePacked(prevReplyHashes)),
                        bytes32 workflowRunId))   (ERC-8301; prevReplyHashesPacked empty for the initial task)
 
-  — all 7 flow steps now recomputable end-to-end —
+  PRECEDENCE — ERC-8263 anchor (value-fidelity type-2)
+    8263/precedence  <digest> <ots_proof_url_or_file> [outcome_timestamp]
+                     OTS digest → Bitcoin block → merkleroot cross-checked off a public
+                     explorer (no node, no trust); strict block_time < outcome if given
+
+  — all 7 flow steps + the value-fidelity precedence anchor, recomputable end-to-end —
 EOF
     ;;
 
@@ -153,6 +158,48 @@ PY
     exec "$BIN/recompute-commitment" abi-keccak "$expected" \
       "f(uint8,uint256,bytes32,uint256,uint256,bytes32,bytes32)" \
       "$stage" "$seq" "$inh" "$ts" "$exp_at" "$inner" "$run" ;;
+
+  8263/precedence)
+    digest="${2:?need OTS digest (event_id stamped)}"; proof="${3:?need .ots proof url or file}"
+    outcome="${4:-}"
+    python3 - "$digest" "$proof" "$outcome" <<'PY'
+import sys, os, re, json, shutil, subprocess, tempfile, urllib.request
+digest, proof, outcome = sys.argv[1], sys.argv[2], (sys.argv[3] or None)
+ots = shutil.which("ots") or os.path.expanduser("~/Library/Python/3.14/bin/ots")
+if not os.path.exists(ots) and not shutil.which("ots"):
+    sys.exit("need the OpenTimestamps client: pip install opentimestamps-client")
+# resolve proof → local file
+pf = proof
+if proof.startswith("http"):
+    pf = tempfile.mktemp(suffix=".ots")
+    urllib.request.urlretrieve(proof, pf)
+# OTS resolves the proof to a Bitcoin block + merkleroot (no local node)
+r = subprocess.run([ots, "--no-bitcoin", "verify", "-d", digest, pf], capture_output=True, text=True)
+m = re.search(r"Bitcoin block (\d+) has merkleroot ([0-9a-fA-F]+)", r.stdout + r.stderr)
+if not m:
+    print("✗ OTS proof did not resolve to a Bitcoin block:"); print((r.stdout + r.stderr)[-300:]); sys.exit(1)
+block, ots_root = int(m.group(1)), m.group(2).lower()
+# cross-check the merkleroot off a public explorer (no node, no trust in the ledger)
+h = urllib.request.urlopen(f"https://blockstream.info/api/block-height/{block}", timeout=15).read().decode()
+b = json.load(urllib.request.urlopen(f"https://blockstream.info/api/block/{h}", timeout=15))
+exp_root, block_time = b["merkle_root"].lower(), b["timestamp"]
+print(f"→ 8263/precedence: OTS digest → Bitcoin block {block}, merkleroot cross-checked off blockstream")
+print("─" * 56)
+print(f"OTS merkleroot:      {ots_root}")
+print(f"explorer merkleroot: {exp_root}  (block {block})")
+print(f"block_time:          {block_time}")
+if ots_root != exp_root:
+    print("✗ MISMATCH — OTS merkleroot ≠ explorer merkleroot (anchor not confirmed)"); sys.exit(1)
+if outcome:
+    strict = block_time < int(outcome)
+    print(f"strict precedence:   {block_time} < {outcome}  →  {strict}")
+    if not strict:
+        print("✗ PRECEDENCE FAILS — anchor not strictly before the outcome"); sys.exit(1)
+    print("✓ RECOMPUTED — anchor Bitcoin-confirmed AND strictly precedes the outcome")
+else:
+    print("✓ RECOMPUTED — anchor Bitcoin-confirmed (merkleroot matches explorer); pass an outcome_ts for the strict < check")
+PY
+    ;;
 
   *)
     echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;

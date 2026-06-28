@@ -20,8 +20,8 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
     && /root/.foundry/bin/foundryup
 ENV PATH="/root/.foundry/bin:${PATH}"
 
-# MCP SDK
-RUN pip install --no-cache-dir mcp
+# MCP SDK + OpenTimestamps client (for the 8263/precedence recipe)
+RUN pip install --no-cache-dir mcp opentimestamps-client
 
 WORKDIR /app
 COPY bin/ ./bin/

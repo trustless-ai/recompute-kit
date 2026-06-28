@@ -45,7 +45,7 @@ Dependencies (only what each verb needs):
 - `git` + [`gh`](https://cli.github.com) — clone/pin, PR checks, config fetch
 - [`foundry`](https://getfoundry.sh) — `forge test` (or any test command you pass)
 - `curl` + [`poppler`](https://poppler.freedesktop.org) (`pdftotext`) — fetch URLs / extract PDFs
-- `python3` (optional) — second-language reference cross-checks
+- `python3` + [`ots`](https://opentimestamps.org) (`pip install opentimestamps-client`) — OTS precedence recompute (8263/precedence)
 
 ## Roadmap
 
