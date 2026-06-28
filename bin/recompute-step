@@ -42,9 +42,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8275/reputation  [ledger_url]
                      winRate*min(closedOutcomes,volumeCap)/volumeCap  (live api.babyblueviper.com/ledger)
 
-  (next, pending each spec's exact shape:
-   8301 dispatch — taskHash formula in hand (note §90), needs exact abi.encode field types (Jimmy's AgentTask)
-   8274/8263 verify — deployed BIP-340 verifier 0xd8a0…18a09, needs the verify() ABI)
+  VERIFY — ERC-8274 / 8263 (Step 4)
+    8274/verify      <rpc> <block> <inputHash> <outputHash> <metadata> <proof>
+                     WyriweProofVerifier(0xd8a0…18a09).verify(...) == true  (canonical deployed verifier)
+
+  (last one: 8301 dispatch — taskHash formula in hand (note §90), needs the exact
+   abi.encode field types from Jimmy's AgentTask contract)
 EOF
     ;;
 
@@ -124,6 +127,14 @@ PY
     ref="${2:-main}"
     exec "$BIN/recompute-repo" https://github.com/TMerlini/hack-ens-recovery "$ref" \
       "cd scope-contestation-demo/contracts && (ls lib/forge-std >/dev/null 2>&1 || git clone -q --depth 1 https://github.com/foundry-rs/forge-std lib/forge-std) && forge test" ;;
+
+  8274/verify)
+    rpc="${2:?need rpc-url (mainnet)}"; block="${3:?need block (pin, or latest)}"
+    inh="${4:?need inputHash}"; outh="${5:?need outputHash}"
+    meta="${6:?need metadata bytes (0x…)}"; proof="${7:?need proof bytes (0x…)}"
+    echo "→ 8274/verify: WyriweProofVerifier(0xd8a0…18a09).verify(inputHash,outputHash,metadata,proof) == true"
+    exec "$BIN/recompute-onchain" "$rpc" "$block" 0xd8a09d830b27697e1b24e8c9800e562d20318a09 \
+      "verify(bytes32,bytes32,bytes,bytes)(bool)" true "$inh" "$outh" "$meta" "$proof" ;;
 
   *)
     echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;
