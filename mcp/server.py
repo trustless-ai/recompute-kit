@@ -70,16 +70,13 @@ def verify_claim(source: str, terms: list[str]) -> dict:
     Returns {all_present, source, found:{term:count}, missing:[...], evidence}.
     """
     rc, out, err = _run("verify-claim", source, *terms)
-    found, missing = {}, []
+    found = {}
     for line in out.splitlines():
-        s = line.strip()
-        mc = re.match(r"^✓\s+(.+?)\s+(\d+)x$", s)
+        mc = re.match(r"^✓\s+(.+?)\s+(\d+)x$", line.strip())
         if mc:
             found[mc.group(1).strip()] = int(mc.group(2))
-            continue
-        mm = re.match(r"^✗\s+(.+?)\s+NOT FOUND$", s)
-        if mm:
-            missing.append(mm.group(1).strip())
+    # derive missing from the input terms — robust to any output/locale variance
+    missing = [t for t in terms if t not in found]
     return {
         "all_present": rc == 0,
         "source": source, "found": found, "missing": missing,
