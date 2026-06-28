@@ -19,10 +19,20 @@ bin/verify-claim ./paper.pdf Merkle VRF "hidden state"
 
 # 3. recheck a CI / lint failure — the real verdict + the actual config
 bin/recheck-ci ethereum/ERCs 1810 config/eipw.toml
+
+# 4. recompute a fact FROM CHAIN — cast-call at a PINNED block vs a claim
+bin/recompute-onchain https://ethereum-rpc.publicnode.com 19000000 \
+    0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 "decimals()(uint8)" 18
+
+# 5. recompute a COMMITMENT — keccak / keccak256(abi.encode(...)) vs a committed digest
+bin/recompute-commitment abi-keccak 0x<digest> "f(bytes32,uint256)" 0x<root> 4
 ```
 
-Each prints **pass/fail + the evidence** (the resolved SHA, the test output, the
-matched lines) — so the output is itself a recomputation anyone can reproduce.
+Each prints **pass/fail + the evidence** (the resolved SHA, the test output, the matched
+lines, the block, the recomputed digest) — so the output is itself a recomputation anyone
+can reproduce. Verbs 1–3 recompute *others' artifacts* (repos, claims, CI); verbs 4–5
+recompute the *on-chain + cryptographic facts* the work rests on — the standards family's
+own verify-step ("recompute from public data, no trusted party") made callable, on `cast`.
 
 ## Install
 

@@ -114,5 +114,48 @@ def recheck_ci(repo: str, pr: int, config_path: str = "") -> dict:
     return result
 
 
+@mcp.tool()
+def recompute_onchain(rpc_url: str, block: str, address: str, sig: str, expect: str,
+                      args: list[str] = []) -> dict:
+    """Recompute a fact FROM CHAIN: cast-call a view function at a PINNED block and
+    compare the result to a claimed value. The block number is the immutable ref (the
+    on-chain analog of a commit SHA) — prefer a real block over "latest".
+
+    Args:
+        rpc_url: JSON-RPC endpoint.
+        block: block number to pin at (or "latest", not a pin).
+        address: contract address.
+        sig: cast return-typed signature, e.g. "totalSupply()(uint256)".
+        expect: the claimed value to check against.
+        args: call arguments, if any.
+    Returns {match, block, address, sig, expected, evidence}.
+    """
+    rc, out, err = _run("recompute-onchain", rpc_url, block, address, sig, expect, *args)
+    return {
+        "match": rc == 0, "block": block, "address": address, "sig": sig,
+        "expected": expect,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 12),
+    }
+
+
+@mcp.tool()
+def recompute_commitment(scheme: str, expect: str, args: list[str]) -> dict:
+    """Recompute a digest from PUBLIC inputs and compare to a committed value — the
+    family's verify-step ("recompute from public data, no trusted party") as a tool.
+
+    Args:
+        scheme: "keccak" (keccak256 of a hex blob) or "abi-keccak"
+                (keccak256(abi.encode(...)), e.g. bind(root,N)).
+        expect: the committed digest to check against.
+        args: for keccak → [hexdata]; for abi-keccak → ["<sig>", value, value, ...].
+    Returns {match, scheme, expected, evidence}.
+    """
+    rc, out, err = _run("recompute-commitment", scheme, expect, *args)
+    return {
+        "match": rc == 0, "scheme": scheme, "expected": expect,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 12),
+    }
+
+
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")

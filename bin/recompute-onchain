@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# recompute-onchain <rpc-url> <block> <address> <sig> <expected> [args...]
+#
+# Recompute a fact FROM CHAIN: cast-call a view function at a PINNED block and compare
+# the result to a claimed value. The block number is the immutable ref — the on-chain
+# analog of a commit SHA. "latest" is NOT a pin (it moves), so prefer a real block.
+#
+#   recompute-onchain https://eth.llamarpc.com 19000000 \
+#       0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2 "decimals()(uint8)" 18
+#
+# Signatures use cast's return-type form, e.g. "totalSupply()(uint256)", so the output
+# is decoded and directly comparable to <expected>. Extra args are the call arguments.
+set -euo pipefail
+
+rpc="${1:-}"; block="${2:-}"; addr="${3:-}"; sig="${4:-}"; expect="${5:-}"
+if [ -z "$rpc" ] || [ -z "$block" ] || [ -z "$addr" ] || [ -z "$sig" ] || [ -z "$expect" ]; then
+  echo "usage: recompute-onchain <rpc-url> <block> <address> <sig> <expected> [args...]" >&2
+  exit 64
+fi
+shift 5
+command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
+[ "$block" = "latest" ] && echo "⚠ block=latest is not a pinned ref — the result may change" >&2
+
+echo "→ cast call $addr '$sig' $* --block $block"
+echo "─────────────────────────────────────────────"
+if ! got="$(cast call "$addr" "$sig" "$@" --rpc-url "$rpc" --block "$block" 2>&1)"; then
+  echo "✗ call failed: $got"; exit 1
+fi
+got="$(printf '%s' "$got" | tr -d '[:space:]')"
+exp="$(printf '%s' "$expect" | tr -d '[:space:]')"
+
+# normalized fallback: strip 0x + leading zeros + lowercase (so 0x012 == 0x12 etc.)
+norm() { local v="${1#0x}"; v="${v#"${v%%[!0]*}"}"; printf '%s' "${v:-0}" | tr 'A-F' 'a-f'; }
+
+echo "expected:  $exp"
+echo "on-chain:  $got   (block $block)"
+if [ "$got" = "$exp" ] || [ "$(norm "$got")" = "$(norm "$exp")" ]; then
+  echo "✓ RECOMPUTED — on-chain value matches the claim @ block $block"
+else
+  echo "✗ MISMATCH — on-chain value ≠ claim @ block $block"; exit 1
+fi

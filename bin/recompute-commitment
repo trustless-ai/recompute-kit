@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# recompute-commitment <scheme> <expected> <args...>
+#
+# Recompute a digest from PUBLIC inputs and compare it to a committed value — the
+# standards family's verify-step ("recompute from public data, no trusted party") made
+# callable. Wraps cast; no trusted issuer, no private state.
+#
+#   recompute-commitment keccak     <expected> <hexdata>
+#       → keccak256(hexdata)            e.g. a hashed pre-image / packed blob
+#   recompute-commitment abi-keccak <expected> "<sig>" <values...>
+#       → keccak256(abi.encode(...))    e.g. bind(root,N) = keccak256(abi.encode(root,count)):
+#         recompute-commitment abi-keccak 0x… "f(bytes32,uint256)" 0x<root> 4
+set -euo pipefail
+
+scheme="${1:-}"; expect="${2:-}"
+if [ -z "$scheme" ] || [ -z "$expect" ]; then
+  echo "usage: recompute-commitment <keccak|abi-keccak> <expected> <args...>" >&2
+  exit 64
+fi
+shift 2
+command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
+
+case "$scheme" in
+  keccak)
+    data="${1:-}"; [ -n "$data" ] || { echo "keccak needs <hexdata>" >&2; exit 64; }
+    got="$(cast keccak "$data")"
+    ;;
+  abi-keccak)
+    sig="${1:-}"; [ -n "$sig" ] || { echo "abi-keccak needs a signature, e.g. \"f(uint256,bytes32)\"" >&2; exit 64; }
+    shift
+    enc="$(cast abi-encode "$sig" "$@")"
+    got="$(cast keccak "$enc")"
+    ;;
+  *)
+    echo "unknown scheme: $scheme  (use: keccak | abi-keccak)" >&2; exit 64 ;;
+esac
+
+lc() { printf '%s' "$1" | tr 'A-F' 'a-f'; }
+echo "→ scheme: $scheme"
+echo "─────────────────────────────────────────────"
+echo "expected:    $expect"
+echo "recomputed:  $got"
+if [ "$(lc "$got")" = "$(lc "$expect")" ]; then
+  echo "✓ RECOMPUTED — digest matches the commitment"
+else
+  echo "✗ MISMATCH — recomputed digest ≠ commitment"; exit 1
+fi
