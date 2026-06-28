@@ -46,8 +46,13 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8274/verify      <rpc> <block> <inputHash> <outputHash> <metadata> <proof>
                      WyriweProofVerifier(0xd8a0…18a09).verify(...) == true  (canonical deployed verifier)
 
-  (last one: 8301 dispatch — taskHash formula in hand (note §90), needs the exact
-   abi.encode field types from Jimmy's AgentTask contract)
+  DISPATCH — ERC-8301 (Step 2)
+    8301/task-hash   <stage> <taskSeq> <inputHash> <timestamp> <expiresAt> <workflowRunId> <expected> [prevReplyHashesPacked]
+                     taskHash = keccak256(abi.encode(uint8 stage, uint256 taskSeq, bytes32 inputHash,
+                       uint256 timestamp, uint256 expiresAt, keccak256(abi.encodePacked(prevReplyHashes)),
+                       bytes32 workflowRunId))   (ERC-8301; prevReplyHashesPacked empty for the initial task)
+
+  — all 7 flow steps now recomputable end-to-end —
 EOF
     ;;
 
@@ -135,6 +140,19 @@ PY
     echo "→ 8274/verify: WyriweProofVerifier(0xd8a0…18a09).verify(inputHash,outputHash,metadata,proof) == true"
     exec "$BIN/recompute-onchain" "$rpc" "$block" 0xd8a09d830b27697e1b24e8c9800e562d20318a09 \
       "verify(bytes32,bytes32,bytes,bytes)(bool)" true "$inh" "$outh" "$meta" "$proof" ;;
+
+  8301/task-hash)
+    stage="${2:?need stage}"; seq="${3:?need taskSeq}"; inh="${4:?need inputHash}"
+    ts="${5:?need timestamp}"; exp_at="${6:?need expiresAt}"; run="${7:?need workflowRunId}"
+    expected="${8:?need expected taskHash}"; prev="${9:-0x}"
+    command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
+    # inner: keccak256(abi.encodePacked(prevReplyHashes)) — packed = concat of the bytes32 elems (0x = empty / initial task)
+    inner="$(cast keccak "$prev")"
+    echo "→ 8301/task-hash: keccak256(abi.encode(stage,taskSeq,inputHash,timestamp,expiresAt,keccak(prevReplyHashes),workflowRunId))"
+    echo "  prevReplyHashes hash = $inner"
+    exec "$BIN/recompute-commitment" abi-keccak "$expected" \
+      "f(uint8,uint256,bytes32,uint256,uint256,bytes32,bytes32)" \
+      "$stage" "$seq" "$inh" "$ts" "$exp_at" "$inner" "$run" ;;
 
   *)
     echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;
