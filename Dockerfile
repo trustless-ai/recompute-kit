@@ -21,7 +21,7 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
 ENV PATH="/root/.foundry/bin:${PATH}"
 
 # MCP SDK + OpenTimestamps client (for the 8263/precedence recipe)
-RUN pip install --no-cache-dir mcp opentimestamps-client
+RUN pip install --no-cache-dir mcp opentimestamps-client pycryptodome
 
 WORKDIR /app
 COPY bin/ ./bin/

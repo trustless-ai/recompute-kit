@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+# recompute-receipt-proof <rpc> <block> <txhash|txindex> [<log_address> <topic0>]
+#
+# Recompute that a LOG/event is genuinely committed on-chain — the trustless answer to
+# "events aren't contract-readable state". Events live in transaction receipts, and the
+# block header commits them via `receiptsRoot`. So: pull every receipt in the block, rebuild
+# the receipt Merkle-Patricia trie, and check the computed root == header.receiptsRoot. If it
+# matches, every receipt (hence every log) is authentic — an indexer/cache can't serve a log
+# that doesn't rebuild into the canonical root. Then confirm the target tx's receipt carries
+# the log you're checking. No trust in eth_getLogs / the cache.
+#
+#   recompute-receipt-proof https://ethereum-rpc.publicnode.com 21000000 \
+#       0x<txhash> 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \
+#       0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+#
+# Tri-state exits: 0 verified-good · 1 verified-bad · 2 UNVERIFIABLE (couldn't fetch) · 64 usage
+import sys, json, subprocess, urllib.request
+
+def unverifiable(m): print("⊘ UNVERIFIABLE —", m); sys.exit(2)
+if len(sys.argv) < 4:
+    print("usage: recompute-receipt-proof <rpc> <block> <txhash|txindex> [<log_address> <topic0>]"); sys.exit(64)
+rpc, block, target = sys.argv[1], sys.argv[2], sys.argv[3]
+log_addr = sys.argv[4].lower() if len(sys.argv) > 4 else None
+log_topic0 = sys.argv[5].lower() if len(sys.argv) > 5 else None
+
+try:
+    from Crypto.Hash import keccak as _k
+    def keccak(b): h = _k.new(digest_bits=256); h.update(b); return h.digest()
+except Exception:
+    def keccak(b):
+        r = subprocess.run(["cast", "keccak", "0x" + b.hex()], capture_output=True, text=True)
+        if r.returncode != 0: unverifiable("no keccak (need pycryptodome or foundry/cast)")
+        return bytes.fromhex(r.stdout.strip()[2:])
+
+def rpc_call(method, params):
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode()
+    req = urllib.request.Request(rpc, data=body, headers={"Content-Type": "application/json", "User-Agent": "recompute-kit/1.0"})
+    try: d = json.load(urllib.request.urlopen(req, timeout=25))
+    except Exception as e: unverifiable(f"RPC unreachable ({method}): {e}")
+    if d.get("error"): unverifiable(f"RPC error ({method}): {d['error']}")
+    return d["result"]
+
+def hb(h):
+    h = h[2:] if h.startswith("0x") else h
+    if len(h) % 2: h = "0" + h
+    return bytes.fromhex(h) if h else b""
+
+def i2b(n): return n.to_bytes((n.bit_length() + 7) // 8, "big") if n else b""
+def nibbles(b): return [n for byte in b for n in (byte >> 4, byte & 0x0f)]
+
+def rlp(x):
+    if isinstance(x, bytes):
+        if len(x) == 1 and x[0] < 0x80: return x
+        return _lp(len(x), 0x80) + x
+    p = b"".join(rlp(e) for e in x)
+    return _lp(len(p), 0xc0) + p
+def _lp(l, off):
+    if l < 56: return bytes([off + l])
+    bl = i2b(l); return bytes([off + 55 + len(bl)]) + bl
+
+def hp_encode(nib, is_leaf):
+    flag = 2 if is_leaf else 0
+    if len(nib) % 2: first = bytes([((flag + 1) << 4) | nib[0]]); rest = nib[1:]
+    else: first = bytes([flag << 4]); rest = nib
+    return first + bytes((rest[i] << 4) | rest[i + 1] for i in range(0, len(rest), 2))
+
+# Build an MPT from (key_nibbles, value_bytes) pairs and return the root hash.
+def _ref(node):
+    enc = rlp(node)
+    return keccak(enc) if len(enc) >= 32 else node     # 32B hash ref, or inline node
+def _build(pairs):
+    if len(pairs) == 1:
+        k, v = pairs[0]; return [hp_encode(k, True), v]            # leaf
+    keys = [k for k, _ in pairs]
+    cp = 0
+    while keys[0][cp:cp+1] and all(len(k) > cp and k[cp] == keys[0][cp] for k in keys): cp += 1
+    if cp:
+        inner = _build([(k[cp:], v) for k, v in pairs])
+        return [hp_encode(keys[0][:cp], False), _ref(inner)]       # extension
+    branch = [b""] * 17
+    for k, v in pairs:
+        if len(k) == 0: branch[16] = v
+    for nib in range(16):
+        grp = [(k[1:], v) for k, v in pairs if len(k) > 0 and k[0] == nib]
+        if grp: branch[nib] = _ref(_build(grp))
+    return branch
+def trie_root(pairs):
+    return keccak(rlp(_build(pairs)))
+
+def encode_receipt(r):
+    status = i2b(int(r["status"], 16)) if "status" in r else hb(r.get("root", "0x"))
+    cum = i2b(int(r["cumulativeGasUsed"], 16))
+    bloom = hb(r["logsBloom"])
+    logs = [[hb(l["address"]), [hb(t) for t in l["topics"]], hb(l["data"])] for l in r["logs"]]
+    payload = rlp([status, cum, bloom, logs])
+    typ = int(r.get("type", "0x0"), 16)
+    return payload if typ == 0 else bytes([typ]) + payload          # EIP-2718 typed prefix
+
+bh = block if block.startswith("0x") else hex(int(block))
+header = rpc_call("eth_getBlockByNumber", [bh, False])
+receipts_root = header["receiptsRoot"].lower()
+receipts = rpc_call("eth_getBlockReceipts", [bh])
+if not receipts: unverifiable("no receipts returned (RPC may not support eth_getBlockReceipts)")
+
+print(f"→ recompute-receipt-proof: rebuild receipt trie vs header.receiptsRoot @ block {int(bh,16)}")
+print("─" * 62)
+pairs = [(nibbles(rlp(i2b(i))), encode_receipt(r)) for i, r in enumerate(receipts)]
+computed = "0x" + trie_root(pairs).hex()
+print(f"receipts:            {len(receipts)}")
+print(f"computed root:       {computed}")
+print(f"header receiptsRoot: {receipts_root}")
+if computed != receipts_root:
+    print("✗ VERIFIED-BAD — rebuilt receipt trie ≠ header.receiptsRoot (receipts not authentic / encoding drift)")
+    sys.exit(1)
+print("✓ receipt set rebuilds to the committed receiptsRoot — every log in the block is authentic")
+
+# locate the target tx's receipt
+tgt = None
+if target.startswith("0x") and len(target) == 66:
+    tgt = next((r for r in receipts if r.get("transactionHash", "").lower() == target.lower()), None)
+else:
+    idx = int(target); tgt = receipts[idx] if 0 <= idx < len(receipts) else None
+if tgt is None: print("✗ VERIFIED-BAD — target tx not in this block"); sys.exit(1)
+print(f"target tx:           {tgt.get('transactionHash','?')[:18]}… ({len(tgt['logs'])} logs)")
+
+if log_addr or log_topic0:
+    hit = [l for l in tgt["logs"]
+           if (not log_addr or l["address"].lower() == log_addr)
+           and (not log_topic0 or (l["topics"] and l["topics"][0].lower() == log_topic0))]
+    if hit:
+        print(f"✓ VERIFIED-GOOD — log present in the receipt (addr {log_addr or 'any'}, topic0 {(log_topic0 or 'any')[:14]}…), and the receipt is anchored to receiptsRoot")
+    else:
+        print("✗ VERIFIED-BAD — no matching log in the target receipt"); sys.exit(1)
+else:
+    print("✓ VERIFIED-GOOD — target receipt anchored to receiptsRoot (pass <address> <topic0> to check a specific log)")
