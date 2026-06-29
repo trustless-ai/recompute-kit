@@ -18,13 +18,14 @@ fi
 txt="$(mktemp)"; trap 'rm -f "$txt"' EXIT
 case "$src" in
   *.pdf)
-    command -v pdftotext >/dev/null || { echo "need poppler: brew install poppler" >&2; exit 69; }
-    pdftotext "$src" "$txt" ;;
+    # tri-state exits: 0 verified-good · 1 verified-bad (term missing) · 2 UNVERIFIABLE (couldn't fetch/read) · 64 usage
+    command -v pdftotext >/dev/null || { echo "⊘ UNVERIFIABLE — need poppler: brew install poppler" >&2; exit 2; }
+    pdftotext "$src" "$txt" 2>/dev/null || { echo "⊘ UNVERIFIABLE — could not read the PDF: $src" >&2; exit 2; } ;;
   http://*|https://*)
-    command -v curl >/dev/null || { echo "need curl" >&2; exit 69; }
-    curl -fsSL "$src" > "$txt" ;;
+    command -v curl >/dev/null || { echo "⊘ UNVERIFIABLE — need curl" >&2; exit 2; }
+    curl -fsSL "$src" > "$txt" || { echo "⊘ UNVERIFIABLE — could not fetch source (unreachable / HTTP error): $src" >&2; exit 2; } ;;
   *)
-    cp "$src" "$txt" ;;
+    cp "$src" "$txt" 2>/dev/null || { echo "⊘ UNVERIFIABLE — could not read file: $src" >&2; exit 2; } ;;
 esac
 
 echo "→ source: $src  ($(wc -c < "$txt" | tr -d ' ') bytes)"
@@ -40,5 +41,5 @@ for t in "$@"; do
   fi
 done
 echo "─────────────────────────────────────────────"
-[ "$missing" -eq 0 ] && echo "✓ all terms confirmed in source" || echo "✗ some terms NOT in source — do not cite as-is"
+[ "$missing" -eq 0 ] && echo "✓ VERIFIED-GOOD — all terms confirmed in source" || echo "✗ VERIFIED-BAD — some terms NOT in source — do not cite as-is"
 exit "$missing"

@@ -74,14 +74,17 @@ def recompute_repo(git_url: str, ref: str, test_cmd: str = "forge test") -> dict
 
 
 @mcp.tool()
-def verify_claim(source: str, terms: list[str]) -> dict:
+def verify_claim(source: str, terms: list[str], reversible: bool = False) -> dict:
     """Fetch a primary source (URL or local PDF/file) and report which claim-terms
     actually appear in it, with context — recompute a citation against the source.
 
     Args:
         source: a URL, a .pdf path, or a text file path.
         terms: claim-terms to look for (case-insensitive).
-    Returns {all_present, source, found:{term:count}, missing:[...], evidence}.
+        reversible: governs the UNVERIFIABLE gate (source unfetchable) — False (default)
+            fail-closes, True annotates.
+    Returns {verdict, pass, gate, all_present, source, found, missing, evidence}.
+    verdict ∈ verified-good / verified-bad (a term is missing) / unverifiable (couldn't fetch).
     """
     rc, out, err = _run("verify-claim", source, *terms)
     found = {}
@@ -90,9 +93,9 @@ def verify_claim(source: str, terms: list[str]) -> dict:
         if mc:
             found[mc.group(1).strip()] = int(mc.group(2))
     # derive missing from the input terms — robust to any output/locale variance
-    missing = [t for t in terms if t not in found]
+    missing = [t for t in terms if t not in found] if rc != 2 else None
     return {
-        "all_present": rc == 0,
+        **_verdict(rc, reversible), "all_present": rc == 0,
         "source": source, "found": found, "missing": missing,
         "evidence": out.strip()[-1500:] or err.strip()[-500:],
     }
@@ -130,7 +133,7 @@ def recheck_ci(repo: str, pr: int, config_path: str = "") -> dict:
 
 @mcp.tool()
 def recompute_onchain(rpc_url: str, block: str, address: str, sig: str, expect: str,
-                      args: list[str] = []) -> dict:
+                      args: list[str] = [], reversible: bool = False) -> dict:
     """Recompute a fact FROM CHAIN: cast-call a view function at a PINNED block and
     compare the result to a claimed value. The block number is the immutable ref (the
     on-chain analog of a commit SHA) — prefer a real block over "latest".
@@ -142,11 +145,14 @@ def recompute_onchain(rpc_url: str, block: str, address: str, sig: str, expect: 
         sig: cast return-typed signature, e.g. "totalSupply()(uint256)".
         expect: the claimed value to check against.
         args: call arguments, if any.
-    Returns {match, block, address, sig, expected, evidence}.
+        reversible: governs the UNVERIFIABLE gate (RPC unreachable / call reverted) —
+            False (default) fail-closes, True annotates.
+    Returns {verdict, pass, gate, match, block, address, sig, expected, evidence}.
+    verdict ∈ verified-good / verified-bad (value ≠ claim) / unverifiable (couldn't read chain).
     """
     rc, out, err = _run("recompute-onchain", rpc_url, block, address, sig, expect, *args)
     return {
-        "match": rc == 0, "block": block, "address": address, "sig": sig,
+        **_verdict(rc, reversible), "match": rc == 0, "block": block, "address": address, "sig": sig,
         "expected": expect,
         "evidence": _tail(out + ("\n" + err if err.strip() else ""), 12),
     }
