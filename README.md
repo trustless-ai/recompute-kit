@@ -26,13 +26,22 @@ bin/recompute-onchain https://ethereum-rpc.publicnode.com 19000000 \
 
 # 5. recompute a COMMITMENT — keccak / keccak256(abi.encode(...)) vs a committed digest
 bin/recompute-commitment abi-keccak 0x<digest> "f(bytes32,uint256)" 0x<root> 4
+
+# 6. recompute STORAGE — eth_getProof Merkle-inclusion vs the block's stateRoot (not a trusted cast call)
+bin/recompute-storage-proof <rpc> <block> <address> <slot> [expected]
+
+# 7. recompute an EVENT/LOG — rebuild the receipt trie vs the block's receiptsRoot, confirm the log
+bin/recompute-receipt-proof <rpc> <block> <txhash|index> [<log_address> <topic0>]
 ```
 
 Each prints **pass/fail + the evidence** (the resolved SHA, the test output, the matched
 lines, the block, the recomputed digest) — so the output is itself a recomputation anyone
-can reproduce. Verbs 1–3 recompute *others' artifacts* (repos, claims, CI); verbs 4–5
-recompute the *on-chain + cryptographic facts* the work rests on — the standards family's
-own verify-step ("recompute from public data, no trusted party") made callable, on `cast`.
+can reproduce. Verbs 1–3 recompute *others' artifacts* (repos, claims, CI); verbs 4–7
+recompute the *on-chain + cryptographic facts* the work rests on — including the Merkle
+path that makes an RPC/indexer un-cheatable: storage vs `stateRoot`, event logs vs
+`receiptsRoot`. The standards family's verify-step ("recompute from public data, no trusted
+party") made callable. All verbs are **tri-state** — `verified-good` / `verified-bad` /
+`UNVERIFIABLE` (couldn't fetch/run, never a silent pass).
 
 ## Install
 
@@ -46,6 +55,7 @@ Dependencies (only what each verb needs):
 - [`foundry`](https://getfoundry.sh) — `forge test` (or any test command you pass)
 - `curl` + [`poppler`](https://poppler.freedesktop.org) (`pdftotext`) — fetch URLs / extract PDFs
 - `python3` + [`ots`](https://opentimestamps.org) (`pip install opentimestamps-client`) — OTS precedence recompute (8263/precedence)
+- `pycryptodome` (`pip install pycryptodome`) — in-process keccak for the receipt-trie rebuild (`recompute-receipt-proof`); falls back to `cast keccak` if absent
 
 ## Roadmap
 

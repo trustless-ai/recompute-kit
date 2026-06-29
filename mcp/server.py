@@ -159,6 +159,59 @@ def recompute_onchain(rpc_url: str, block: str, address: str, sig: str, expect: 
 
 
 @mcp.tool()
+def recompute_storage_proof(rpc_url: str, block: str, address: str, slot: str,
+                            expect: str = "", reversible: bool = False) -> dict:
+    """Recompute a contract storage value the TRUSTLESS way — not a `cast call` that trusts
+    the RPC's state, but an `eth_getProof` Merkle-Patricia inclusion verified against the
+    block's committed stateRoot (account → stateRoot, slot → account.storageRoot). A lying or
+    mis-structured RPC can't fake a value: the proof must root to the canonical header.
+
+    Args:
+        rpc_url: JSON-RPC endpoint (recent block; archive needs an archive node).
+        block: block number (or hex) to pin at.
+        address: contract address.
+        slot: 32-byte storage slot (hex).
+        expect: optional claimed value to check the proven value against.
+        reversible: governs the UNVERIFIABLE gate (RPC/proof unreachable).
+    Returns {verdict, pass, gate, block, address, slot, evidence}.
+    """
+    a = [rpc_url, block, address, slot] + ([expect] if expect else [])
+    rc, out, err = _run("recompute-storage-proof", *a)
+    return {
+        **_verdict(rc, reversible), "block": block, "address": address, "slot": slot,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 12),
+    }
+
+
+@mcp.tool()
+def recompute_receipt_proof(rpc_url: str, block: str, target: str,
+                            log_address: str = "", log_topic0: str = "",
+                            reversible: bool = False) -> dict:
+    """Recompute that a LOG/event is genuinely committed on-chain — events aren't contract-
+    readable state, but the header commits them via receiptsRoot. Rebuilds the block's receipt
+    Merkle-Patricia trie from `eth_getBlockReceipts` and checks the computed root ==
+    header.receiptsRoot (so an indexer/cache can't serve a log that doesn't rebuild into the
+    canonical root), then confirms the target tx's receipt carries the log. No trust in eth_getLogs.
+
+    Args:
+        rpc_url: JSON-RPC endpoint (needs eth_getBlockReceipts).
+        block: block number (or hex).
+        target: target transaction hash (0x… 32B) or transaction index.
+        log_address: optional log emitter to require.
+        log_topic0: optional event signature topic to require.
+        reversible: governs the UNVERIFIABLE gate.
+    Returns {verdict, pass, gate, block, target, log_address, log_topic0, evidence}.
+    """
+    a = [rpc_url, block, target] + ([log_address, log_topic0] if log_address else [])
+    rc, out, err = _run("recompute-receipt-proof", *a)
+    return {
+        **_verdict(rc, reversible), "block": block, "target": target,
+        "log_address": log_address or None, "log_topic0": log_topic0 or None,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 14),
+    }
+
+
+@mcp.tool()
 def recompute_commitment(scheme: str, expect: str, args: list[str]) -> dict:
     """Recompute a digest from PUBLIC inputs and compare to a committed value — the
     family's verify-step ("recompute from public data, no trusted party") as a tool.
