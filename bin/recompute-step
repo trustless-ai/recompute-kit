@@ -9,6 +9,14 @@
 #   recompute-step list
 #   recompute-step wyriwe/pipeline ipfs://Qm... 0x<raw_input_hash> 0x<expected>
 #   recompute-step scope/binding   0x<merkleRoot> 4 0x<expected_scopeRoot>
+#
+# TRI-STATE EXIT CONVENTION ("couldn't check is its own verdict, never a pass"):
+#   0  = verified-good   (recompute ran, verdict holds)
+#   1  = verified-bad    (recompute ran, verdict is a determinate mismatch/fail)
+#   2  = UNVERIFIABLE    (recompute could NOT run: fetch/RPC/tool/timeout/pending data)
+#   64 = usage error
+# Consumers gate on this: unverifiable -> fail-closed (defer/deny) for irreversible
+# actions, fail-annotate for reversible ones. Never treat 2 as a pass.
 set -euo pipefail
 BIN="$(cd "$(dirname "$0")" && pwd)"
 recipe="${1:-list}"
@@ -175,24 +183,29 @@ PY
     outcome="${4:-}"
     python3 - "$digest" "$proof" "$outcome" <<'PY'
 import sys, os, re, json, shutil, subprocess, tempfile, urllib.request
+def unverifiable(msg): print("⊘ UNVERIFIABLE —", msg); sys.exit(2)   # couldn't check ≠ verified-bad
 digest, proof, outcome = sys.argv[1], sys.argv[2], (sys.argv[3] or None)
 ots = shutil.which("ots") or os.path.expanduser("~/Library/Python/3.14/bin/ots")
 if not os.path.exists(ots) and not shutil.which("ots"):
-    sys.exit("need the OpenTimestamps client: pip install opentimestamps-client")
+    unverifiable("OpenTimestamps client not installed (pip install opentimestamps-client)")
 # resolve proof → local file
 pf = proof
 if proof.startswith("http"):
     pf = tempfile.mktemp(suffix=".ots")
-    urllib.request.urlretrieve(proof, pf)
+    try: urllib.request.urlretrieve(proof, pf)
+    except Exception as e: unverifiable(f"could not fetch the .ots proof: {e}")
 # OTS resolves the proof to a Bitcoin block + merkleroot (no local node)
 r = subprocess.run([ots, "--no-bitcoin", "verify", "-d", digest, pf], capture_output=True, text=True)
 m = re.search(r"Bitcoin block (\d+) has merkleroot ([0-9a-fA-F]+)", r.stdout + r.stderr)
 if not m:
-    print("✗ OTS proof did not resolve to a Bitcoin block:"); print((r.stdout + r.stderr)[-300:]); sys.exit(1)
+    unverifiable("OTS proof not yet anchored to a Bitcoin block (pending, or node unreachable):\n" + (r.stdout + r.stderr)[-300:])
 block, ots_root = int(m.group(1)), m.group(2).lower()
 # cross-check the merkleroot off a public explorer (no node, no trust in the ledger)
-h = urllib.request.urlopen(f"https://blockstream.info/api/block-height/{block}", timeout=15).read().decode()
-b = json.load(urllib.request.urlopen(f"https://blockstream.info/api/block/{h}", timeout=15))
+try:
+    h = urllib.request.urlopen(f"https://blockstream.info/api/block-height/{block}", timeout=15).read().decode()
+    b = json.load(urllib.request.urlopen(f"https://blockstream.info/api/block/{h}", timeout=15))
+except Exception as e:
+    unverifiable(f"explorer unreachable — can't cross-check the merkleroot: {e}")
 exp_root, block_time = b["merkle_root"].lower(), b["timestamp"]
 print(f"→ 8263/precedence: OTS digest → Bitcoin block {block}, merkleroot cross-checked off blockstream")
 print("─" * 56)
@@ -200,15 +213,15 @@ print(f"OTS merkleroot:      {ots_root}")
 print(f"explorer merkleroot: {exp_root}  (block {block})")
 print(f"block_time:          {block_time}")
 if ots_root != exp_root:
-    print("✗ MISMATCH — OTS merkleroot ≠ explorer merkleroot (anchor not confirmed)"); sys.exit(1)
+    print("✗ VERIFIED-BAD — OTS merkleroot ≠ explorer merkleroot (anchor not confirmed)"); sys.exit(1)
 if outcome:
     strict = block_time < int(outcome)
     print(f"strict precedence:   {block_time} < {outcome}  →  {strict}")
     if not strict:
-        print("✗ PRECEDENCE FAILS — anchor not strictly before the outcome"); sys.exit(1)
-    print("✓ RECOMPUTED — anchor Bitcoin-confirmed AND strictly precedes the outcome")
+        print("✗ VERIFIED-BAD — anchor not strictly before the outcome"); sys.exit(1)
+    print("✓ VERIFIED-GOOD — anchor Bitcoin-confirmed AND strictly precedes the outcome")
 else:
-    print("✓ RECOMPUTED — anchor Bitcoin-confirmed (merkleroot matches explorer); pass an outcome_ts for the strict < check")
+    print("✓ VERIFIED-GOOD — anchor Bitcoin-confirmed (merkleroot matches explorer); pass an outcome_ts for the strict < check")
 PY
     ;;
 
@@ -227,7 +240,7 @@ sig = "survival(bytes32)(uint256,uint64,uint64,uint64,bool,bool)"
 r = subprocess.run(["cast","call",bond,sig,bondId,"--rpc-url",rpc],
                    capture_output=True, text=True)
 if r.returncode != 0:
-    print("✗ survival() call failed:", (r.stderr or r.stdout).strip()[:200]); sys.exit(1)
+    print("⊘ UNVERIFIABLE — survival() call failed (bond not deployed / RPC unreachable):", (r.stderr or r.stdout).strip()[:160]); sys.exit(2)
 v = r.stdout.split()
 amount, bondStart, termEnd, resolvedAt = int(v[0]), int(v[1]), int(v[2]), int(v[3])
 slashed, challenged = v[4].lower()=="true", v[5].lower()=="true"
@@ -291,16 +304,20 @@ rpc, reader, pin = sys.argv[1], sys.argv[2], sys.argv[3]
 pairs = [p.split(":") for p in sys.argv[4:]]
 print(f"→ scope/value-fidelity-onchain: recompute valueAt(sourceId, {pin}) (type-1, guard 5)")
 print("─"*58)
-bad = 0
+bad = 0; unver = 0
 for sid, opt in pairs:
-    got = subprocess.run(["cast","call",reader,"valueAt(bytes32,uint256)(uint8)",sid,pin,"--rpc-url",rpc],
-                         capture_output=True, text=True).stdout.strip().split()[0:1]
-    got = got[0] if got else "ERR"
-    ok = got == opt
+    r = subprocess.run(["cast","call",reader,"valueAt(bytes32,uint256)(uint8)",sid,pin,"--rpc-url",rpc],
+                       capture_output=True, text=True)
+    out = r.stdout.strip().split()
+    if r.returncode != 0 or not out:
+        print(f"  {sid[:14]}… ⊘ unreadable: {(r.stderr or r.stdout).strip()[:70]}"); unver += 1; continue
+    got = out[0]; ok = got == opt
     print(f"  {sid[:14]}… claimed {opt} | chain {got}  {'✓' if ok else '✗'}")
     bad += 0 if ok else 1
-print("✓ VALUE-FIDELITY HOLDS — every source matches the chain at blockPin" if bad==0
-      else f"✗ {bad} source(s) do NOT match the chain reading")
+if unver:
+    print(f"⊘ UNVERIFIABLE — {unver} source(s) could not be read (RPC/reader unreachable); can't conclude"); sys.exit(2)
+print("✓ VERIFIED-GOOD — every source matches the chain at blockPin" if bad==0
+      else f"✗ VERIFIED-BAD — {bad} source(s) do NOT match the chain reading")
 sys.exit(1 if bad else 0)
 PY
     ;;

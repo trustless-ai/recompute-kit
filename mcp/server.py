@@ -38,6 +38,20 @@ def _tail(text: str, n: int = 25) -> str:
     return "\n".join(text.strip().splitlines()[-n:])
 
 
+def _verdict(rc: int, reversible: bool = False) -> dict:
+    """Tri-state verdict from a recipe exit code (recompute-step convention):
+    0 verified-good · 1 verified-bad · 2 UNVERIFIABLE (couldn't run: fetch/RPC/tool/timeout).
+    'couldn't check' is its own verdict, never a pass — so an unverifiable result on an
+    IRREVERSIBLE action fail-closes (defer/deny); on a reversible one it annotates."""
+    v = {0: "verified-good", 1: "verified-bad", 2: "unverifiable"}.get(rc, "error")
+    gate = {
+        "verified-good": "proceed",
+        "verified-bad": "deny",
+        "unverifiable": "annotate" if reversible else "fail-closed (defer/deny)",
+    }.get(v, "error")
+    return {"verdict": v, "pass": rc == 0, "gate": gate}
+
+
 @mcp.tool()
 def recompute_repo(git_url: str, ref: str, test_cmd: str = "forge test") -> dict:
     """Clone a repo at an EXACT ref (commit SHA / branch / tag) and run its tests
@@ -158,20 +172,25 @@ def recompute_commitment(scheme: str, expect: str, args: list[str]) -> dict:
 
 
 @mcp.tool()
-def recompute_step(recipe: str = "list", args: list[str] = []) -> dict:
+def recompute_step(recipe: str = "list", args: list[str] = [], reversible: bool = False) -> dict:
     """Recompute a named step of the agent-standards flow from public inputs, composing
     the kit's primitives — the ERC-specific recompute recipe per step.
 
     Args:
         recipe: "list" to see recipes, or a recipe name. Seed recipes:
             wyriwe/raw, wyriwe/pipeline (input-provenance, ERC-8299);
-            scope/binding, scope/suite (observation-completeness, scope-contestation).
+            scope/binding, scope/value-fidelity (observation-completeness);
+            8263/precedence, scope/bond-standing (precedence + Layer-3 defense).
         args: the recipe's inputs (see `list`).
-    Returns {recipe, pass, evidence}.
+        reversible: is the action being gated reversible? Governs the UNVERIFIABLE gate:
+            False (default, safe) → fail-closed; True → annotate.
+    Returns {recipe, verdict, pass, gate, evidence}. verdict ∈ verified-good /
+    verified-bad / unverifiable — "couldn't check" is its own verdict, never a pass.
     """
     rc, out, err = _run("recompute-step", recipe, *args)
+    v = _verdict(rc, reversible) if recipe != "list" else {"verdict": "n/a", "pass": rc == 0, "gate": "n/a"}
     return {
-        "recipe": recipe, "pass": rc == 0,
+        "recipe": recipe, **v,
         "evidence": _tail(out + ("\n" + err if err.strip() else ""), 20),
     }
 
