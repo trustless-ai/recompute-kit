@@ -103,6 +103,65 @@
         "challenged": true
       },
       "expected": false
+    },
+    {
+      "id": "value-fidelity-honest",
+      "step": "scope/value-fidelity",
+      "spec": "scope-contestation guard 5 / ResolutionCommitment",
+      "desc": "resolutionRoot = keccak256(abi.encode(leaves)); leaf = keccak256(abi.encode(bytes32 sourceId, uint8 option)); votes sorted by sourceId asc",
+      "inputs": {
+        "votes": [
+          [
+            "0x9ebbe7b045ffb8a27a63d44b7b44724def6bb8159d2d4ad9fc8bf3b802bffada",
+            1
+          ],
+          [
+            "0x10fd9c4fbf1c3e50602308fed93fc2082ecbf8562c3b55f0ef831d0a8e322b30",
+            1
+          ],
+          [
+            "0x55a341b182c515249455508f9cf94451816d9862bbdcf88b6624134a39d9008a",
+            1
+          ]
+        ]
+      },
+      "expected": "0xa0d8aa0df43bfbbaf15f565bc8fe46a6e3d29bdaf0ecb2a9ce80186dbcbcd4da"
+    },
+    {
+      "id": "value-fidelity-different-values",
+      "step": "scope/value-fidelity",
+      "desc": "same sourceIds, different values -> different root (so adversarial-a values can't reproduce the committed root)",
+      "inputs": {
+        "votes": [
+          [
+            "0x9ebbe7b045ffb8a27a63d44b7b44724def6bb8159d2d4ad9fc8bf3b802bffada",
+            1
+          ],
+          [
+            "0x10fd9c4fbf1c3e50602308fed93fc2082ecbf8562c3b55f0ef831d0a8e322b30",
+            3
+          ],
+          [
+            "0x55a341b182c515249455508f9cf94451816d9862bbdcf88b6624134a39d9008a",
+            2
+          ]
+        ]
+      },
+      "expected": "0x3015c75690927185dd10daeff8d7cafb071d108be8e09e558d50bb3f47bfc38f"
+    },
+    {
+      "id": "value-fidelity-single",
+      "step": "scope/value-fidelity",
+      "desc": "single-source resolution",
+      "inputs": {
+        "votes": [
+          [
+            "0x10fe8c41b76a1b8db6e508d0d05ff9b90787c50bf00794db7f9b1114198caf6c",
+            1
+          ]
+        ]
+      },
+      "expected": "0x8b2ae73260091f506e7a3ab8d9f86164e86811a71fb6c10e32da83a85f5b7d2a"
     }
   ]
 }

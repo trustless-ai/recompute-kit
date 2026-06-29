@@ -27,6 +27,11 @@ recompute-step recipes (start: the two steps we built end-to-end)
   OBSERVATION COMPLETENESS — scope-contestation
     scope/binding    <merkleRoot> <count> <expected_scopeRoot>
                      scopeRoot = keccak256(abi.encode(root, N))   (Guarantee 4 — truncation-resistant)
+    scope/value-fidelity  <committed_root|-> <sourceId>:<opt> ...
+                     guard 5 (type-2): resolutionRoot = keccak256(abi.encode(leaves)),
+                     leaf = keccak256(abi.encode(sourceId, option)); recompute a's values vs committed
+    scope/value-fidelity-onchain  <rpc> <reader> <blockPin> <sourceId>:<opt> ...
+                     guard 5 (type-1): reader.valueAt(sourceId, blockPin) == claimed, per source
     scope/suite      [ref]
                      run the contest() four-guard reference suite (TMerlini/hack-ens-recovery)
 
@@ -245,6 +250,58 @@ print("✓ STANDING — recomputed from public bond state: unslashed, unchalleng
       "(bounty×age = Lindy strength)" if standing else
       "✗ NOT STANDING — bond falsified (slashed or successfully challenged)")
 sys.exit(0 if standing else 1)
+PY
+    ;;
+
+  scope/value-fidelity)
+    # Type-2 (off-chain resolution): recompute the resolutionRoot from a's (sourceId,value)
+    # pairs and compare to the committed root — guard 5 / Damon's ResolutionCommitment.
+    #   leaf = keccak256(abi.encode(bytes32 sourceId, uint8 option))   [votes sorted by sourceId asc]
+    #   resolutionRoot = keccak256(abi.encode(bytes32[] leaves))
+    committed="${2:?need committed resolutionRoot (or - to just compute)}"; shift 2
+    python3 - "$committed" "$@" <<'PY'
+import sys, subprocess
+def cast(*a): return subprocess.run(["cast", *map(str, a)], capture_output=True, text=True).stdout.strip()
+committed = sys.argv[1]
+pairs = [p.split(":") for p in sys.argv[2:]]
+if not pairs: print("need <sourceId>:<option> pairs"); sys.exit(64)
+pairs.sort(key=lambda p: int(p[0], 16))                 # contract sorts by sourceId ascending
+leaves = [cast("keccak", cast("abi-encode", "f(bytes32,uint8)", sid, opt)) for sid, opt in pairs]
+root = cast("keccak", cast("abi-encode", "f(bytes32[])", "[" + ",".join(leaves) + "]"))
+print("→ scope/value-fidelity: recompute resolutionRoot (type-2, guard 5)")
+print("─"*58)
+for sid, opt in pairs: print(f"  {sid[:14]}… : {opt}")
+print(f"recomputed root: {root}")
+if committed and committed != "-":
+    ok = root.lower() == committed.lower()
+    print(f"committed root:  {committed}")
+    print("✓ VALUE-FIDELITY HOLDS — a reproduces the committed resolution" if ok
+          else "✗ MISMATCH — a's values do NOT reproduce the committed resolution (adversarial-a / drift)")
+    sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  scope/value-fidelity-onchain)
+    # Type-1 (chain-native): recompute each source's value off the committed reader at the
+    # pinned pre-outcome block — guard 5 via ChainNativeResolution. reader.valueAt(sourceId, blockPin).
+    rpc="${2:?need rpc-url}"; reader="${3:?need reader addr}"; blockPin="${4:?need blockPin}"; shift 4
+    python3 - "$rpc" "$reader" "$blockPin" "$@" <<'PY'
+import sys, subprocess
+rpc, reader, pin = sys.argv[1], sys.argv[2], sys.argv[3]
+pairs = [p.split(":") for p in sys.argv[4:]]
+print(f"→ scope/value-fidelity-onchain: recompute valueAt(sourceId, {pin}) (type-1, guard 5)")
+print("─"*58)
+bad = 0
+for sid, opt in pairs:
+    got = subprocess.run(["cast","call",reader,"valueAt(bytes32,uint256)(uint8)",sid,pin,"--rpc-url",rpc],
+                         capture_output=True, text=True).stdout.strip().split()[0:1]
+    got = got[0] if got else "ERR"
+    ok = got == opt
+    print(f"  {sid[:14]}… claimed {opt} | chain {got}  {'✓' if ok else '✗'}")
+    bad += 0 if ok else 1
+print("✓ VALUE-FIDELITY HOLDS — every source matches the chain at blockPin" if bad==0
+      else f"✗ {bad} source(s) do NOT match the chain reading")
+sys.exit(1 if bad else 0)
 PY
     ;;
 

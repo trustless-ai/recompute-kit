@@ -43,6 +43,11 @@ def recompute(v):
     if s == "scope/bond-standing":
         # Layer 3: standing recomputed from public survival(bondId), never asserted.
         return (not i["slashed"]) and (not i["challenged"])
+    if s == "scope/value-fidelity":
+        # guard 5: resolutionRoot = keccak(abi.encode(leaves)); leaf = keccak(abi.encode(sourceId, option))
+        votes = sorted(i["votes"], key=lambda v: int(v[0], 16))   # contract sorts by sourceId asc
+        leaves = [cast("keccak", cast("abi-encode", "f(bytes32,uint8)", v[0], v[1])) for v in votes]
+        return cast("keccak", cast("abi-encode", "f(bytes32[])", "[" + ",".join(leaves) + "]"))
     raise SystemExit(f"unknown step: {s}")
 
 
