@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+# recompute-storage-proof <rpc> <block> <address> <slot> [expected]
+#
+# Recompute a contract storage value the TRUSTLESS way — not a `cast call` that trusts the
+# RPC's state, but an `eth_getProof` Merkle-Patricia inclusion verified against the block's
+# committed stateRoot. The account proves into stateRoot; the slot proves into the account's
+# storageRoot. So a lying/mis-structured RPC can't fake a value — the proof must root to the
+# header's stateRoot, which is canonical.
+#
+#   recompute-storage-proof https://ethereum-rpc.publicnode.com 21000000 \
+#       0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \
+#       0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc
+#
+# Tri-state exits: 0 verified-good · 1 verified-bad · 2 UNVERIFIABLE (couldn't fetch) · 64 usage
+import sys, json, subprocess, urllib.request
+
+def unverifiable(m): print("⊘ UNVERIFIABLE —", m); sys.exit(2)
+def usage():
+    print("usage: recompute-storage-proof <rpc> <block> <address> <slot> [expected]"); sys.exit(64)
+if len(sys.argv) < 5: usage()
+rpc, block, address, slot = sys.argv[1:5]
+expected = sys.argv[5] if len(sys.argv) > 5 else None
+
+def keccak(b: bytes) -> str:
+    r = subprocess.run(["cast", "keccak", "0x" + b.hex()], capture_output=True, text=True)
+    if r.returncode != 0: unverifiable("need foundry (cast) for keccak")
+    return r.stdout.strip().lower()
+
+def rpc_call(method, params):
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode()
+    req = urllib.request.Request(rpc, data=body, headers={
+        "Content-Type": "application/json", "User-Agent": "recompute-kit/1.0"})
+    try:
+        d = json.load(urllib.request.urlopen(req, timeout=20))
+    except Exception as e:
+        unverifiable(f"RPC unreachable ({method}): {e}")
+    if "error" in d: unverifiable(f"RPC error ({method}): {d['error']}")
+    return d["result"]
+
+def hb(h):  # hex string -> bytes
+    h = h[2:] if h.startswith("0x") else h
+    if len(h) % 2: h = "0" + h
+    return bytes.fromhex(h)
+
+def nibbles(b):  # bytes -> nibble list
+    return [n for byte in b for n in (byte >> 4, byte & 0x0f)]
+
+def decode_hp(b):  # hex-prefix path segment -> (nibbles, is_leaf)
+    if not b: return [], False
+    flag = b[0] >> 4
+    out = [b[0] & 0x0f] if (flag & 1) else []
+    for byte in b[1:]: out += [byte >> 4, byte & 0x0f]
+    return out, flag >= 2
+
+def rlp_decode(b):
+    def item(b, i):
+        p = b[i]
+        if p < 0x80: return b[i:i+1], i+1
+        if p < 0xb8: l = p-0x80; return b[i+1:i+1+l], i+1+l
+        if p < 0xc0:
+            ll = p-0xb7; l = int.from_bytes(b[i+1:i+1+ll], "big"); s = i+1+ll; return b[s:s+l], s+l
+        if p < 0xf8:
+            l = p-0xc0; end = i+1+l; i += 1; o = []
+            while i < end: it, i = item(b, i); o.append(it)
+            return o, i
+        ll = p-0xf7; l = int.from_bytes(b[i+1:i+1+ll], "big"); s = i+1+ll; end = s+l; i = s; o = []
+        while i < end: it, i = item(b, i); o.append(it)
+        return o, i
+    v, _ = item(b, 0); return v
+
+# Verify an MPT inclusion: walk from `root` along keccak(key)'s nibbles through the proof nodes
+# (kept as a hash->node map, so a node is only ever used if its hash matched the ref that pointed
+# to it — that IS the verification). Returns the leaf value bytes, or None if the key is absent.
+def verify(root_hex, key_bytes, proof_hexes):
+    m = {}
+    for ph in proof_hexes:
+        nb = hb(ph)
+        m[keccak(nb)] = rlp_decode(nb)
+    path = nibbles(bytes(hb(keccak(key_bytes))))
+    def resolve(ref):
+        if isinstance(ref, list): return ref          # inlined (<32B) node
+        if ref == b"": return None                    # absent
+        if len(ref) == 32:
+            n = m.get("0x" + ref.hex())
+            if n is None: unverifiable("proof incomplete — a referenced node is missing")
+            return n
+        return rlp_decode(ref)
+    node = m.get(root_hex.lower())
+    if node is None: print("✗ VERIFIED-BAD — root node not in proof (does not root to the committed root)"); sys.exit(1)
+    i = 0
+    while True:
+        if isinstance(node, list) and len(node) == 17:        # branch
+            if i == len(path): return node[16]
+            node = resolve(node[path[i]]); i += 1
+            if node is None: return None
+        elif isinstance(node, list) and len(node) == 2:       # leaf or extension
+            seg, is_leaf = decode_hp(node[0])
+            if path[i:i+len(seg)] != seg: return None
+            i += len(seg)
+            if is_leaf: return node[1]
+            node = resolve(node[1])
+            if node is None: return None
+        else:
+            print("✗ VERIFIED-BAD — malformed trie node"); sys.exit(1)
+
+bh = block if block.startswith("0x") else hex(int(block))
+header = rpc_call("eth_getBlockByNumber", [bh, False])
+state_root = header["stateRoot"]
+slot_padded = hb(slot).rjust(32, b"\x00")
+proof = rpc_call("eth_getProof", [address, ["0x" + slot_padded.hex()], bh])
+
+print(f"→ recompute-storage-proof: slot vs stateRoot {state_root[:14]}… @ block {int(bh,16)}")
+print("─" * 60)
+# 1) account proves into stateRoot → extract the account's storageRoot
+acct_leaf = verify(state_root, hb(address), proof["accountProof"])
+if acct_leaf is None: print("✗ VERIFIED-BAD — account not present under the committed stateRoot"); sys.exit(1)
+account = rlp_decode(acct_leaf)                 # [nonce, balance, storageRoot, codeHash]
+storage_root = "0x" + account[2].hex()
+returned_root = proof.get("storageHash", "").lower()
+print(f"account storageRoot: {storage_root}")
+if returned_root and returned_root != storage_root.lower():
+    print("✗ VERIFIED-BAD — eth_getProof storageHash ≠ storageRoot proven under stateRoot"); sys.exit(1)
+# 2) slot proves into that storageRoot
+sp = proof["storageProof"][0]
+leaf = verify(storage_root, slot_padded, sp["proof"])
+got = int.from_bytes(rlp_decode(leaf), "big") if leaf else 0
+got_hex = hex(got)
+print(f"slot value:          {got_hex}")
+if expected is not None:
+    exp = int(expected, 16) if expected.startswith("0x") else int(expected)
+    if got == exp:
+        print(f"✓ VERIFIED-GOOD — slot proves to {got_hex} against the committed stateRoot (matches claim)")
+    else:
+        print(f"✗ VERIFIED-BAD — proven value {got_hex} ≠ claim {hex(exp)}"); sys.exit(1)
+else:
+    print("✓ VERIFIED-GOOD — slot value Merkle-proven against the committed stateRoot (no trusted RPC read)")
