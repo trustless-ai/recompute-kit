@@ -1,6 +1,9 @@
-# Containerized recompute-kit MCP server — isolated, deployable to the NAS via Coolify.
-# Build mirrors the repo (Dockerfile COPYs bin/ + mcp/). Other NAS services (e.g. the
-# ENS Boiler / dinamic kit) can point their MCP client at http://<host>:7079/mcp.
+# Containerized recompute-kit MCP server — isolated, deployable to the NAS.
+# Build mirrors the repo (Dockerfile COPYs bin/ + mcp/). It joins the ENS Boiler / dinamic-kit
+# network so `ensboiler-gateway-1` reaches it BY NAME at http://recompute-kit:7079/mcp (no
+# host-IP/firewall guessing), AND publishes 7079 so host/LAN ops still hit <host>:7079.
+# Redeploy after a recipe change:  docker compose up -d --build   (network is baked in, so a
+# recreate never silently drops the gateway link — the footgun a bare `docker run` left open).
 services:
   recompute-kit:
     build: .
@@ -12,3 +15,10 @@ services:
     environment:
       # gh auth — needed by recheck_ci and for private clones; optional for public repos
       - GH_TOKEN=${GH_TOKEN:-}
+    networks:
+      - ensboiler_default
+
+# ensboiler_default is created by the ENS Boiler compose; we join it as an external network.
+networks:
+  ensboiler_default:
+    external: true
