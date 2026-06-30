@@ -51,6 +51,10 @@ recompute-step recipes (start: the two steps we built end-to-end)
   IDENTITY — ERC-8004 (Step 1)
     8004/agent-id    <agentRef> <expected_agentId>
                      agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation)
+    ens/namehash     <name> [expected_node]
+                     EIP-137 node = keccak(parent ‖ keccak(label)) over labels — the id ENS
+                     resolves. DISTINCT from 8004/agent-id's flat keccak(utf8(name)); use this
+                     when the agent identity is the ENS node, not a flat label commitment.
 
   ELIGIBILITY — ReceiptOS (Step 5)
     receiptos/receipt-hash  <receipt.json>
@@ -377,6 +381,27 @@ if exp:
           else "✗ VERIFIED-BAD — recomputed separation ≠ committed (unsound contest claim)")
     sys.exit(0 if ok else 1)
 PY
+    ;;
+
+  ens/namehash)
+    # EIP-137 namehash — the node ENS actually resolves. DISTINCT from a flat keccak256(utf8(name)):
+    # namehash recurses node = keccak(parentNode ‖ keccak(label)) right-to-left over the labels.
+    # The identity an ENS-native stack keys on — cf. the 8004/agent-id "string-hash vs namehash"
+    # question (keccak("agent.eth") != namehash("agent.eth")).
+    #   ens/namehash <name> [expected_node]
+    name="${2:?need an ENS name, e.g. agent.eth}"; exp="${3:-}"
+    node="$(cast namehash "$name" 2>/dev/null)"
+    [ -z "$node" ] && { echo "⊘ UNVERIFIABLE — need foundry (cast) for namehash"; exit 2; }
+    echo "→ ens/namehash: EIP-137 node = keccak(parent ‖ keccak(label)) over \"$name\""
+    echo "──────────────────────────────────────────────────────────"
+    echo "namehash: $node"
+    if [ -n "$exp" ]; then
+      if [ "$(echo "$node" | tr 'A-Z' 'a-z')" = "$(echo "$exp" | tr 'A-Z' 'a-z')" ]; then
+        echo "✓ VERIFIED-GOOD — namehash matches the committed node"
+      else
+        echo "✗ VERIFIED-BAD — namehash $node ≠ claim $exp"; exit 1
+      fi
+    fi
     ;;
 
   8312/cap-conservation)

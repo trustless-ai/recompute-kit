@@ -64,6 +64,14 @@ def recompute(v):
             if bestC * 10000 < total * q: return None
             return best
         return plur(a) != plur(a + [x])
+    if s == "ens/namehash":
+        # EIP-137 namehash, recomputed by RECURSION (node = keccak(parent ‖ keccak(label)),
+        # right-to-left) — independent of the recipe's `cast namehash`, so it's a real cross-check.
+        node = "0x" + "00" * 32
+        for label in reversed(i["name"].split(".")) if i["name"] else []:
+            lh = cast("keccak", cast("from-utf8", label))
+            node = cast("keccak", "0x" + node[2:] + lh[2:])
+        return node
     if s == "8312/cap-conservation":
         # ERC-8312 cap invariant: reserved + confirmed <= cap. Recomputable to a SOUND verdict
         # because the Security clause binds confirm/cancel to the reserver (no third party can
