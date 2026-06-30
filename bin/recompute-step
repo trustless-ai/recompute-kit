@@ -181,11 +181,15 @@ PY
     exec "$BIN/recompute-commitment" keccak "$exp" "$raw" ;;
 
   wyriwe/pipeline)
+    # ERC-8299 §46: sanitization_pipeline_hash = keccak256(sanitization_spec_cid_bytes ‖ raw_input_hash).
+    # ASSUMPTION: cid_bytes = the UTF-8 bytes of the CID string. §46 writes "cid_bytes" without pinning
+    # utf8(cid-string) vs the decoded multihash — flagged for the #1810 review; an impl using the
+    # multihash bytes diverges silently. This recipe commits to utf8(cid).
     cid="${2:?need sanitization_spec_cid}"; rawhash="${3:?need raw_input_hash}"; exp="${4:?need expected}"
     command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
     cidhex="$(cast from-utf8 "$cid")"
     packed="$(cast concat-hex "$cidhex" "$rawhash")"
-    echo "→ wyriwe/pipeline: keccak256( utf8(\"$cid\") ‖ $rawhash )"
+    echo "→ wyriwe/pipeline: keccak256( utf8(\"$cid\") ‖ $rawhash )   [cid = utf8 string bytes — see §46 note]"
     exec "$BIN/recompute-commitment" keccak "$exp" "$packed" ;;
 
   scope/binding)
