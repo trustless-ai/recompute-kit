@@ -222,6 +222,30 @@
         "xOption": 1
       },
       "expected": false
+    },
+    {
+      "id": "cap-conservation-holds",
+      "step": "8312/cap-conservation",
+      "spec": "ERC-8312 \u2014 bounded agent actions (cap invariant + Security clause: confirm/cancel bind to reserver)",
+      "desc": "reserved+confirmed \u2264 cap holds. Real captured state from Atlas-Protocol-AI/zero-human-loop @ 5530a9c, StatefulBound 0x3f79\u2026faac, mandateId 0x9e3e\u202605bbe on Base Sepolia (storage-proven vs stateRoot).",
+      "inputs": {
+        "reserved": 100,
+        "confirmed": 0,
+        "cap": 150
+      },
+      "expected": true
+    },
+    {
+      "id": "cap-conservation-breach",
+      "step": "8312/cap-conservation",
+      "spec": "ERC-8312 \u2014 bounded agent actions",
+      "desc": "synthetic over-cap control: aggregate exceeds the cap \u2192 the audit must reject (the cursor's enforce path makes this unreachable on-chain; the vector pins the verdict side).",
+      "inputs": {
+        "reserved": 100,
+        "confirmed": 60,
+        "cap": 150
+      },
+      "expected": false
     }
   ]
 }

@@ -75,13 +75,19 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      OTS digest → Bitcoin block → merkleroot cross-checked off a public
                      explorer (no node, no trust); strict block_time < outcome if given
 
+  BOUNDED ACTIONS — ERC-8312 aggregate cap (Atlas-Protocol-AI/zero-human-loop)
+    8312/cap-conservation  <rpc> <cursor_addr> <mandateId> <cap> [block]
+                     reserved[mid] + confirmed[mid] ≤ cap, proven from STORAGE (eth_getProof vs
+                     stateRoot, no trusted meter read) via recompute-storage-proof. The audit half
+                     of the cursor; sound because the Security clause binds confirm/cancel to the reserver.
+
   DEFENSE STANDING — Layer 3 completeness bond (damonzwicker/scope-contestation)
     scope/bond-standing  <rpc> <bond_addr> <bondId> [as_of]
                      recompute(survival(bondId)) → standing = (not slashed ∧ not challenged);
                      bounty=amount, age=as_of−bondStart (Lindy strength). "which agent is good?"
                      recomputed from public bond state, not asserted.
 
-  — 7 flow steps + value-fidelity precedence + contest-verify separation + Layer-3 standing —
+  — 7 flow steps + value-fidelity + contest-verify + cap-conservation + Layer-3 standing —
 EOF
     ;;
 
@@ -370,6 +376,56 @@ if exp:
     print("✓ VERIFIED-GOOD — recomputed separation matches the committed contest verdict" if ok
           else "✗ VERIFIED-BAD — recomputed separation ≠ committed (unsound contest claim)")
     sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  8312/cap-conservation)
+    # ERC-8312 aggregate cap: prove reserved[mandateId] + confirmed[mandateId] <= cap from STORAGE
+    # — eth_getProof Merkle-inclusion vs the block's stateRoot, NOT a trusted meter read — composing
+    # recompute-storage-proof. The audit half of the cursor (enforce = ordered write; audit =
+    # recompute). reserved = mapping @ slot 0, confirmed @ slot 1 (StatefulBound layout). Re-derives
+    # to a SOUND verdict because the ERC-8312 Security clause binds confirm/cancel to the reserver
+    # (finding 1) — without it a third party frees in-flight room and the trajectory is forgeable.
+    #   8312/cap-conservation <rpc> <cursor_addr> <mandateId> <cap> [block]
+    rpc="${2:?need rpc}"; sb="${3:?need cursor addr}"; mid="${4:?need mandateId}"; cap="${5:?need cap}"; blk="${6:-latest}"
+    python3 - "$BIN" "$rpc" "$sb" "$mid" "$cap" "$blk" <<'PY'
+import sys, subprocess, re, time
+BIN, rpc, sb, mid, cap, blk = sys.argv[1:7]; cap = int(cap)
+def sh(*a): return subprocess.run(a, capture_output=True, text=True)
+def slot(base): return sh("cast", "index", "bytes32", mid, str(base)).stdout.strip()
+s0, s1 = slot(0), slot(1)
+def prove(block, slot_hex):
+    r = sh(BIN + "/recompute-storage-proof", rpc, str(block), sb, slot_hex)
+    if r.returncode == 2: return None
+    m = re.search(r"slot value:\s*(0x[0-9a-fA-F]+)", r.stdout)
+    return int(m.group(1), 16) if m else None
+# Prove BOTH slots at ONE block (same stateRoot). Keyless public RPCs often serve eth_getProof
+# only near the tip (narrow window) + load-balance across desynced backends, so a tip pin races
+# the head — re-resolve "latest" and retry both slots together. An explicit block is tried once.
+reserved = confirmed = pin = None
+for _ in range(6):
+    if blk == "latest":
+        r = sh("cast", "block-number", "--rpc-url", rpc)
+        if r.returncode != 0: time.sleep(0.6); continue
+        pin = r.stdout.strip()
+    else:
+        pin = blk
+    reserved, confirmed = prove(pin, s0), prove(pin, s1)
+    if reserved is not None and confirmed is not None: break
+    if blk != "latest": break          # explicit block: window error is terminal
+    time.sleep(0.6)
+print(f"→ 8312/cap-conservation: reserved+confirmed ≤ cap, proven vs stateRoot @ block {pin}")
+print("─"*58)
+if reserved is None or confirmed is None:
+    print("⊘ UNVERIFIABLE — could not prove a slot (an old block needs an archive RPC with a wide getProof window)"); sys.exit(2)
+committed = reserved + confirmed
+print(f"reserved  (slot 0): {reserved}")
+print(f"confirmed (slot 1): {confirmed}")
+print(f"committed:          {committed}    cap: {cap}")
+if committed <= cap:
+    print(f"✓ VERIFIED-GOOD — aggregate {committed} ≤ cap {cap}, proven from storage (no trusted meter read)")
+    sys.exit(0)
+print(f"✗ VERIFIED-BAD — aggregate {committed} > cap {cap}: the cap was exceeded in committed state"); sys.exit(1)
 PY
     ;;
 

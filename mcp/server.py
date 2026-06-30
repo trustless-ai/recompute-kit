@@ -241,6 +241,8 @@ def recompute_step(recipe: str = "list", args: list[str] = [], reversible: bool 
             scope/binding, scope/value-fidelity (observation-completeness);
             scope/contest-verify (the four-guard + guard-7 contest() separation verdict —
             the materiality the completeness bond slashes on; tri-state via its guard-7 leg);
+            8312/cap-conservation (reserved+confirmed ≤ cap, storage-proven vs stateRoot —
+            the indexer-uncheatable audit half of the ERC-8312 cursor);
             8263/precedence, scope/bond-standing (precedence + Layer-3 defense).
         args: the recipe's inputs (see `list`).
         reversible: is the action being gated reversible? Governs the UNVERIFIABLE gate:

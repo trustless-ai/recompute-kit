@@ -64,6 +64,12 @@ def recompute(v):
             if bestC * 10000 < total * q: return None
             return best
         return plur(a) != plur(a + [x])
+    if s == "8312/cap-conservation":
+        # ERC-8312 cap invariant: reserved + confirmed <= cap. Recomputable to a SOUND verdict
+        # because the Security clause binds confirm/cancel to the reserver (no third party can
+        # forge the trajectory). The 'holds' input is real on-chain state proven vs stateRoot
+        # (zero-human-loop @ 5530a9c); the live storage-proof form is recompute-step 8312/cap-conservation.
+        return i["reserved"] + i["confirmed"] <= i["cap"]
     raise SystemExit(f"unknown step: {s}")
 
 
