@@ -49,7 +49,7 @@
       "id": "8301-task-hash",
       "step": "8301/task-hash",
       "spec": "ERC-8301 \u00a784",
-      "desc": "taskHash = keccak256(abi.encode(uint8 stage,uint256 taskSeq,bytes32 inputHash,uint256 timestamp,uint256 expiresAt,keccak256(abi.encodePacked(prevReplyHashes)),bytes32 workflowRunId))",
+      "desc": "\u26a0 DRAFT-DERIVED \u2014 ERC-8301 not filed / not in a live contract; this struct encoding is unanchored. Re-pin against the primary artifact when 8301 is filed.",
       "inputs": {
         "stage": 1,
         "taskSeq": 0,
@@ -65,7 +65,7 @@
       "id": "8275-reputation",
       "step": "8275/reputation",
       "spec": "ERC-8275 axis",
-      "desc": "reputation = (wins/(wins+losses)) * min(closedOutcomes,volumeCap)/volumeCap",
+      "desc": "\u26a0 ILLUSTRATIVE \u2014 one 2-input instantiation of ERC-8275's RECOMMENDED shape; reputation is impl-defined (no canonical value), so this expected comes from the recipe's own formula, not a primary artifact. Tests arithmetic only.",
       "inputs": {
         "wins": 16,
         "losses": 15,

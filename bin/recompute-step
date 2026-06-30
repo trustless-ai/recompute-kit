@@ -65,8 +65,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      receipt_sha256 = sha256(decision_sha256 ‖ prev)   (receiptos-mvp hash-chain)
 
   REPUTATION — ERC-8275 (Step 7)
-    8275/reputation  [ledger_url]
-                     winRate*min(closedOutcomes,volumeCap)/volumeCap  (live api.babyblueviper.com/ledger)
+    8275/reputation  [ledger_url]   ⚠ ILLUSTRATIVE, not canonical
+                     ERC-8275 reputation is a RECOMMENDED shape f(attestationCount,
+                     counterpartyDiversity, winRate, volumeCap), impl-defined — there is NO single
+                     canonical value. This computes one 2-input instantiation; the genuinely
+                     recomputable atomics are the INPUTS (winRate, settled-count) from public events,
+                     not the composite score. Treat the output as an example, not a conformance value.
 
   VERIFY — ERC-8274 / 8263 (Step 4)
     8274/verify      <rpc> <block> <inputHash> <outputHash> <metadata> <proof>
@@ -76,7 +80,10 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8301/task-hash   <stage> <taskSeq> <inputHash> <timestamp> <expiresAt> <workflowRunId> <expected> [prevReplyHashesPacked]
                      taskHash = keccak256(abi.encode(uint8 stage, uint256 taskSeq, bytes32 inputHash,
                        uint256 timestamp, uint256 expiresAt, keccak256(abi.encodePacked(prevReplyHashes)),
-                       bytes32 workflowRunId))   (ERC-8301; prevReplyHashesPacked empty for the initial task)
+                       bytes32 workflowRunId))   (prevReplyHashesPacked empty for the initial task)
+                     ⚠ DRAFT-DERIVED: ERC-8301 is NOT a filed ERC and the struct isn't in a live
+                     contract — this encoding is unanchored to a primary artifact. Re-verify against
+                     the real spec/contract once 8301 is filed; until then it's illustrative.
 
   PRECEDENCE — ERC-8263 anchor (value-fidelity type-2)
     8263/precedence  <digest> <ots_proof_url_or_file> [outcome_timestamp]
@@ -162,7 +169,7 @@ cap = inp['volumeCap']
 winRate = wins / (wins + losses)
 rep = winRate * min(closed, cap) / cap
 pub_rep, pub_wr = r['reputation'], inp['winRate']
-print("→ 8275/reputation: winRate*min(closedOutcomes,volumeCap)/volumeCap  [ERC-8275 axis, live /ledger]")
+print("→ 8275/reputation: winRate*min(closedOutcomes,volumeCap)/volumeCap  [ILLUSTRATIVE â 8275 reputation is impl-defined, not canonical]")
 print("─" * 45)
 print(f"from published derivation: wins={wins} losses={losses} closed={closed} cap={cap}")
 print(f"winRate    recomputed {winRate:.4f}  vs published {pub_wr}")
