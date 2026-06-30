@@ -48,6 +48,22 @@ def recompute(v):
         votes = sorted(i["votes"], key=lambda v: int(v[0], 16))   # contract sorts by sourceId asc
         leaves = [cast("keccak", cast("abi-encode", "f(bytes32,uint8)", v[0], v[1])) for v in votes]
         return cast("keccak", cast("abi-encode", "f(bytes32[])", "[" + ",".join(leaves) + "]"))
+    if s == "scope/contest-verify":
+        # contest() separation: separated = w(a) != w(b), b = a ++ [X]; w = MajorityClassifier
+        # plurality (NO_QUORUM on tie-at-max / below-quorum). Expected verdicts come from the
+        # merged contract (forge), not from here — this reference reproduces them.
+        from collections import Counter
+        q, a, x = i["quorumBps"], list(i["aOptions"]), i["xOption"]
+        def plur(opts):
+            if not opts: return None
+            c = Counter(opts); total = len(opts); best = 0; bestC = 0; tie = False
+            for o in sorted(c):
+                if c[o] > bestC: bestC, best, tie = c[o], o, False
+                elif c[o] == bestC and bestC > 0: tie = True
+            if tie: return None
+            if bestC * 10000 < total * q: return None
+            return best
+        return plur(a) != plur(a + [x])
     raise SystemExit(f"unknown step: {s}")
 
 

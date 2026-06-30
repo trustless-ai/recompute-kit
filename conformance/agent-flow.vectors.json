@@ -162,6 +162,66 @@
         ]
       },
       "expected": "0x8b2ae73260091f506e7a3ab8d9f86164e86811a71fb6c10e32da83a85f5b7d2a"
+    },
+    {
+      "id": "contest-verify-material",
+      "step": "scope/contest-verify",
+      "spec": "scope-contestation contest() / MajorityClassifier",
+      "desc": "separated = w(a)!=w(b), b=a++[X]; 3-3-1 base + X(WIN) \u2192 4-3-1 sole 50% flips \u2192 MATERIAL",
+      "inputs": {
+        "quorumBps": 5000,
+        "aOptions": [
+          1,
+          1,
+          1,
+          3,
+          3,
+          3,
+          2
+        ],
+        "xOption": 1
+      },
+      "expected": true
+    },
+    {
+      "id": "contest-verify-immaterial",
+      "step": "scope/contest-verify",
+      "spec": "scope-contestation contest() / MajorityClassifier",
+      "desc": "3-3-1 base + X(LOSS) \u2192 3-3-2 WIN/DRAW tie persists \u2192 NO_QUORUM \u2192 immaterial",
+      "inputs": {
+        "quorumBps": 5000,
+        "aOptions": [
+          1,
+          1,
+          1,
+          3,
+          3,
+          3,
+          2
+        ],
+        "xOption": 2
+      },
+      "expected": false
+    },
+    {
+      "id": "contest-verify-robust-immaterial",
+      "step": "scope/contest-verify",
+      "spec": "scope-contestation contest() / MajorityClassifier",
+      "desc": "6-1 WIN base + X(WIN) \u2192 7-1 still WIN \u2192 not separated (robust majority, immaterial)",
+      "inputs": {
+        "quorumBps": 5000,
+        "aOptions": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "xOption": 1
+      },
+      "expected": false
     }
   ]
 }

@@ -239,6 +239,8 @@ def recompute_step(recipe: str = "list", args: list[str] = [], reversible: bool 
         recipe: "list" to see recipes, or a recipe name. Seed recipes:
             wyriwe/raw, wyriwe/pipeline (input-provenance, ERC-8299);
             scope/binding, scope/value-fidelity (observation-completeness);
+            scope/contest-verify (the four-guard + guard-7 contest() separation verdict —
+            the materiality the completeness bond slashes on; tri-state via its guard-7 leg);
             8263/precedence, scope/bond-standing (precedence + Layer-3 defense).
         args: the recipe's inputs (see `list`).
         reversible: is the action being gated reversible? Governs the UNVERIFIABLE gate:

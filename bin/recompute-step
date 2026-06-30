@@ -40,6 +40,11 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      leaf = keccak256(abi.encode(sourceId, option)); recompute a's values vs committed
     scope/value-fidelity-onchain  <rpc> <reader> <blockPin> <sourceId>:<opt> ...
                      guard 5 (type-1): reader.valueAt(sourceId, blockPin) == claimed, per source
+    scope/contest-verify  <quorumBps> <a-options-csv> <X-option> [expected_separated]
+                     the four-guard + guard-7 contest() SEPARATION verdict: separated = w(a) != w(b),
+                     b = a ++ [X], via MajorityClassifier plurality/quorum. The materiality the
+                     completeness bond slashes on. Guards 5/7 compose value-fidelity[-onchain];
+                     a type-2 contest's guard-7 defers → UNVERIFIABLE (the tri-state span).
     scope/suite      [ref]
                      run the contest() four-guard reference suite (TMerlini/hack-ens-recovery)
 
@@ -76,7 +81,7 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      bounty=amount, age=as_of−bondStart (Lindy strength). "which agent is good?"
                      recomputed from public bond state, not asserted.
 
-  — 7 flow steps + value-fidelity precedence + Layer-3 standing, recomputable end-to-end —
+  — 7 flow steps + value-fidelity precedence + contest-verify separation + Layer-3 standing —
 EOF
     ;;
 
@@ -319,6 +324,52 @@ if unver:
 print("✓ VERIFIED-GOOD — every source matches the chain at blockPin" if bad==0
       else f"✗ VERIFIED-BAD — {bad} source(s) do NOT match the chain reading")
 sys.exit(1 if bad else 0)
+PY
+    ;;
+
+  scope/contest-verify)
+    # The four-guard + guard-7 contest() SEPARATION verdict, recomputed: separated = w(a) != w(b),
+    # b = a ++ [X], via the real MajorityClassifier plurality/quorum rules (NO_QUORUM on tie or
+    # below-quorum). This is the materiality core the completeness bond slashes on. The guards
+    # compose existing legs: value fidelity of `a` and of the contested X route through
+    # scope/value-fidelity[-onchain] (guard 5 / guard 7); a TYPE-2 contest's guard-7 returns false
+    # → those recipes report UNVERIFIABLE (defer to the source-auth leg) — that's the tri-state span.
+    #   scope/contest-verify <quorumBps> <a-options-csv> <X-option> [expected_separated:true|false]
+    # options are the classifier's uint8 codes (harness: WIN=1, LOSS=2, DRAW=3).
+    q="${2:?need quorumBps}"; aopts="${3:?need a-options csv e.g. 1,1,1,3,3,3,2}"; xopt="${4:?need X option}"; exp="${5:-}"
+    python3 - "$q" "$aopts" "$xopt" "$exp" <<'PY'
+import sys
+from collections import Counter
+q = int(sys.argv[1]); a = [int(x) for x in sys.argv[2].split(",") if x != ""]
+x = int(sys.argv[3]); exp = sys.argv[4]
+def plurality(opts):
+    # mirrors MajorityClassifier._plurality: count per option, scan options ascending,
+    # NO_QUORUM (None) on empty / tie-at-max / below-quorum, else the sole plurality winner.
+    if not opts: return None
+    c = Counter(opts); total = len(opts); best = 0; bestC = 0; tie = False
+    for o in sorted(c):
+        if c[o] > bestC: bestC, best, tie = c[o], o, False
+        elif c[o] == bestC and bestC > 0: tie = True
+    if tie: return None
+    if bestC * 10000 < total * q: return None
+    return best
+wa, wb = plurality(a), plurality(a + [x])
+separated = wa != wb
+nm = lambda w: "NO_QUORUM" if w is None else str(w)
+print("→ scope/contest-verify: separated = w(a) != w(b),  b = a ++ [X]  (MajorityClassifier rules)")
+print("─"*58)
+print(f"quorum:            {q} bps")
+print(f"w(a)  over {a}: {nm(wa)}")
+print(f"w(b)  over {a+[x]}: {nm(wb)}   (X = {x})")
+print(f"separated:         {str(separated).lower()}   → X is {'MATERIAL (slash)' if separated else 'immaterial (bond stands)'}")
+print("  guards 5/7 (value-fidelity of a + of X) compose scope/value-fidelity[-onchain]; type-2 guard-7 → UNVERIFIABLE (defers)")
+if exp:
+    want = exp.lower() in ("true", "1", "yes")
+    ok = (separated == want)
+    print(f"committed verdict: {str(want).lower()}")
+    print("✓ VERIFIED-GOOD — recomputed separation matches the committed contest verdict" if ok
+          else "✗ VERIFIED-BAD — recomputed separation ≠ committed (unsound contest claim)")
+    sys.exit(0 if ok else 1)
 PY
     ;;
 
