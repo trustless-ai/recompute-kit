@@ -7,11 +7,11 @@
       "id": "8004-agent-id",
       "step": "8004/agent-id",
       "spec": "ERC-8299 \u00a7Step3",
-      "desc": "agentId = keccak256(utf8(agentRef))",
+      "desc": "agentId = keccak256(utf8(agentRef)); agentRef is a CAIP/token-bound id (eip155:chain:contract/tokenId), an opaque label \u2014 NOT an ENS name (so not a namehash; see ens/namehash for the ENS-node case)",
       "inputs": {
-        "agentRef": "agent.eth"
+        "agentRef": "eip155:1:0xe61f5a6783ae09949b9a1b6821b68f89c0d7bb2d/2"
       },
-      "expected": "0x3ad75de71f32339becb08e4de837df6a125578acd79a70638923545ac4a2055e"
+      "expected": "0xa4901e8856b7720cabdbef198f982d9563fbb3be72b49f9bf55666730cd09ee6"
     },
     {
       "id": "wyriwe-raw",

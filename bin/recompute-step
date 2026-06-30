@@ -50,7 +50,9 @@ recompute-step recipes (start: the two steps we built end-to-end)
 
   IDENTITY — ERC-8004 (Step 1)
     8004/agent-id    <agentRef> <expected_agentId>
-                     agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation)
+                     agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation).
+                     agentRef is a CAIP/token-bound id (eip155:chain:contract/tokenId) committed as
+                     an OPAQUE label — not an ENS name (so not a namehash; see ens/namehash for that).
     ens/namehash     <name> [expected_node]
                      EIP-137 node = keccak(parent ‖ keccak(label)) over labels — the id ENS
                      resolves. DISTINCT from 8004/agent-id's flat keccak(utf8(name)); use this
