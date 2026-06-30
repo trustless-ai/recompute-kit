@@ -43,8 +43,11 @@ def recompute(v):
                    i["expiresAt"], inner, i["workflowRunId"])
         return cast("keccak", enc)
     if s == "8275/reputation":
-        w, l, c, cap = i["wins"], i["losses"], i["closedOutcomes"], i["volumeCap"]
-        return round(w / (w + l) * min(c, cap) / cap, 4)
+        # canonical INPUT recompute: winRate = gated_wins/(gated_wins+gated_losses), checked vs the
+        # ledger's PUBLISHED winRate (primary artifact). The composite score is an impl-defined view,
+        # deliberately NOT a conformance value.
+        gw, gl = i["commit_gated_wins"], i["commit_gated_losses"]
+        return round(gw / (gw + gl), 4)
     if s == "scope/bond-standing":
         # Layer 3: standing recomputed from public survival(bondId), never asserted.
         return (not i["slashed"]) and (not i["challenged"])

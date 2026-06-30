@@ -65,14 +65,12 @@
       "id": "8275-reputation",
       "step": "8275/reputation",
       "spec": "ERC-8275 axis",
-      "desc": "\u26a0 ILLUSTRATIVE \u2014 one 2-input instantiation of ERC-8275's RECOMMENDED shape; reputation is impl-defined (no canonical value), so this expected comes from the recipe's own formula, not a primary artifact. Tests arithmetic only.",
+      "desc": "the RECOMPUTABLE input: winRate = commit_gated_wins/(gated_wins+gated_losses) reproduces the ledger's published winRate (primary artifact). The composite reputation is an impl-defined VIEW, deliberately not a conformance value.",
       "inputs": {
-        "wins": 16,
-        "losses": 15,
-        "closedOutcomes": 32,
-        "volumeCap": 50
+        "commit_gated_wins": 16,
+        "commit_gated_losses": 15
       },
-      "expected": 0.3303
+      "expected": 0.5161
     },
     {
       "id": "bond-standing-valid",

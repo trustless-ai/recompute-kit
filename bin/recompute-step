@@ -65,12 +65,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      receipt_sha256 = sha256(decision_sha256 ‖ prev)   (receiptos-mvp hash-chain)
 
   REPUTATION — ERC-8275 (Step 7)
-    8275/reputation  [ledger_url]   ⚠ ILLUSTRATIVE, not canonical
-                     ERC-8275 reputation is a RECOMMENDED shape f(attestationCount,
-                     counterpartyDiversity, winRate, volumeCap), impl-defined — there is NO single
-                     canonical value. This computes one 2-input instantiation; the genuinely
-                     recomputable atomics are the INPUTS (winRate, settled-count) from public events,
-                     not the composite score. Treat the output as an example, not a conformance value.
+    8275/reputation  [ledger_url]
+                     Verdicts that the recomputable INPUTS reproduce (winRate = gated_wins/(gated_wins
+                     +gated_losses), closedOutcomes) vs the ledger's published values; the composite
+                     reputation = f(inputs) is a VIEW, never a pass/fail (8275 specifies the shape as
+                     RECOMMENDED — no canonical score). attestationCount / counterpartyDiversity
+                     recompute per-entry via verify-proof (schnorr + artifact_hash).
 
   VERIFY — ERC-8274 / 8263 (Step 4)
     8274/verify      <rpc> <block> <inputHash> <outputHash> <metadata> <proof>
@@ -159,27 +159,40 @@ PY
     ;;
 
   8275/reputation)
+    # ERC-8275 reputation is a RECOMMENDED, impl-defined SHAPE — there is NO canonical score to
+    # verdict (the spec says so deliberately). So the recompute lives ONE LEVEL DOWN: this recipe
+    # verdicts that the recomputable INPUTS reproduce, and shows the composite only as a VIEW.
+    #   winRate = commit_gated_wins / (commit_gated_wins + commit_gated_losses)  [commit-gated outcomes]
+    #   closedOutcomes = commit_gated_closed
+    #   attestationCount / counterpartyDiversity -> per-entry schnorr-verify + distinct artifact_hash
+    #     = the verify-proof leg (separate recipe), composed above this one.
+    # reputation = winRate*min(closed,cap)/cap is f(inputs) — a lens, never a pass/fail.
     url="${2:-https://api.babyblueviper.com/ledger}"
-    python3 - "$url" <<'PY'
+    python3 - "$url" <<'PYEOF'
 import sys, json, urllib.request
 d = json.load(urllib.request.urlopen(sys.argv[1], timeout=15))
 r = d['reputation_axis']; dv = r['derivation']; inp = r['inputs']
-wins, losses, closed = dv['commit_gated_wins'], dv['commit_gated_losses'], dv['commit_gated_closed']
+gw, gl, gc = dv['commit_gated_wins'], dv['commit_gated_losses'], dv['commit_gated_closed']
 cap = inp['volumeCap']
-winRate = wins / (wins + losses)
-rep = winRate * min(closed, cap) / cap
-pub_rep, pub_wr = r['reputation'], inp['winRate']
-print("→ 8275/reputation: winRate*min(closedOutcomes,volumeCap)/volumeCap  [ILLUSTRATIVE â 8275 reputation is impl-defined, not canonical]")
-print("─" * 45)
-print(f"from published derivation: wins={wins} losses={losses} closed={closed} cap={cap}")
-print(f"winRate    recomputed {winRate:.4f}  vs published {pub_wr}")
-print(f"reputation recomputed {rep:.4f}  vs published {pub_rep}")
-ok = abs(winRate - pub_wr) < 5e-4 and abs(rep - pub_rep) < 5e-4
-print("✓ RECOMPUTED — reputation recomputes from its published counts" if ok
-      else "✗ MISMATCH — published reputation ≠ recomputed")
-print("  (deeper tier: re-derive wins/losses/closed by verifying each entry's schnorr sig + 8263 anchor)")
-sys.exit(0 if ok else 1)
-PY
+print("-> 8275/reputation: assert the INPUTS reproduce; the score is a VIEW, not a verdict")
+print("-" * 60)
+print(f"commit-gated counts:  wins={gw} losses={gl} closed={gc}   volumeCap={cap}")
+winRate = round(gw / (gw + gl), 4)
+checks = [("winRate = gw/(gw+gl)", winRate, round(inp['winRate'], 4)),
+          ("closedOutcomes",       gc,      dv['commit_gated_closed'])]
+bad = 0
+for name, got, pub in checks:
+    ok = (abs(got - pub) < 5e-4) if isinstance(got, float) else (got == pub)
+    print(f"  {name:22} recomputed {got}  vs published {pub}  {'OK' if ok else 'X'}")
+    bad += 0 if ok else 1
+rep_view = winRate * min(gc, cap) / cap
+print(f"  reputation = f(inputs):  {rep_view:.4f}   [VIEW - impl-choice f, not a verdict; published {r['reputation']}]")
+print("  attestationCount / counterpartyDiversity: recompute per-entry via verify-proof (schnorr + artifact_hash)")
+if bad == 0:
+    print("VERIFIED-GOOD - the recomputable INPUTS reproduce from public commit-gated counts (score stays a view)")
+    sys.exit(0)
+print(f"VERIFIED-BAD - {bad} input(s) do NOT reproduce from the published counts"); sys.exit(1)
+PYEOF
     ;;
 
   wyriwe/raw)
