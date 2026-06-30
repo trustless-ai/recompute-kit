@@ -204,9 +204,10 @@ PYEOF
 
   wyriwe/pipeline)
     # ERC-8299 §46: sanitization_pipeline_hash = keccak256(sanitization_spec_cid_bytes ‖ raw_input_hash).
-    # ASSUMPTION: cid_bytes = the UTF-8 bytes of the CID string. §46 writes "cid_bytes" without pinning
-    # utf8(cid-string) vs the decoded multihash — flagged for the #1810 review; an impl using the
-    # multihash bytes diverges silently. This recipe commits to utf8(cid).
+    # §53 PINS the byte form: cid_bytes = UTF-8 of the FULL ipfs:// URI string (prefix included, MUST).
+    # This recipe matches it — pass the full "ipfs://Qm..." URI and it commits utf8(URI). (The residual
+    # #1810 item is purely NOTATIONAL: §46's formula uses the bare token while §224/§237 use
+    # sanitization_spec_cid_bytes — Fede's proposed one-line operand gloss makes the three read identically.)
     cid="${2:?need sanitization_spec_cid}"; rawhash="${3:?need raw_input_hash}"; exp="${4:?need expected}"
     command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
     cidhex="$(cast from-utf8 "$cid")"
