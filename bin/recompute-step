@@ -81,9 +81,9 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      taskHash = keccak256(abi.encode(uint8 stage, uint256 taskSeq, bytes32 inputHash,
                        uint256 timestamp, uint256 expiresAt, keccak256(abi.encodePacked(prevReplyHashes)),
                        bytes32 workflowRunId))   (prevReplyHashesPacked empty for the initial task)
-                     ⚠ DRAFT-DERIVED: ERC-8301 is NOT a filed ERC and the struct isn't in a live
-                     contract — this encoding is unanchored to a primary artifact. Re-verify against
-                     the real spec/contract once 8301 is filed; until then it's illustrative.
+                     ✓ ANCHORED: struct order + types confirmed field-for-field against erc-8301.md
+                     (JimmyShi22/ERCs @ erc-agent-execution §AgentTask). Spec is a pre-filing draft —
+                     re-confirm if it changes when it lands on ethereum/ERCs.
 
   PRECEDENCE — ERC-8263 anchor (value-fidelity type-2)
     8263/precedence  <digest> <ots_proof_url_or_file> [outcome_timestamp]

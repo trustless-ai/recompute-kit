@@ -48,8 +48,8 @@
     {
       "id": "8301-task-hash",
       "step": "8301/task-hash",
-      "spec": "ERC-8301 \u00a784",
-      "desc": "\u26a0 DRAFT-DERIVED \u2014 ERC-8301 not filed / not in a live contract; this struct encoding is unanchored. Re-pin against the primary artifact when 8301 is filed.",
+      "spec": "ERC-8301 (JimmyShi22/ERCs @ erc-agent-execution, \u00a7AgentTask)",
+      "desc": "taskHash = keccak256(abi.encode(stage,taskSeq,inputHash,timestamp,expiresAt,keccak256(abi.encodePacked(prevReplyHashes)),workflowRunId)) \u2014 struct order + types confirmed field-for-field against the live erc-8301.md. Pre-filing draft; re-confirm on filing.",
       "inputs": {
         "stage": 1,
         "taskSeq": 0,
