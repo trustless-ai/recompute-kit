@@ -24,7 +24,12 @@ def cast(*a):
 def recompute(v):
     s, i = v["step"], v["inputs"]
     if s == "8004/agent-id":
-        return cast("keccak", cast("from-utf8", i["agentRef"]))
+        # ERC-8004 agentId = bytes32(uint256(registryId)) (live erc-8299.md, PR #1810) — the
+        # registry-assigned identity, left-padded. NOT a hash of any name.
+        return "0x" + format(int(i["registryId"]), "064x")
+    if s == "name/keccak-binding":
+        # keccak256(utf8(label)) — a name->handle binding (wyriwe preimage leg), not the agentId.
+        return cast("keccak", cast("from-utf8", i["label"]))
     if s == "wyriwe/raw":
         return cast("keccak", i["raw_input_hex"])
     if s == "wyriwe/pipeline":

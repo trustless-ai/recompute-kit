@@ -49,10 +49,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      run the contest() four-guard reference suite (TMerlini/hack-ens-recovery)
 
   IDENTITY — ERC-8004 (Step 1)
-    8004/agent-id    <agentRef> <expected_agentId>
-                     agentId = keccak256(utf8(agentRef))          (ERC-8299 §Step3 derivation).
-                     agentRef is a CAIP/token-bound id (eip155:chain:contract/tokenId) committed as
-                     an OPAQUE label — not an ENS name (so not a namehash; see ens/namehash for that).
+    8004/agent-id    <registryId> [expected_bytes32]
+                     agentId = bytes32(uint256(registryId)) — the ERC-8004 registry-assigned id,
+                     left-padded (live erc-8299.md, PR #1810). NOT a hash of any name.
+    name/keccak-binding  <label> <expected_digest>
+                     keccak256(utf8(label)) — a name→handle binding (wyriwe preimage leg). NOT the
+                     8004 agentId (that's the registry id) and NOT an ENS namehash.
     ens/namehash     <name> [expected_node]
                      EIP-137 node = keccak(parent ‖ keccak(label)) over labels — the id ENS
                      resolves. DISTINCT from 8004/agent-id's flat keccak(utf8(name)); use this
@@ -98,9 +100,31 @@ EOF
     ;;
 
   8004/agent-id)
-    ref="${2:?need agentRef}"; exp="${3:?need expected agentId}"
+    # The ERC-8004 agentId per ERC-8299 (live erc-8299.md, PR #1810): a bytes32 registry-identity
+    # anchor — the id the ERC-8004 registry ASSIGNS (Wizgob = 860), paired with the registry addr.
+    # NOT a hash of any name. Canonical encoding of a uint256 registry id: bytes32(uint256(id)),
+    # left-padded. (Encoding pin proposed for §8299; bytes32(uint256(id)) is the only sane mapping.)
+    #   8004/agent-id <registryId> [expected_bytes32]
+    id="${2:?need the ERC-8004 registry id (uint256), e.g. 860}"; exp="${3:-}"
+    node="0x$(python3 -c "print(format(int('$id'), '064x'))")"
+    echo "→ 8004/agent-id: agentId = bytes32(uint256($id))  (ERC-8004 registry identity, ERC-8299)"
+    echo "──────────────────────────────────────────────────────────"
+    echo "agentId: $node"
+    if [ -n "$exp" ]; then
+      if [ "$(echo "$node" | tr 'A-Z' 'a-z')" = "$(echo "$exp" | tr 'A-Z' 'a-z')" ]; then
+        echo "✓ VERIFIED-GOOD — encodes to the committed agentId"
+      else echo "✗ VERIFIED-BAD — bytes32(uint256($id))=$node ≠ claim $exp"; exit 1; fi
+    fi
+    ;;
+
+  name/keccak-binding)
+    # keccak256(utf8(label)) — a NAME→handle binding (the wyriwe-preimage leg for agentRef/
+    # modelLabel/etc). NOT the ERC-8004 agentId (that's the registry id; see 8004/agent-id) and
+    # NOT an ENS namehash (see ens/namehash). If used as identity, the derivation MUST be declared.
+    #   name/keccak-binding <label> <expected_digest>
+    ref="${2:?need a label/name}"; exp="${3:?need expected digest}"
     command -v cast >/dev/null || { echo "need foundry (cast)" >&2; exit 69; }
-    echo "→ 8004/agent-id: agentId = keccak256(utf8(\"$ref\"))"
+    echo "→ name/keccak-binding: keccak256(utf8(\"$ref\"))  (name→handle binding, NOT the 8004 agentId)"
     exec "$BIN/recompute-commitment" keccak "$exp" "$(cast from-utf8 "$ref")" ;;
 
   receiptos/receipt-hash)

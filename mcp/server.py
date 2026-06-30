@@ -238,8 +238,9 @@ def recompute_step(recipe: str = "list", args: list[str] = [], reversible: bool 
     Args:
         recipe: "list" to see recipes, or a recipe name. Seed recipes:
             wyriwe/raw, wyriwe/pipeline (input-provenance, ERC-8299);
-            ens/namehash (EIP-137 node — the ENS-resolved identity, distinct from 8004/agent-id's
-            flat keccak(name)); scope/binding, scope/value-fidelity (observation-completeness);
+            8004/agent-id (bytes32(uint256(registryId)) — the ERC-8004 registry identity, NOT a
+            name hash); name/keccak-binding (keccak(utf8(label)) — a name→handle binding);
+            ens/namehash (EIP-137 ENS node); scope/binding, scope/value-fidelity (completeness);
             scope/contest-verify (the four-guard + guard-7 contest() separation verdict —
             the materiality the completeness bond slashes on; tri-state via its guard-7 leg);
             8312/cap-conservation (reserved+confirmed ≤ cap, storage-proven vs stateRoot —
