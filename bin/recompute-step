@@ -80,10 +80,12 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8301/task-hash   <stage> <taskSeq> <inputHash> <timestamp> <expiresAt> <workflowRunId> <expected> [prevReplyHashesPacked]
                      taskHash = keccak256(abi.encode(uint8 stage, uint256 taskSeq, bytes32 inputHash,
                        uint256 timestamp, uint256 expiresAt, keccak256(abi.encodePacked(prevReplyHashes)),
-                       bytes32 workflowRunId))   (prevReplyHashesPacked empty for the initial task)
-                     ✓ ANCHORED: struct order + types confirmed field-for-field against erc-8301.md
-                     (JimmyShi22/ERCs @ erc-agent-execution §AgentTask). Spec is a pre-filing draft —
-                     re-confirm if it changes when it lands on ethereum/ERCs.
+                       bytes32 workflowRunId))
+                     ✓ ANCHORED: order + types confirmed field-for-field vs the FILED erc-8301.md
+                     (ethereum/ERCs PR #1815 §AgentTask). INITIAL task: prevReplyHashes empty →
+                     inner = keccak256(abi.encodePacked([])) = keccak256("") =
+                     0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470 — NOT
+                     bytes32(0) (Fede's flag; the kit already computes this, the conformance vector pins it).
 
   PRECEDENCE — ERC-8263 anchor (value-fidelity type-2)
     8263/precedence  <digest> <ots_proof_url_or_file> [outcome_timestamp]

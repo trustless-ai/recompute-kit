@@ -48,8 +48,8 @@
     {
       "id": "8301-task-hash",
       "step": "8301/task-hash",
-      "spec": "ERC-8301 (JimmyShi22/ERCs @ erc-agent-execution, \u00a7AgentTask)",
-      "desc": "taskHash = keccak256(abi.encode(stage,taskSeq,inputHash,timestamp,expiresAt,keccak256(abi.encodePacked(prevReplyHashes)),workflowRunId)) \u2014 struct order + types confirmed field-for-field against the live erc-8301.md. Pre-filing draft; re-confirm on filing.",
+      "spec": "ERC-8301 (ethereum/ERCs PR #1815, \u00a7AgentTask)",
+      "desc": "INITIAL-task taskHash, order+types confirmed vs filed erc-8301.md. GUARDS Fede's empty-array edge: prevReplyHashes empty \u2192 inner = keccak256(abi.encodePacked([])) = keccak256('')=0xc5d2\u2026a470, NOT bytes32(0) \u2014 an impl that special-cases the empty array to 0x0 fails this vector.",
       "inputs": {
         "stage": 1,
         "taskSeq": 0,
