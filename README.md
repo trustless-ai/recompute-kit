@@ -101,12 +101,13 @@ the primitives. `recompute-step list` prints the catalog.
 | domain | recipes |
 |---|---|
 | input provenance (ERC-8299 / WYRIWE) | `wyriwe/raw` · `wyriwe/pipeline` |
-| identity & dispatch (ERC-8004 / ERC-8301) | `8004/agent-id` · `8301/task-hash` |
+| identity & dispatch (ERC-8004 / ERC-8301) | `8004/agent-id` · `8301/task-hash` · `ens/namehash` · `name/keccak-binding` |
 | verify & precedence (ERC-8274 / ERC-8263) | `8274/verify` · `8263/precedence` |
 | eligibility & reputation (ReceiptOS / ERC-8275) | `receiptos/receipt-hash` · `8275/reputation` |
 | observation-completeness (scope-contestation) | `scope/binding` · `scope/value-fidelity` · `scope/value-fidelity-onchain` · `scope/contest-verify` · `scope/suite` |
 | bounded actions (ERC-8312) | `8312/cap-conservation` |
 | Layer-3 defense | `scope/bond-standing` |
+| composition — attestation envelope (ERC-8294 ↔ ERC-8275/WYRIWE) | `seam4/envelope-align` |
 
 ```bash
 bin/recompute-step list
