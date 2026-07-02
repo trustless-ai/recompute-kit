@@ -311,6 +311,28 @@
         "agentId_reconciled": true,
         "tamper_rejected_both": true
       }
+    },
+    {
+      "id": "receiptos-wyriwe-composed",
+      "step": "receiptos/receipt-hash × wyriwe  (Step 3 × Step 5 seam)",
+      "spec": "ReceiptOS Step-5 capsule carrying the WYRIWE input_commitment slice; genesis encoding pinned. Three-case test vector authored by @pipavlo82, independently reproduced byte-identical (linked decision_sha256 rebuilt from the described body, not just the chaining arithmetic).",
+      "desc": "input_commitment slice recomputes under wyriwe/raw + wyriwe/pipeline; capsule recomputes under receiptos/receipt-hash. Genesis: prev=null → prev_hex='' (empty), '|' delimiter retained. Linked: 2nd capsule (action.kind='nft_suggest_followup', decision.reason='input recomputes; policy clean; chained') chains onto genesis. Chain-tamper: flipping a prev_hex nibble MUST move the receipt.",
+      "inputs": {
+        "raw_input_hash": "0x160f63e29149e1eaa5936c980a56b068e6a3d571d1e7fc8e793f64d6ef389fb7",
+        "sanitization_pipeline_hash": "0x55ff95e489cf78db2a4e981497580e1d4f1b61055528e2dffc7040a98ffd0a04"
+      },
+      "expected": {
+        "genesis": {
+          "decision_sha256": "a4178a36b25080a5213621683363deeac18c4802cf047a42e36a8ebdf73ecfb7",
+          "receipt_sha256": "cf283ef73b2a5cbaead9079a00ec42466e2c41ad90ef82b4ee6dacae073022e5"
+        },
+        "linked": {
+          "decision_sha256": "814e57c900601c6e610b110bc741662070e2de9bf6b0d196a577eea6250c9528",
+          "prev_receipt_sha256": "cf283ef73b2a5cbaead9079a00ec42466e2c41ad90ef82b4ee6dacae073022e5",
+          "receipt_sha256": "9155182411ef00b627d72d5f77501877b464bda3d2860a0a5b304e02c2e215d3"
+        },
+        "chain_tamper_must_move": true
+      }
     }
   ]
 }
