@@ -1,0 +1,6 @@
+{
+  "name": "recompute-kit-node-recipes",
+  "private": true,
+  "description": "Node dependency for recompute-step recipes that need EIP-712 typed-data recover (seam4/envelope-align).",
+  "dependencies": { "ethers": "^6.13.0" }
+}

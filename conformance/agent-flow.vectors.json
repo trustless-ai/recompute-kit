@@ -7,7 +7,7 @@
       "id": "name-keccak-binding",
       "step": "name/keccak-binding",
       "spec": "wyriwe preimage leg",
-      "desc": "keccak256(utf8(label)) \u2014 a name->handle binding (e.g. a CAIP agentRef as a preimage leg). NOT the ERC-8004 agentId (registry id) and NOT an ENS namehash.",
+      "desc": "keccak256(utf8(label)) — a name->handle binding (e.g. a CAIP agentRef as a preimage leg). NOT the ERC-8004 agentId (registry id) and NOT an ENS namehash.",
       "inputs": {
         "label": "eip155:1:0xe61f5a6783ae09949b9a1b6821b68f89c0d7bb2d/2"
       },
@@ -16,7 +16,7 @@
     {
       "id": "wyriwe-raw",
       "step": "wyriwe/raw",
-      "spec": "ERC-8299 \u00a745",
+      "spec": "ERC-8299 §45",
       "desc": "raw_input_hash = keccak256(raw_user_input)",
       "inputs": {
         "raw_input_hex": "0x68656c6c6f"
@@ -26,7 +26,7 @@
     {
       "id": "wyriwe-pipeline",
       "step": "wyriwe/pipeline",
-      "spec": "ERC-8299 \u00a746",
+      "spec": "ERC-8299 §46",
       "desc": "sanitization_pipeline_hash = keccak256(utf8(cid) || raw_input_hash)",
       "inputs": {
         "spec_cid": "ipfs://QmccvoM6aRVgZ2dtFWvT6Wm3DmTvoAUHHotK7uQufnStVR",
@@ -48,8 +48,8 @@
     {
       "id": "8301-task-hash",
       "step": "8301/task-hash",
-      "spec": "ERC-8301 (ethereum/ERCs PR #1815, \u00a7AgentTask)",
-      "desc": "INITIAL-task taskHash, order+types confirmed vs filed erc-8301.md. GUARDS Fede's empty-array edge: prevReplyHashes empty \u2192 inner = keccak256(abi.encodePacked([])) = keccak256('')=0xc5d2\u2026a470, NOT bytes32(0) \u2014 an impl that special-cases the empty array to 0x0 fails this vector.",
+      "spec": "ERC-8301 (ethereum/ERCs PR #1815, §AgentTask)",
+      "desc": "INITIAL-task taskHash, order+types confirmed vs filed erc-8301.md. GUARDS Fede's empty-array edge: prevReplyHashes empty → inner = keccak256(abi.encodePacked([])) = keccak256('')=0xc5d2…a470, NOT bytes32(0) — an impl that special-cases the empty array to 0x0 fails this vector.",
       "inputs": {
         "stage": 1,
         "taskSeq": 0,
@@ -76,7 +76,7 @@
       "id": "bond-standing-valid",
       "step": "scope/bond-standing",
       "spec": "scope-contestation Layer3 / ICompletenessBond.survival()",
-      "desc": "standing = (not slashed) and (not challenged) \u2014 recomputed from public bond state, not asserted",
+      "desc": "standing = (not slashed) and (not challenged) — recomputed from public bond state, not asserted",
       "inputs": {
         "amount": "10000000000000000000",
         "bondStart": 1782000000,
@@ -91,7 +91,7 @@
       "id": "bond-standing-slashed",
       "step": "scope/bond-standing",
       "spec": "scope-contestation Layer3 / ICompletenessBond.survival()",
-      "desc": "a slashed/challenged bond is NOT standing \u2014 its completeness claim was falsified",
+      "desc": "a slashed/challenged bond is NOT standing — its completeness claim was falsified",
       "inputs": {
         "amount": "10000000000000000000",
         "bondStart": 1782000000,
@@ -165,7 +165,7 @@
       "id": "contest-verify-material",
       "step": "scope/contest-verify",
       "spec": "scope-contestation contest() / MajorityClassifier",
-      "desc": "separated = w(a)!=w(b), b=a++[X]; 3-3-1 base + X(WIN) \u2192 4-3-1 sole 50% flips \u2192 MATERIAL",
+      "desc": "separated = w(a)!=w(b), b=a++[X]; 3-3-1 base + X(WIN) → 4-3-1 sole 50% flips → MATERIAL",
       "inputs": {
         "quorumBps": 5000,
         "aOptions": [
@@ -185,7 +185,7 @@
       "id": "contest-verify-immaterial",
       "step": "scope/contest-verify",
       "spec": "scope-contestation contest() / MajorityClassifier",
-      "desc": "3-3-1 base + X(LOSS) \u2192 3-3-2 WIN/DRAW tie persists \u2192 NO_QUORUM \u2192 immaterial",
+      "desc": "3-3-1 base + X(LOSS) → 3-3-2 WIN/DRAW tie persists → NO_QUORUM → immaterial",
       "inputs": {
         "quorumBps": 5000,
         "aOptions": [
@@ -205,7 +205,7 @@
       "id": "contest-verify-robust-immaterial",
       "step": "scope/contest-verify",
       "spec": "scope-contestation contest() / MajorityClassifier",
-      "desc": "6-1 WIN base + X(WIN) \u2192 7-1 still WIN \u2192 not separated (robust majority, immaterial)",
+      "desc": "6-1 WIN base + X(WIN) → 7-1 still WIN → not separated (robust majority, immaterial)",
       "inputs": {
         "quorumBps": 5000,
         "aOptions": [
@@ -224,8 +224,8 @@
     {
       "id": "cap-conservation-holds",
       "step": "8312/cap-conservation",
-      "spec": "ERC-8312 \u2014 bounded agent actions (cap invariant + Security clause: confirm/cancel bind to reserver)",
-      "desc": "reserved+confirmed \u2264 cap holds. Real captured state from Atlas-Protocol-AI/zero-human-loop @ 5530a9c, StatefulBound 0x3f79\u2026faac, mandateId 0x9e3e\u202605bbe on Base Sepolia (storage-proven vs stateRoot).",
+      "spec": "ERC-8312 — bounded agent actions (cap invariant + Security clause: confirm/cancel bind to reserver)",
+      "desc": "reserved+confirmed ≤ cap holds. Real captured state from Atlas-Protocol-AI/zero-human-loop @ 5530a9c, StatefulBound 0x3f79…faac, mandateId 0x9e3e…05bbe on Base Sepolia (storage-proven vs stateRoot).",
       "inputs": {
         "reserved": 100,
         "confirmed": 0,
@@ -236,8 +236,8 @@
     {
       "id": "cap-conservation-breach",
       "step": "8312/cap-conservation",
-      "spec": "ERC-8312 \u2014 bounded agent actions",
-      "desc": "synthetic over-cap control: aggregate exceeds the cap \u2192 the audit must reject (the cursor's enforce path makes this unreachable on-chain; the vector pins the verdict side).",
+      "spec": "ERC-8312 — bounded agent actions",
+      "desc": "synthetic over-cap control: aggregate exceeds the cap → the audit must reject (the cursor's enforce path makes this unreachable on-chain; the vector pins the verdict side).",
       "inputs": {
         "reserved": 100,
         "confirmed": 60,
@@ -249,7 +249,7 @@
       "id": "ens-namehash-eth",
       "step": "ens/namehash",
       "spec": "EIP-137",
-      "desc": "namehash('eth') \u2014 the TLD node ENS resolves",
+      "desc": "namehash('eth') — the TLD node ENS resolves",
       "inputs": {
         "name": "eth"
       },
@@ -259,7 +259,7 @@
       "id": "ens-namehash-agent-eth",
       "step": "ens/namehash",
       "spec": "EIP-137",
-      "desc": "namehash('agent.eth') \u2014 DISTINCT from keccak256(utf8('agent.eth'))=0x3ad7\u2026; the ENS-identity fork Fede flagged on 8004/agent-id",
+      "desc": "namehash('agent.eth') — DISTINCT from keccak256(utf8('agent.eth'))=0x3ad7…; the ENS-identity fork Fede flagged on 8004/agent-id",
       "inputs": {
         "name": "agent.eth"
       },
@@ -269,7 +269,7 @@
       "id": "ens-namehash-vitalik-eth",
       "step": "ens/namehash",
       "spec": "EIP-137",
-      "desc": "namehash('vitalik.eth') \u2014 second 2-label vector",
+      "desc": "namehash('vitalik.eth') — second 2-label vector",
       "inputs": {
         "name": "vitalik.eth"
       },
@@ -294,6 +294,23 @@
         "registryId": 54848
       },
       "expected": "0x000000000000000000000000000000000000000000000000000000000000d640"
+    },
+    {
+      "id": "seam4-envelope-align",
+      "step": "seam4/envelope-align",
+      "spec": "ERC-8275 §Composition-with-8294 seam 4 (envelope alignment); schemas pinned from ERC-8294 #1808 + ERC-8299/WYRIWE #1810",
+      "desc": "One EIP-712 verifier recovers the signer for BOTH an ERC-8294 Attestation and a WYRIWE WyriweAttestation, rejects either when a committed field is tampered, and reconciles the shared agentId (8294 uint256 860 == WYRIWE bytes32(uint256(860))=0x..035c, the ERC-8299 rule). Signer = anvil key #1 (throwaway). Recompute via recompute-step seam4/envelope-align (node + ethers).",
+      "inputs": {
+        "signer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "agentId": 860
+      },
+      "expected": {
+        "vni_digest": "0x36dedffaaf41cc989709c82259f78ffd2944f88978b3575a6ec0b9ec67634c7e",
+        "wyriwe_digest": "0xe1ba8810c5b19fd5ad9f330ad70bcf35d447150f6cd2f907ea6acb179069213c",
+        "recovered_signer_both": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "agentId_reconciled": true,
+        "tamper_rejected_both": true
+      }
     }
   ]
 }

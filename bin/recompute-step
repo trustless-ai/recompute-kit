@@ -104,7 +104,16 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      bounty=amount, age=as_of−bondStart (Lindy strength). "which agent is good?"
                      recomputed from public bond state, not asserted.
 
-  — 7 flow steps + value-fidelity + contest-verify + cap-conservation + Layer-3 standing —
+  COMPOSITION — ERC-8294 (VNI) ↔ ERC-8275/WYRIWE, seam 4 (attestation envelope)
+    seam4/envelope-align
+                     one generic EIP-712 verifier recovers the signer for BOTH an ERC-8294
+                     validator Attestation and a WYRIWE/8274 WyriweAttestation, rejects either
+                     when a committed field is tampered, and reconciles the shared agentId
+                     (8294 uint256 ↔ WYRIWE bytes32(uint256(id)), the ERC-8299 rule). Proves
+                     8275 §"Composition with 8294" seam 4 ("a single verifier checks both").
+                     Needs node + ethers (npm i ethers) → else UNVERIFIABLE.
+
+  — 7 flow steps + value-fidelity + contest-verify + cap-conservation + Layer-3 standing + seam-4 envelope —
 EOF
     ;;
 
@@ -506,6 +515,14 @@ if committed <= cap:
 print(f"✗ VERIFIED-BAD — aggregate {committed} > cap {cap}: the cap was exceeded in committed state"); sys.exit(1)
 PY
     ;;
+
+  seam4/envelope-align)
+    # ERC-8294 ↔ ERC-8275/WYRIWE seam 4: one EIP-712 verifier greens on both envelope
+    # classes, rejects tampered, reconciles agentId. EIP-712 typed-data recover needs
+    # node + ethers (cast has no typed-data recover). Tool missing → UNVERIFIABLE (2).
+    command -v node >/dev/null || { echo "⊘ UNVERIFIABLE — node not installed (recipe needs node + ethers)"; exit 2; }
+    node -e "require.resolve('ethers')" 2>/dev/null || { echo "⊘ UNVERIFIABLE — ethers not resolvable (run: npm i ethers)"; exit 2; }
+    exec node "$BIN/recompute-envelope.mjs" ;;
 
   *)
     echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;
