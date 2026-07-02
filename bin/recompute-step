@@ -62,7 +62,8 @@ recompute-step recipes (start: the two steps we built end-to-end)
 
   ELIGIBILITY — ReceiptOS (Step 5)
     receiptos/receipt-hash  <receipt.json>
-                     receipt_sha256 = sha256(decision_sha256 ‖ prev)   (receiptos-mvp hash-chain)
+                     receipt_sha256 = sha256(utf8(decision_hex "|" prev_hex))  (receiptos-mvp
+                     hash-chain; "|" always present; GENESIS prev=null → prev_hex="" empty string)
 
   REPUTATION — ERC-8275 (Step 7)
     8275/reputation  [ledger_url]
@@ -146,6 +147,13 @@ EOF
     exec "$BIN/recompute-commitment" keccak "$exp" "$(cast from-utf8 "$ref")" ;;
 
   receiptos/receipt-hash)
+    # ENCODING (pinned — the "‖" in the shorthand is NOT bare concat; the genesis case is
+    # recipe-defined, not derivable from the formula, per @pipavlo82):
+    #   receipt_sha256 = sha256( utf8( decision_hex + "|" + prev_hex ) )
+    #   • decision_hex / prev_hex are lowercase 64-char sha256 hexdigests (no 0x)
+    #   • "|" (0x7c) is the delimiter and is ALWAYS present
+    #   • GENESIS (prev = null): prev_hex = "" (EMPTY STRING) → preimage = decision_hex + "|"
+    #     NOT omitted-delimiter, NOT literal "null", NOT zero-fill, NOT raw zero bytes — all diverge.
     f="${2:?need a receipt .json file}"
     python3 - "$f" <<'PY'
 import sys, json, hashlib
@@ -155,7 +163,7 @@ sha = lambda b: hashlib.sha256(b).hexdigest()
 unsigned = {k: v for k, v in r.items() if k not in ('hashes', 'signature')}
 decision = sha(canon(unsigned))
 prev = (r.get('hashes') or {}).get('prev_receipt_sha256')
-receipt = sha(f"{decision}|{prev or ''}".encode())
+receipt = sha(f"{decision}|{prev or ''}".encode())  # genesis: prev None → '' (empty), delimiter kept
 exp = (r.get('hashes') or {}).get('receipt_sha256')
 print("→ receiptos/receipt-hash: receipt_sha256 = sha256(decision_sha256 ‖ prev)  [receiptos-mvp]")
 print("─" * 45)
