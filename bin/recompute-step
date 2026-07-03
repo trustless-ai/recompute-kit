@@ -103,6 +103,10 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      reserved[mid] + confirmed[mid] ≤ cap, proven from STORAGE (eth_getProof vs
                      stateRoot, no trusted meter read) via recompute-storage-proof. The audit half
                      of the cursor; sound because the Security clause binds confirm/cancel to the reserver.
+                     NB (Base-Sepolia, verified 2026-07-03 w/ blockbird): KEYLESS getProof serves the
+                     HEAD but not historical blocks (proof-window limit → UNVERIFIABLE, a keyless-archive
+                     artifact, NOT a state fault). A keyed archive RPC clears it at head or pinned. The
+                     captured vector already carries the criterion; run at head for the live green.
 
   DEFENSE STANDING — Layer 3 completeness bond (damonzwicker/scope-contestation)
     scope/bond-standing  <rpc> <bond_addr> <bondId> [as_of]
