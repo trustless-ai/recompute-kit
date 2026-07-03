@@ -92,6 +92,11 @@ recompute-step recipes (start: the two steps we built end-to-end)
     8263/precedence  <digest> <ots_proof_url_or_file> [outcome_timestamp]
                      OTS digest → Bitcoin block → merkleroot cross-checked off a public
                      explorer (no node, no trust); strict block_time < outcome if given
+    eas/precedence   <attestation_uid> [outcome_timestamp] [rpc]
+                     sibling anchor, same invariant: committed_at = EAS.getAttestation(uid).time
+                     on Base (the on-chain block timestamp, NOT the issuer's evaluatedAt field),
+                     cross-checked against the block timestamp of the tx that emitted it (no single
+                     trusted read); strict anchor_time < outcome if given
 
   BOUNDED ACTIONS — ERC-8312 aggregate cap (Atlas-Protocol-AI/zero-human-loop)
     8312/cap-conservation  <rpc> <cursor_addr> <mandateId> <cap> [block]
@@ -307,6 +312,69 @@ if outcome:
     print("✓ VERIFIED-GOOD — anchor Bitcoin-confirmed AND strictly precedes the outcome")
 else:
     print("✓ VERIFIED-GOOD — anchor Bitcoin-confirmed (merkleroot matches explorer); pass an outcome_ts for the strict < check")
+PY
+    ;;
+
+  eas/precedence)
+    # Sibling of 8263/precedence. Same invariant — committed_at provably prior to the outcome,
+    # READ FROM THE ANCHOR, not the issuer's word — different anchor/read. The anchor timestamp is
+    # EAS.getAttestation(uid).time on Base: the ON-CHAIN block timestamp set by Base consensus when
+    # the attestation was mined. It is NOT the issuer-supplied evaluatedAt field inside the schema
+    # data (that would be "the issuer's word"). Cross-checked against the block timestamp of the tx
+    # that emitted the attestation (independent re-derivation) so no single read is trusted.
+    uid="${2:?need attestation uid (bytes32)}"; outcome="${3:-}"; rpc="${4:-https://mainnet.base.org}"
+    python3 - "$uid" "$outcome" "$rpc" <<'PY'
+import sys, json, subprocess, urllib.request
+def unverifiable(msg): print("⊘ UNVERIFIABLE —", msg); sys.exit(2)   # couldn't check ≠ verified-bad
+uid, outcome, rpc = sys.argv[1], (sys.argv[2] or None), sys.argv[3]
+EAS = "0x4200000000000000000000000000000000000021"  # canonical EAS on Base / all OP-stack
+STRUCT = "((bytes32,bytes32,uint64,uint64,uint64,bytes32,address,address,bool,bytes))"
+def cast(a):
+    r = subprocess.run(["cast", *a], capture_output=True, text=True)
+    return (None, (r.stderr or r.stdout).strip()) if r.returncode else (r.stdout.strip(), None)
+# 1) READ THE ANCHOR — EAS.getAttestation(uid) on Base (uid,schema,time,expiry,revoked,refUID,recipient,attester,revocable,data)
+raw, err = cast(["call", EAS, f"getAttestation(bytes32){STRUCT}", uid, "--rpc-url", rpc])
+if err: unverifiable(f"getAttestation() call failed (RPC unreachable / bad uid): {err[:160]}")
+f = [x.strip() for x in raw.lstrip("(").rstrip(")").split(",")]
+schema, anchor_time, attester = f[1], int(f[2].split()[0]), f[7]
+if anchor_time == 0 or f[0].lower() == "0x"+"0"*64:
+    print("✗ VERIFIED-BAD — no attestation found for uid on Base (time=0); uid does not resolve to a real anchor"); sys.exit(1)
+# 2) CROSS-CHECK — re-derive the anchor timestamp from the block that mined the Attested event (no single trusted read)
+xnote, txid = "", None
+try:
+    q = '{"query":"query { attestations(where: {id: {equals: \\"%s\\"}}, take: 1) { txid } }"}' % uid
+    resp = json.load(urllib.request.urlopen(urllib.request.Request(
+        "https://base.easscan.org/graphql", data=q.encode(), headers={"Content-Type":"application/json"}), timeout=15))
+    rows = (resp.get("data") or {}).get("attestations") or []
+    txid = rows[0].get("txid") if rows else None
+except Exception:
+    txid = None
+if txid:
+    blk, e2 = cast(["tx", txid, "blockNumber", "--rpc-url", rpc])
+    if blk:
+        bts, e3 = cast(["block", blk, "--field", "timestamp", "--rpc-url", rpc])
+        if bts:
+            bt = int(bts)
+            if bt != anchor_time:
+                print(f"✗ VERIFIED-BAD — getAttestation().time {anchor_time} ≠ tx block timestamp {bt}; anchor read not internally consistent"); sys.exit(1)
+            xnote = f"block {blk} timestamp re-derived independently = {bt} ✓"
+if not xnote:
+    xnote = "explorer/txid unavailable — anchor time from getAttestation() only (single-read; reachable indexer needed for the cross-check)"
+print(f"→ eas/precedence: EAS attestation {uid[:12]}… on Base — anchor read from getAttestation().time (NOT issuer's evaluatedAt)")
+print("─" * 56)
+print(f"schema:              {schema}")
+print(f"attester:            {attester}")
+print(f"anchor committed_at: {anchor_time}   (on-chain block timestamp, EAS.getAttestation().time)")
+print(f"cross-check:         {xnote}")
+# 3) STRICT PRECEDENCE — committed_at < outcome
+if outcome:
+    strict = anchor_time < int(outcome)
+    print(f"strict precedence:   {anchor_time} < {outcome}  →  {strict}")
+    if not strict:
+        print("✗ VERIFIED-BAD — anchor not strictly before the outcome"); sys.exit(1)
+    print("✓ VERIFIED-GOOD — anchor on-chain-confirmed AND strictly precedes the outcome")
+else:
+    print("✓ VERIFIED-GOOD — anchor on-chain-confirmed (getAttestation().time read from Base); pass an outcome_ts for the strict < check")
 PY
     ;;
 
