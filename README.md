@@ -107,6 +107,7 @@ the primitives. `recompute-step list` prints the catalog.
 | observation-completeness (scope-contestation) | `scope/binding` · `scope/value-fidelity` · `scope/value-fidelity-onchain` · `scope/contest-verify` · `scope/suite` |
 | bounded actions (ERC-8312) | `8312/cap-conservation` |
 | Layer-3 defense | `scope/bond-standing` |
+| settlement (ERC-8203 SettlementProofRef) | `8203/settlement-proof` |
 | composition — attestation envelope (ERC-8294 ↔ ERC-8275/WYRIWE) | `seam4/envelope-align` |
 
 ```bash
