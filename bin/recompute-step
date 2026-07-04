@@ -98,11 +98,14 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      cross-checked against the block timestamp of the tx that emitted it (no single
                      trusted read); strict anchor_time < outcome if given
 
-  BOUNDED ACTIONS — ERC-8312 aggregate cap (Atlas-Protocol-AI/zero-human-loop)
-    8312/cap-conservation  <rpc> <cursor_addr> <mandateId> <cap> [block]
-                     reserved[mid] + confirmed[mid] ≤ cap, proven from STORAGE (eth_getProof vs
-                     stateRoot, no trusted meter read) via recompute-storage-proof. The audit half
-                     of the cursor; sound because the Security clause binds confirm/cancel to the reserver.
+  BOUNDED ACTIONS — ERC-8312 aggregate cap (one invariant, two impl layouts)
+    8312/cap-conservation  <rpc> <meter_addr> <key> <cap | struct:S:A:C> [block]
+                     aggregate ≤ cap, proven from STORAGE (eth_getProof vs stateRoot, no trusted
+                     meter/view read) via recompute-storage-proof. Two layouts:
+                       <cap literal>  StatefulBound (zero-human-loop): reserved@slot0 + confirmed@slot1
+                       struct:S:A:C   struct mapping @ slot S (orbmis/headroom): base=keccak(key,S),
+                                      aggregate=base+A, cap=base+C (cap read from storage, not asserted)
+                     Sound because the Security clause binds confirm/cancel to the reserver.
                      NB (Base-Sepolia, verified 2026-07-03 w/ blockbird): KEYLESS getProof serves the
                      HEAD but not historical blocks (proof-window limit → UNVERIFIABLE, a keyless-archive
                      artifact, NOT a state fault). A keyed archive RPC clears it at head or pinned. The
@@ -547,29 +550,41 @@ PY
     ;;
 
   8312/cap-conservation)
-    # ERC-8312 aggregate cap: prove reserved[mandateId] + confirmed[mandateId] <= cap from STORAGE
-    # — eth_getProof Merkle-inclusion vs the block's stateRoot, NOT a trusted meter read — composing
-    # recompute-storage-proof. The audit half of the cursor (enforce = ordered write; audit =
-    # recompute). reserved = mapping @ slot 0, confirmed @ slot 1 (StatefulBound layout). Re-derives
-    # to a SOUND verdict because the ERC-8312 Security clause binds confirm/cancel to the reserver
-    # (finding 1) — without it a third party frees in-flight room and the trajectory is forgeable.
-    #   8312/cap-conservation <rpc> <cursor_addr> <mandateId> <cap> [block]
-    rpc="${2:?need rpc}"; sb="${3:?need cursor addr}"; mid="${4:?need mandateId}"; cap="${5:?need cap}"; blk="${6:-latest}"
-    python3 - "$BIN" "$rpc" "$sb" "$mid" "$cap" "$blk" <<'PY'
+    # ERC-8312 aggregate cap: prove  aggregate ≤ cap  from STORAGE — eth_getProof Merkle-inclusion
+    # vs the block's stateRoot, NOT a trusted meter/view read — composing recompute-storage-proof.
+    # ONE invariant, TWO implementation layouts (pass the layout as arg 4):
+    #   <cap literal>        StatefulBound (zero-human-loop): reserved @ mapping-slot 0 + confirmed
+    #                        @ slot 1, keyed by <key>; cap is the literal arg. aggregate = reserved+confirmed.
+    #   struct:<S>:<A>:<C>   struct-mapping (orbmis/headroom): base = keccak(key, S); aggregate =
+    #                        storage[base+A], cap = storage[base+C] (cap read from storage too, not asserted).
+    # Sound because the ERC-8312 Security clause binds confirm/cancel to the reserver (finding 1) —
+    # without it a third party frees in-flight room and the trajectory is forgeable.
+    #   8312/cap-conservation <rpc> <meter_addr> <key> <cap | struct:S:A:C> [block]
+    rpc="${2:?need rpc}"; meter="${3:?need meter/cursor addr}"; key="${4:?need key (mandateId/envelopeId)}"; capspec="${5:?need <cap> or struct:S:A:C}"; blk="${6:-latest}"
+    python3 - "$BIN" "$rpc" "$meter" "$key" "$capspec" "$blk" <<'PY'
 import sys, subprocess, re, time
-BIN, rpc, sb, mid, cap, blk = sys.argv[1:7]; cap = int(cap)
+BIN, rpc, meter, key, capspec, blk = sys.argv[1:7]
 def sh(*a): return subprocess.run(a, capture_output=True, text=True)
-def slot(base): return sh("cast", "index", "bytes32", mid, str(base)).stdout.strip()
-s0, s1 = slot(0), slot(1)
+def idx(base): return sh("cast", "index", "bytes32", key, str(base)).stdout.strip()
+def add_hex(h, n): return hex(int(h, 16) + n)
 def prove(block, slot_hex):
-    r = sh(BIN + "/recompute-storage-proof", rpc, str(block), sb, slot_hex)
+    r = sh(BIN + "/recompute-storage-proof", rpc, str(block), meter, slot_hex)
     if r.returncode == 2: return None
     m = re.search(r"slot value:\s*(0x[0-9a-fA-F]+)", r.stdout)
     return int(m.group(1), 16) if m else None
-# Prove BOTH slots at ONE block (same stateRoot). Keyless public RPCs often serve eth_getProof
-# only near the tip (narrow window) + load-balance across desynced backends, so a tip pin races
-# the head — re-resolve "latest" and retry both slots together. An explicit block is tried once.
-reserved = confirmed = pin = None
+struct = capspec.startswith("struct:")
+if struct:
+    _, S, A, C = capspec.split(":"); S, A, C = int(S), int(A), int(C)
+    base = idx(S)
+    slots = {"aggregate": add_hex(base, A), "cap": add_hex(base, C)}
+    label = f"struct mapping @ slot {S} (agg=+{A}, cap=+{C})"
+else:
+    cap_lit = int(capspec)
+    slots = {"reserved": idx(0), "confirmed": idx(1)}
+    label = "StatefulBound (reserved@0 + confirmed@1)"
+# Prove all slots at ONE block (same stateRoot). Keyless RPCs serve eth_getProof only near the tip
+# + load-balance across desynced backends, so re-resolve "latest" and retry together; explicit block once.
+vals = {}; pin = None
 for _ in range(6):
     if blk == "latest":
         r = sh("cast", "block-number", "--rpc-url", rpc)
@@ -577,22 +592,27 @@ for _ in range(6):
         pin = r.stdout.strip()
     else:
         pin = blk
-    reserved, confirmed = prove(pin, s0), prove(pin, s1)
-    if reserved is not None and confirmed is not None: break
-    if blk != "latest": break          # explicit block: window error is terminal
+    vals = {k: prove(pin, s) for k, s in slots.items()}
+    if all(v is not None for v in vals.values()): break
+    if blk != "latest": break
     time.sleep(0.6)
-print(f"→ 8312/cap-conservation: reserved+confirmed ≤ cap, proven vs stateRoot @ block {pin}")
+print(f"→ 8312/cap-conservation [{label}]: aggregate ≤ cap, proven vs stateRoot @ block {pin}")
 print("─"*58)
-if reserved is None or confirmed is None:
+if any(v is None for v in vals.values()):
     print("⊘ UNVERIFIABLE — could not prove a slot (an old block needs an archive RPC with a wide getProof window)"); sys.exit(2)
-committed = reserved + confirmed
-print(f"reserved  (slot 0): {reserved}")
-print(f"confirmed (slot 1): {confirmed}")
-print(f"committed:          {committed}    cap: {cap}")
-if committed <= cap:
-    print(f"✓ VERIFIED-GOOD — aggregate {committed} ≤ cap {cap}, proven from storage (no trusted meter read)")
+if struct:
+    aggregate, cap = vals["aggregate"], vals["cap"]
+    print(f"aggregate (base+{A}): {aggregate}")
+    print(f"cap       (base+{C}): {cap}   (read from storage, not asserted)")
+else:
+    aggregate, cap = vals["reserved"] + vals["confirmed"], cap_lit
+    print(f"reserved  (slot 0): {vals['reserved']}")
+    print(f"confirmed (slot 1): {vals['confirmed']}")
+    print(f"committed:          {aggregate}    cap: {cap}")
+if aggregate <= cap:
+    print(f"✓ VERIFIED-GOOD — aggregate {aggregate} ≤ cap {cap}, proven from storage (no trusted meter read)")
     sys.exit(0)
-print(f"✗ VERIFIED-BAD — aggregate {committed} > cap {cap}: the cap was exceeded in committed state"); sys.exit(1)
+print(f"✗ VERIFIED-BAD — aggregate {aggregate} > cap {cap}: the cap was exceeded in committed state"); sys.exit(1)
 PY
     ;;
 

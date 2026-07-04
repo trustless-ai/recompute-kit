@@ -234,6 +234,17 @@
       "expected": true
     },
     {
+      "id": "cap-conservation-holds-headroom",
+      "step": "8312/cap-conservation",
+      "spec": "ERC-8312 — bounded agent actions (cap invariant, struct/turnover-cursor layout)",
+      "desc": "Second independent implementation of the same invariant: orbmis/headroom CURSOR_HEADROOM (cumulativeTurnover ≤ maxCumulativeTurnover), distinct from StatefulBound's reserved+confirmed aggregate. Real captured state from EnvelopeRegistry 0x091f665B…07d1, envelope 0x48e972a2…bcb041 on Base Sepolia (84532), storage-proven vs stateRoot @ block 43697520 (0xbb4fbc63…) — cursorValues @ mapping-slot 2, agg=cumulativeTurnover(+2), cap=maxCumulativeTurnover(+1): recompute-step form `struct:2:2:1`.",
+      "inputs": {
+        "aggregate": 0,
+        "cap": 8000
+      },
+      "expected": true
+    },
+    {
       "id": "cap-conservation-breach",
       "step": "8312/cap-conservation",
       "spec": "ERC-8312 — bounded agent actions",
