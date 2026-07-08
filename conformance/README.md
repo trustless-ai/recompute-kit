@@ -41,6 +41,21 @@ The on-chain **8274 verify** (`WyriweProofVerifier.verify`) is a contract call �
 for every SDK — so it is not a pure-recompute vector; check it via
 `recompute-step 8274/verify`.
 
+## Cross-repo conformance
+
+A vector can also be cross-verified by **independent implementations living in other repos**.
+The kit records the pointer so the citation goes both ways (recompute-native, no drift).
+
+| vector | independent reproductions | record |
+|---|---|---|
+| `receiptos/receipt-hash` — receipt chain-hash `sha256(decision ‖ prev)` | recompute-kit · ReceiptOS reference · a **fourth** implementation rebuilt from the pinned spec alone (`@babyblueviper1`, never read the other two) — byte-exact on both real evidence capsules and all negative fixtures | crystal-receipt [`docs/CONFORMANCE_INDEX.md`](https://github.com/pipavlo82/crystal-receipt/blob/main/docs/CONFORMANCE_INDEX.md) → row `pre-post-gate-composed` |
+
+Related seam artifact — the **eligibility ↔ verdict** correspondence (the kit's tri-state exits
+`0/1/2` ↔ the gate's `admit/reject/undetermined` ↔ ReceiptOS binary admissibility) is pinned in a
+three-way co-signed note: [gist `TMerlini/0f5f426e…`](https://gist.github.com/TMerlini/0f5f426e400197a670874f17c4451c99),
+which pairs with crystal-receipt `fixtures/invalid/EXPECTED.md@29f36fb`. Exit numbers are
+implementation-specific; the **verdict vocabulary** is what's normative.
+
 ## Provenance
 
 Each `expected` was computed authoritatively from its primary source (the ERC text / live
