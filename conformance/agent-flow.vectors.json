@@ -14,6 +14,16 @@
       "expected": "0xa4901e8856b7720cabdbef198f982d9563fbb3be72b49f9bf55666730cd09ee6"
     },
     {
+      "id": "receiptos-c14n-v0",
+      "step": "receiptos/canonicalize",
+      "spec": "RAILS/ReceiptOS §2.8 — profile receiptos-c14n-v0 (JCS/RFC-8785 by reference + top-level anchor-strip as sole delta)",
+      "desc": "receipt_root = 0x·sha256(C(strip_anchor(E))). The π forces LITERAL UTF-8 (non-ASCII NOT \\u-escaped): canonical form is {\"a\":{\"x\":[true,null,\"0x2a\"],\"y\":\"π\"},\"b\":1} = 44 chars / 45 UTF-8 bytes. An impl that \\u-escapes, mis-sorts keys, or strips more/less than the top-level anchor fails this vector. Verified byte-exact vs ReceiptOS v0.6 §2.8 (2026-07-11).",
+      "inputs": {
+        "evidence": {"b":1,"a":{"y":"π","x":[true,null,"0x2a"]},"anchor":{"txHash":"0xdead"}}
+      },
+      "expected": "0xe61c9a9eed9e1d7eb5107acd9bb71d53cee9fcdae806444f4dc93b2f9694c2ae"
+    },
+    {
       "id": "wyriwe-raw",
       "step": "wyriwe/raw",
       "spec": "ERC-8299 §45",

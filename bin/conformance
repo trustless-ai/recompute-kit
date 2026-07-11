@@ -11,7 +11,7 @@ TS reference included, against these — no trusted implementation in the loop.
 (The on-chain 8274 verify is a contract call, identical for every SDK, so it is not a
 pure-recompute vector — checked separately via recompute-step 8274/verify.)
 """
-import sys, json, subprocess
+import sys, json, subprocess, hashlib
 from pathlib import Path
 
 VEC = Path(__file__).resolve().parent.parent / "conformance" / "agent-flow.vectors.json"
@@ -30,6 +30,14 @@ def recompute(v):
     if s == "name/keccak-binding":
         # keccak256(utf8(label)) — a name->handle binding (wyriwe preimage leg), not the agentId.
         return cast("keccak", cast("from-utf8", i["label"]))
+    if s == "receiptos/canonicalize":
+        # receiptos-c14n-v0 (RAILS/ReceiptOS §2.8): receipt_root = 0x + sha256( C(A(E)) ).
+        # A(E) strips the top-level anchor; C = recursive sorted-key / compact / literal-UTF-8
+        # (JCS by reference, anchor-strip sole delta). Pure recompute, no cast.
+        E = i["evidence"]
+        c = json.dumps({k: v for k, v in E.items() if k != "anchor"},
+                       ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        return "0x" + hashlib.sha256(c.encode("utf-8")).hexdigest()
     if s == "wyriwe/raw":
         return cast("keccak", i["raw_input_hex"])
     if s == "wyriwe/pipeline":

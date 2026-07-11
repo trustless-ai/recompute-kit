@@ -64,6 +64,10 @@ recompute-step recipes (start: the two steps we built end-to-end)
     receiptos/receipt-hash  <receipt.json>
                      receipt_sha256 = sha256(utf8(decision_hex "|" prev_hex))  (receiptos-mvp
                      hash-chain; "|" always present; GENESIS prev=null → prev_hex="" empty string)
+    receiptos/canonicalize  <evidence.json|-> [expected_root]
+                     receipt_root = 0x·sha256(C(strip_anchor(E)))  — profile receiptos-c14n-v0
+                     (RAILS/ReceiptOS §2.8): JCS canonicalization + top-level anchor-strip as sole
+                     delta. Byte-exact on the §2.8 π vector (literal-UTF-8 / no-\u exercise).
 
   REPUTATION — ERC-8275 (Step 7)
     8275/reputation  [ledger_url]
@@ -642,6 +646,41 @@ PY
     command -v node >/dev/null || { echo "⊘ UNVERIFIABLE — node not installed (recipe needs node + ethers)"; exit 2; }
     node -e "require.resolve('ethers')" 2>/dev/null || { echo "⊘ UNVERIFIABLE — ethers not resolvable (run: npm i ethers)"; exit 2; }
     exec node "$BIN/recompute-envelope.mjs" ;;
+
+  receiptos/canonicalize)
+    # receiptos-c14n-v0 (RAILS/ReceiptOS §2.8): receipt_root = 0x + sha256( C(A(E)) )
+    #   A(E) = strip the top-level "anchor" field (the root MUST NOT depend on its own anchored value)
+    #   C(·) = canonicalize: recursively sort keys, compact separators, LITERAL UTF-8 (non-ASCII NOT
+    #          \u-escaped), no whitespace — JCS (RFC 8785) by reference; the anchor-strip is the sole
+    #          normative delta. Byte-exact on the §2.8 test vector (the π case exercises literal-UTF-8).
+    #   NOTE: code-point key sort == UTF-16 code-unit for the ASCII keys the normative vectors use; a
+    #   full-JCS port adds UTF-16 code-unit sort + ECMAScript number formatting for non-ASCII/float inputs.
+    f="${2:?need an evidence .json file (or -)}"
+    exp="${3:-}"                                   # optional expected receipt_root (0x… lowercase)
+    python3 - "$f" "$exp" <<'PY'
+import sys, json, hashlib
+E = json.load(sys.stdin if sys.argv[1] == "-" else open(sys.argv[1], encoding="utf-8"))
+exp = sys.argv[2] if len(sys.argv) > 2 else ""
+canon = lambda o: json.dumps(o, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+body = {k: v for k, v in E.items() if k != "anchor"}          # A(E): strip top-level anchor
+c = canon(body)
+root = "0x" + hashlib.sha256(c.encode("utf-8")).hexdigest()
+stored = (E.get("anchor") or {}).get("receipt_root")
+print("→ receiptos/canonicalize: receipt_root = 0x·sha256(C(strip_anchor(E)))  [receiptos-c14n-v0]")
+print("─" * 45)
+print(f"canonical  ({len(c.encode('utf-8'))} bytes):", c)
+print("receipt_root (recomputed):", root)
+if stored: print("receipt_root (stored)    :", stored)
+if exp:    print("receipt_root (expected)  :", exp)
+target = exp or stored
+if not target:
+    print("… no expected/stored receipt_root to check against — recompute only")
+    sys.exit(2)                                   # unverifiable: nothing to compare
+ok = root == target
+print("✓ RECOMPUTED — receipt_root matches" if ok else "✗ MISMATCH — recomputed receipt_root ≠ target")
+sys.exit(0 if ok else 1)
+PY
+    ;;
 
   *)
     echo "unknown recipe: $recipe  (try: recompute-step list)" >&2; exit 64 ;;

@@ -36,6 +36,7 @@ Pure recomputes — the bytes every SDK must reproduce identically:
 | `scope-binding` | scope/binding | `keccak256(abi.encode(root, N))` (Guarantee 4) |
 | `8301-task-hash` | 8301/task-hash | `keccak256(abi.encode(…7 fields…))` |
 | `8275-reputation` | 8275/reputation | `winRate·min(closed,cap)/cap` |
+| `receiptos-c14n-v0` | receiptos/canonicalize | `0x·sha256(C(strip_anchor(E)))` — profile receiptos-c14n-v0 (JCS + anchor-strip), RAILS/ReceiptOS §2.8; the π case exercises literal-UTF-8 |
 
 The on-chain **8274 verify** (`WyriweProofVerifier.verify`) is a contract call — identical
 for every SDK — so it is not a pure-recompute vector; check it via
