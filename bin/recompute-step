@@ -64,6 +64,10 @@ recompute-step recipes (start: the two steps we built end-to-end)
     receiptos/receipt-hash  <receipt.json>
                      receipt_sha256 = sha256(utf8(decision_hex "|" prev_hex))  (receiptos-mvp
                      hash-chain; "|" always present; GENESIS prev=null → prev_hex="" empty string)
+    receiptos/ruleset-version  <recipe_definition.json> [expected_rv]
+                     ruleset_version = 0x·sha256(C(recipe_definition)) — hashes the DECLARATION
+                     block, not impl; implementation-independent version, semver read back from
+                     the hash (Pavlo/ReceiptOS). Reproduces crystal-receipt@f0b9d47 candidates.
     receiptos/canonicalize  <evidence.json|-> [expected_root]
                      receipt_root = 0x·sha256(C(strip_anchor(E)))  — profile receiptos-c14n-v0
                      (RAILS/ReceiptOS §2.8): JCS canonicalization + top-level anchor-strip as sole
@@ -678,6 +682,38 @@ if not target:
     sys.exit(2)                                   # unverifiable: nothing to compare
 ok = root == target
 print("✓ RECOMPUTED — receipt_root matches" if ok else "✗ MISMATCH — recomputed receipt_root ≠ target")
+sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  receiptos/ruleset-version)
+    # ruleset_version carrier (Pavlo/ReceiptOS): ruleset_version = 0x·sha256( C(recipe_definition) ),
+    # where recipe_definition is a DECLARATION block, NOT an impl file — hashing the declaration
+    # keeps the version implementation-independent (reference, this kit, the lens TS port, and a
+    # from-spec rebuild all hash the SAME definition and agree). The semver lives inside the
+    # definition, so it's covered by the hash and read back by resolving it — never asserted
+    # alongside it. Reuses the §2.8 canonicalizer C(·). Reproduces the candidate vectors at
+    # pipavlo82/crystal-receipt@f0b9d47 (conformance/ruleset-version.candidate-vectors.md).
+    f="${2:?need a recipe_definition .json file (or -)}"
+    exp="${3:-}"                                   # optional expected ruleset_version (0x… lowercase)
+    python3 - "$f" "$exp" <<'PY'
+import sys, json, hashlib
+D = json.load(sys.stdin if sys.argv[1] == "-" else open(sys.argv[1], encoding="utf-8"))
+exp = sys.argv[2] if len(sys.argv) > 2 else ""
+canon = lambda o: json.dumps(o, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+c = canon(D)
+rv = "0x" + hashlib.sha256(c.encode("utf-8")).hexdigest()
+print("→ receiptos/ruleset-version: ruleset_version = 0x·sha256(C(recipe_definition))  [declaration-hash]")
+print("─" * 45)
+print(f"C(definition)  ({len(c.encode('utf-8'))} bytes):", c)
+print("declares:", D.get("profile", "?"), "/", D.get("version", "?"), " (read back from the hash)")
+print("ruleset_version (recomputed):", rv)
+if exp: print("ruleset_version (expected)  :", exp)
+if not exp:
+    print("… no expected ruleset_version to check against — recompute only")
+    sys.exit(2)                                   # unverifiable: nothing to compare
+ok = rv == exp
+print("✓ RECOMPUTED — ruleset_version matches" if ok else "✗ MISMATCH — recomputed ≠ expected")
 sys.exit(0 if ok else 1)
 PY
     ;;
