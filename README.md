@@ -105,7 +105,7 @@ the primitives. `recompute-step list` prints the catalog.
 | verify & precedence (ERC-8274 / ERC-8263) | `8274/verify` · `8263/precedence` |
 | eligibility & reputation (ReceiptOS / ERC-8275) | `receiptos/receipt-hash` · `8275/reputation` |
 | observation-completeness (scope-contestation) | `scope/binding` · `scope/value-fidelity` · `scope/value-fidelity-onchain` · `scope/contest-verify` · `scope/suite` |
-| bounded actions (ERC-8312) | `8312/cap-conservation` |
+| bounded actions (ERC-8312) | `8312/cap-conservation` · `8312/budget-substrate` |
 | Layer-3 defense | `scope/bond-standing` |
 | settlement (ERC-8203 SettlementProofRef) | `8203/settlement-proof` |
 | composition — attestation envelope (ERC-8294 ↔ ERC-8275/WYRIWE) | `seam4/envelope-align` |

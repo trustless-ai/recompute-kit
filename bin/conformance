@@ -100,6 +100,14 @@ def recompute(v):
         # stateRoot by recompute-step 8312/cap-conservation (literal cap | struct:S:A:C).
         agg = i["aggregate"] if "aggregate" in i else i["reserved"] + i["confirmed"]
         return agg <= i["cap"]
+    if s == "8312/budget-substrate":
+        # ERC-8312 IBudgetSubstrate — the spec-formalized name for the same cap invariant.
+        # bound(id) → (cap, asset); spent(id); remaining(id) → cap - spent. Two checks:
+        #   (a) the substrate's reported `remaining` MUST equal cap - spent (no misreport), and
+        #   (b) spent <= cap must hold while Active. `spent` here replaces the pre-standard
+        # reserved+confirmed (StatefulBound) / aggregate (CursorHeadroom) — same math, spec fields.
+        remaining_ok = ("remaining" not in i) or (i["remaining"] == i["cap"] - i["spent"])
+        return remaining_ok and i["spent"] <= i["cap"]
     # Composed / node recipes (seam4/envelope-align, receiptos×wyriwe, …) aren't reproducible in
     # this static evaluator — they're verified live via recompute-step. Skip with a note, never crash.
     return "SKIP:live"

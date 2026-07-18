@@ -1,7 +1,7 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.1",
-  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing.",
+  "version": "0.2",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant.",
   "vectors": [
     {
       "id": "name-keccak-binding",
@@ -19,7 +19,20 @@
       "spec": "RAILS/ReceiptOS §2.8 — profile receiptos-c14n-v0 (JCS/RFC-8785 by reference + top-level anchor-strip as sole delta)",
       "desc": "receipt_root = 0x·sha256(C(strip_anchor(E))). The π forces LITERAL UTF-8 (non-ASCII NOT \\u-escaped): canonical form is {\"a\":{\"x\":[true,null,\"0x2a\"],\"y\":\"π\"},\"b\":1} = 44 chars / 45 UTF-8 bytes. An impl that \\u-escapes, mis-sorts keys, or strips more/less than the top-level anchor fails this vector. Verified byte-exact vs ReceiptOS v0.6 §2.8 (2026-07-11).",
       "inputs": {
-        "evidence": {"b":1,"a":{"y":"π","x":[true,null,"0x2a"]},"anchor":{"txHash":"0xdead"}}
+        "evidence": {
+          "b": 1,
+          "a": {
+            "y": "π",
+            "x": [
+              true,
+              null,
+              "0x2a"
+            ]
+          },
+          "anchor": {
+            "txHash": "0xdead"
+          }
+        }
       },
       "expected": "0xe61c9a9eed9e1d7eb5107acd9bb71d53cee9fcdae806444f4dc93b2f9694c2ae"
     },
@@ -365,6 +378,42 @@
         "resultText": "No intermediaries required, cryptographic verification only."
       },
       "expected": "0xdc568bd1cbacdd1ead8231e9d3d6f4e475f5168f3cc9f72b31935d46cfdd48f7"
+    },
+    {
+      "id": "budget-headroom",
+      "step": "8312/budget-substrate",
+      "spec": "ERC-8312 — IBudgetSubstrate (bound(id)→(cap,asset), spent(id), remaining(id)→cap-spent)",
+      "desc": "IBudgetSubstrate: remaining MUST equal cap - spent while Active. cap=150, spent=60 → remaining=90; headroom holds. Formalizes the pre-standard StatefulBound (reserved+confirmed) / CursorHeadroom (aggregate) invariant into the spec's cap - spent = remaining semantics — same math, spec field names.",
+      "inputs": {
+        "cap": 150,
+        "spent": 60,
+        "remaining": 90
+      },
+      "expected": true
+    },
+    {
+      "id": "budget-headroom-breach",
+      "step": "8312/budget-substrate",
+      "spec": "ERC-8312 — IBudgetSubstrate (spent ≤ cap invariant)",
+      "desc": "synthetic over-budget control: spent exceeds cap → the audit must reject. Mirrors cap-conservation-breach in the spent/cap field names.",
+      "inputs": {
+        "cap": 150,
+        "spent": 200,
+        "remaining": 0
+      },
+      "expected": false
+    },
+    {
+      "id": "budget-substrate-misreport",
+      "step": "8312/budget-substrate",
+      "spec": "ERC-8312 — IBudgetSubstrate (remaining(id) is not trusted — recomputed)",
+      "desc": "control for a lying substrate: it REPORTS remaining=100 but cap - spent = 90 → recompute rejects. remaining(id) is verified against cap - spent, never taken on trust.",
+      "inputs": {
+        "cap": 150,
+        "spent": 60,
+        "remaining": 100
+      },
+      "expected": false
     }
   ]
 }
