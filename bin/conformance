@@ -12,6 +12,7 @@ TS reference included, against these — no trusted implementation in the loop.
 pure-recompute vector — checked separately via recompute-step 8274/verify.)
 """
 import sys, json, subprocess, hashlib
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 VEC = Path(__file__).resolve().parent.parent / "conformance" / "agent-flow.vectors.json"
@@ -63,7 +64,13 @@ def recompute(v):
         # "incomplete window" doctrine (a gap in evidence must not read as a clean 0.0 record).
         if gw + gl == 0:
             return None
-        return round(gw / (gw + gl), 4)
+        # Decimal + ROUND_HALF_UP (half-away-from-zero), not Python's built-in round() --
+        # round() is banker's rounding (half-to-even) on a float, which diverges from Rust's
+        # f64::round() (half-away-from-zero) on any gw/gl ratio landing exactly on a 4th-decimal
+        # tie (e.g. gw=1,gl=31 -> 1/32=0.03125 exactly: round()=0.0312, half-away-from-zero=0.0313).
+        # This is the golden every SDK reproduces byte-identically, so the convention has to be
+        # fixed and language-independent, computed from exact integers, not a bare float round().
+        return float((Decimal(gw) / Decimal(gw + gl)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
     if s == "8281/observation-digest":
         # ERC-8281 §1 (OCP): digest = keccak256(observation) — the opaque commitment record()s
         # on-chain. Canonicalized so all SDKs gate on ONE vector, not each impl's inline golden.

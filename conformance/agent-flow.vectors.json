@@ -1,7 +1,7 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.3",
-  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd).",
+  "version": "0.4",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added).",
   "vectors": [
     {
       "id": "name-keccak-binding",
@@ -435,6 +435,17 @@
         "commit_gated_losses": 0
       },
       "expected": null
+    },
+    {
+      "id": "8275-reputation-rounding-tie",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — cross-SDK rounding-convention edge",
+      "desc": "gw=1, gl=31 -> 1/32 = 0.03125 EXACTLY, a genuine tie at the 4th decimal. Pins the rounding convention every SDK must share: half-away-from-zero (matches Rust f64::round()), computed from exact integers -- NOT Python's round() (banker's/half-to-even, which gives 0.0312 here) and not naive float division (subject to binary representation error on top of the rounding-mode question). A naive float+round() implementation fails this vector even though it passes every other reputation vector, which is exactly why it needs its own pinned case rather than living in a code comment.",
+      "inputs": {
+        "commit_gated_wins": 1,
+        "commit_gated_losses": 31
+      },
+      "expected": 0.0313
     }
   ]
 }
