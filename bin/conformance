@@ -99,6 +99,13 @@ def recompute(v):
             if bestC * 10000 < total * q: return None
             return best
         return plur(a) != plur(a + [x])
+    if s == "consult/job-binding":
+        # A consult jobId commits to its agent: jobId = keccak256(utf8(
+        # consumer:registry:agentId:salt)), lowercase addresses. Given the published salt a
+        # verifier re-derives jobId and matches it to an escrow Opened event — reputation
+        # needs no trusted jobId->agent mapping.
+        pre = f"{i['consumer'].lower()}:{i['registry'].lower()}:{i['agentId']}:{i['salt']}"
+        return cast("keccak", cast("from-utf8", pre))
     if s == "mcp/id":
         # MCPEntitlementRegistry capability id = keccak256(utf8(slug)) — binds an
         # agent-mcp-catalog slug to its on-chain premium-MCP id. Same shape as

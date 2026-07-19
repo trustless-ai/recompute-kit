@@ -1,6 +1,6 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.6",
+  "version": "0.7",
   "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added). | v0.4: declared rounding_convention (canonical structured rule + content-hash, gated in the runner) + a fuzz family of 5 non-binary-exact 4dp ties (denom 800) that catch naive round()/f64::round which the binary-exact 1/32 tie passes — three green suites said nothing about a naive impl until this family. Basis-points is the endpoint (removes the rule by construction). | v0.5: +ens/contenthash (ENSIP-7 IPFS contenthash encoding = 0xe301 ‖ CID bytes) — the value the first ENS-write MCP sets via setContenthash; gates the ENS write leg's encoding, recomputable.",
   "vectors": [
     {
@@ -543,6 +543,19 @@
         "now": "1750000000"
       },
       "expected": false
+    },
+    {
+      "id": "consult-job-binding",
+      "step": "consult/job-binding",
+      "spec": "ConsultEscrow — recomputable job→agent binding",
+      "desc": "A consult jobId COMMITS to the agent it is for: jobId = keccak256(utf8(\"consumer:registry:agentId:salt\")), lowercase addresses. Given the published salt, anyone re-derives the jobId and confirms it matches an escrow Opened event — so per-agent reputation needs no trusted jobId→agent mapping. Closes the binding seam.",
+      "inputs": {
+        "consumer": "0x1111111111111111111111111111111111111111",
+        "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+        "agentId": "2",
+        "salt": "0xdeadbeef"
+      },
+      "expected": "0xb5cff6994b4333d23cd7cb9541c10e08028596a8fd3bf450de2a2ca21324ac6a"
     }
   ],
   "rounding_convention": {
