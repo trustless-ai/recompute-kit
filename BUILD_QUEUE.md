@@ -18,3 +18,5 @@ Deferred design notes — not urgent, but load-bearing when their moment comes. 
 4. **Fails-closed.** Unknown or missing convention pointer → **unverifiable**, never a guess. Same instinct as unknown-opset (attester independence) and the `/verify` amber state.
 
 **One-liner (Pavlo):** *pinned at issuance, resolved at verification.*
+
+**Status (2026-07-19):** direction ratified by all SDK authors (Jimmy, Fede, Pavlo, Tiago) — basis-points is the agreed target, not an open proposal. Jimmy is refining the Rust SDK design plans around it. **Cutover must be coordinated**: every SDK (Rust + TS reference) switches together, each pinning the new convention hash — a half-migrated family reintroduces exactly the cross-SDK mismatch this guards against. Still not urgent; no cutover scheduled.
