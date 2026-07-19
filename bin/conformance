@@ -122,6 +122,28 @@ def recompute(v):
             if precedes and live:
                 return True
         return False
+    if s == "verdict/entitlement-drift":
+        # Composition (Fede): bind the entitlement predicate into the /review verdict at issue
+        # time. entitled@verdict = entitled at the VERDICT's position/time; entitled@execution =
+        # entitled at the ACTION's position/time (the Q1 predicate). The DRIFT — a verdict that
+        # was correct when signed but no longer describes the world the action executes into —
+        # is `entitled@verdict AND NOT entitled@execution`. This makes the verdict→execution
+        # window an auditable object instead of silent staleness. With monotonic perpetual
+        # grants drift is impossible (once covered, stays); it can only bite a time-boxed
+        # entitlement that lapses in the window, or a future revocation.
+        PERP = 2**64 - 1
+        def entitled_at(bn, li, t):
+            pos = (int(bn), int(li))
+            for g in i["grants"]:  # each {blockNumber, logIndex, expiry}
+                precedes = (int(g["blockNumber"]), int(g["logIndex"])) < pos
+                live = (int(g["expiry"]) == PERP) or (int(g["expiry"]) > int(t))
+                if precedes and live:
+                    return True
+            return False
+        v, a = i["verdict"], i["action"]
+        entitled_verdict = entitled_at(v["blockNumber"], v["logIndex"], v["time"])
+        entitled_exec = entitled_at(a["blockNumber"], a["logIndex"], a["time"])
+        return entitled_verdict and not entitled_exec
     if s == "mcp/id":
         # MCPEntitlementRegistry capability id = keccak256(utf8(normalize(slug))). The slug is
         # normalized first (NFC -> lowercase -> trim, charset [a-z0-9-]) so the catalog and the
