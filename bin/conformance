@@ -122,28 +122,45 @@ def recompute(v):
             if precedes and live:
                 return True
         return False
+    if s == "ace/entitlement-binding":
+        # entitlement_binding.v0 (Pavlo) — the signed commitment to the entitlement state a
+        # /review verdict was issued against; its binding_hash feeds decision_ref/artifact_hash,
+        # so ONE recompute proves both "authorized under entitlements valid at that moment" and
+        # "independently judged sound before it ran". binding_hash = "sha256:" + sha256(JCS(binding)).
+        # NORMATIVE: expiry is a decimal STRING (2^64-1 > IEEE-754 safe int; a JSON number silently
+        # rounds and hashes wrong — same class as the rounding convention); registry + 32-byte ids
+        # lowercase hex (a checksummed address hashes differently); claims sorted ascending by
+        # (agent_key, mcp_id) BEFORE canonicalization so a multi-MCP action can't hash two ways.
+        b = {
+            "profile": i["profile"],
+            "registry": i["registry"].lower(),
+            "chain_id": i["chain_id"],
+            "as_of": {"block": i["as_of"]["block"], "log_index": i["as_of"]["log_index"]},
+            "claims": sorted(
+                [{"agent_key": c["agent_key"].lower(), "mcp_id": c["mcp_id"].lower(), "expiry": str(c["expiry"])} for c in i["claims"]],
+                key=lambda c: (c["agent_key"], c["mcp_id"]),
+            ),
+        }
+        canon = json.dumps(b, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
     if s == "verdict/entitlement-drift":
-        # Composition (Fede): bind the entitlement predicate into the /review verdict at issue
-        # time. entitled@verdict = entitled at the VERDICT's position/time; entitled@execution =
-        # entitled at the ACTION's position/time (the Q1 predicate). The DRIFT — a verdict that
-        # was correct when signed but no longer describes the world the action executes into —
-        # is `entitled@verdict AND NOT entitled@execution`. This makes the verdict→execution
-        # window an auditable object instead of silent staleness. With monotonic perpetual
-        # grants drift is impossible (once covered, stays); it can only bite a time-boxed
-        # entitlement that lapses in the window, or a future revocation.
-        PERP = 2**64 - 1
-        def entitled_at(bn, li, t):
-            pos = (int(bn), int(li))
-            for g in i["grants"]:  # each {blockNumber, logIndex, expiry}
-                precedes = (int(g["blockNumber"]), int(g["logIndex"])) < pos
-                live = (int(g["expiry"]) == PERP) or (int(g["expiry"]) > int(t))
-                if precedes and live:
-                    return True
-            return False
-        v, a = i["verdict"], i["action"]
-        entitled_verdict = entitled_at(v["blockNumber"], v["logIndex"], v["time"])
-        entitled_exec = entitled_at(a["blockNumber"], a["logIndex"], a["time"])
-        return entitled_verdict and not entitled_exec
+        # ACE × /review drift, FOUR gated outcomes (Pavlo's split — my earlier boolean was wrong:
+        # it filed unentitled-at-verdict next to the healthy perpetual case, the reputation-axis
+        # rot of two reasons for one green row). entitled@verdict and entitled@execution each ∈
+        # {true, false, unknown}:
+        #   entitled × entitled     → clean
+        #   entitled × not-entitled → drift              (a verdict correct when signed, stale by exec)
+        #   not-entitled × *        → verdict_unbacked   (the verdict shouldn't have existed — auth failure)
+        #   unknown on either       → unverifiable       (could-not-check never collapses to no-drift)
+        def tri(x):
+            if x is True: return True
+            if x is False: return False
+            return "unknown"  # JSON null or the literal "unknown"
+        ev, ex = tri(i["entitled_at_verdict"]), tri(i["entitled_at_execution"])
+        if ev == "unknown": return "unverifiable"
+        if ev is False: return "verdict_unbacked"
+        if ex == "unknown": return "unverifiable"
+        return "clean" if ex is True else "drift"
     if s == "mcp/id":
         # MCPEntitlementRegistry capability id = keccak256(utf8(normalize(slug))). The slug is
         # normalized first (NFC -> lowercase -> trim, charset [a-z0-9-]) so the catalog and the
@@ -227,6 +244,12 @@ def main():
         print(f"{'✓' if ok else '✗'} {v['id']:<17} {v['step']:<17} = {str(exp)[:30]}")
         if not ok:
             print(f"    expected {exp}\n    got      {got}")
+            fails += 1
+        # Negative gate (Pavlo): the value a KNOWN-WRONG impl emits — e.g. hashing claims in
+        # insertion order instead of sorted. Reproducing it is a failure, not a pass.
+        mne = v.get("must_not_equal")
+        if mne is not None and str(got).lower() == str(mne).lower():
+            print(f"    ✗ must_not_equal violated — reproduced the non-conformant value {mne}")
             fails += 1
     print("─" * 56)
     total = len(d["vectors"]); reproduced = total - skipped - fails

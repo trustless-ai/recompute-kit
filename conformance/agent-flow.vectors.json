@@ -1,6 +1,6 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.10",
+  "version": "0.11",
   "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added). | v0.4: declared rounding_convention (canonical structured rule + content-hash, gated in the runner) + a fuzz family of 5 non-binary-exact 4dp ties (denom 800) that catch naive round()/f64::round which the binary-exact 1/32 tie passes — three green suites said nothing about a naive impl until this family. Basis-points is the endpoint (removes the rule by construction). | v0.5: +ens/contenthash (ENSIP-7 IPFS contenthash encoding = 0xe301 ‖ CID bytes) — the value the first ENS-write MCP sets via setContenthash; gates the ENS write leg's encoding, recomputable.",
   "vectors": [
     {
@@ -652,82 +652,138 @@
       "expected": false
     },
     {
-      "id": "verdict-drift-caught",
-      "step": "verdict/entitlement-drift",
-      "spec": "ACE × /review — verdict→execution entitlement drift",
-      "desc": "The money case: a time-boxed entitlement valid when the verdict was signed (expiry 1750000500 > verdict time 1750000000) but LAPSED by the time the action executes (expiry <= action time 1750001000). entitled@verdict ∧ ¬entitled@execution = drift TRUE — the signed verdict silently stopped describing the world the action ran into, and the recompute names it.",
+      "id": "ace-binding-perpetual",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 - JCS binding_hash (Pavlo)",
+      "desc": "binding_hash = sha256(JCS(entitlement_binding)); expiry decimal string, registry+ids lowercase, claims sorted by (agent_key,mcp_id). Independently reproduces the golden.",
       "inputs": {
-        "grants": [
-          {
-            "blockNumber": 100,
-            "logIndex": 1,
-            "expiry": "1750000500"
-          }
-        ],
-        "verdict": {
-          "blockNumber": 200,
-          "logIndex": 0,
-          "time": "1750000000"
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
         },
-        "action": {
-          "blockNumber": 300,
-          "logIndex": 0,
-          "time": "1750001000"
-        }
-      },
-      "expected": true
-    },
-    {
-      "id": "verdict-drift-none-perpetual",
-      "step": "verdict/entitlement-drift",
-      "spec": "ACE × /review — verdict→execution entitlement drift",
-      "desc": "Perpetual grant precedes both verdict and action → entitled at both → no drift. Monotonic grants cannot drift.",
-      "inputs": {
-        "grants": [
+        "claims": [
           {
-            "blockNumber": 100,
-            "logIndex": 1,
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
             "expiry": "18446744073709551615"
           }
-        ],
-        "verdict": {
-          "blockNumber": 200,
-          "logIndex": 0,
-          "time": "1750000000"
-        },
-        "action": {
-          "blockNumber": 300,
-          "logIndex": 0,
-          "time": "1750001000"
-        }
+        ]
       },
-      "expected": false
+      "expected": "sha256:9427566415d952d72a85a01338ffffb04af10f6732e96e326d9ad3dd9d017ff4"
     },
     {
-      "id": "verdict-drift-none-unentitled",
-      "step": "verdict/entitlement-drift",
-      "spec": "ACE × /review — verdict→execution entitlement drift",
-      "desc": "Grant lands AFTER the verdict → not entitled@verdict, so there is nothing to drift from (drift requires a once-valid verdict). entitled@verdict is false → drift FALSE. A separate audit still flags the action itself as a violation at execution.",
+      "id": "ace-binding-multi-sorted",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 - JCS binding_hash (Pavlo)",
+      "desc": "binding_hash = sha256(JCS(entitlement_binding)); expiry decimal string, registry+ids lowercase, claims sorted by (agent_key,mcp_id). Independently reproduces the golden.",
       "inputs": {
-        "grants": [
-          {
-            "blockNumber": 400,
-            "logIndex": 1,
-            "expiry": "18446744073709551615"
-          }
-        ],
-        "verdict": {
-          "blockNumber": 200,
-          "logIndex": 0,
-          "time": "1750000000"
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
         },
-        "action": {
-          "blockNumber": 300,
-          "logIndex": 0,
-          "time": "1750001000"
-        }
+        "claims": [
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x0f2b8a4c1d6e3f5079ab2c4d6e8f0a1b3c5d7e9f0a1b2c3d4e5f60718293a4b5c",
+            "expiry": "1763000000"
+          },
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "18446744073709551615"
+          },
+          {
+            "agent_key": "0x9a4d1f7b3e0c6a2f8d5b1e7c4a0f6d3b9e5c2a8f4d1b7e3c0a6f2d8b5e1c7a4f",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "1759000000"
+          }
+        ]
       },
-      "expected": false
+      "expected": "sha256:3f882539064802ec6377f7c6174e9744223932656c6d00ab510d776fddebb9f6"
+    },
+    {
+      "id": "ace-binding-multi-permuted",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 - JCS binding_hash (Pavlo)",
+      "desc": "binding_hash = sha256(JCS(entitlement_binding)); expiry decimal string, registry+ids lowercase, claims sorted by (agent_key,mcp_id). Independently reproduces the golden. Permuted input MUST hash to the sorted value AND must never equal the insertion-order hash.",
+      "inputs": {
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
+        },
+        "claims": [
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x0f2b8a4c1d6e3f5079ab2c4d6e8f0a1b3c5d7e9f0a1b2c3d4e5f60718293a4b5c",
+            "expiry": "1763000000"
+          },
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "18446744073709551615"
+          },
+          {
+            "agent_key": "0x9a4d1f7b3e0c6a2f8d5b1e7c4a0f6d3b9e5c2a8f4d1b7e3c0a6f2d8b5e1c7a4f",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "1759000000"
+          }
+        ]
+      },
+      "expected": "sha256:3f882539064802ec6377f7c6174e9744223932656c6d00ab510d776fddebb9f6",
+      "must_not_equal": "sha256:418556a31a7aaabed5186e971224b7992b796f7d8f1ea4dfb1f2d681dda65318"
+    },
+    {
+      "id": "ace-drift-clean",
+      "step": "verdict/entitlement-drift",
+      "spec": "ACE x /review - verdict/execution drift, 4 gated outcomes (Pavlo)",
+      "desc": " unentitled-at-verdict is verdict_unbacked (never clean); could-not-check is unverifiable (never no-drift).",
+      "inputs": {
+        "entitled_at_verdict": true,
+        "entitled_at_execution": true
+      },
+      "expected": "clean"
+    },
+    {
+      "id": "ace-drift-lapsed",
+      "step": "verdict/entitlement-drift",
+      "spec": "ACE x /review - verdict/execution drift, 4 gated outcomes (Pavlo)",
+      "desc": " unentitled-at-verdict is verdict_unbacked (never clean); could-not-check is unverifiable (never no-drift).",
+      "inputs": {
+        "entitled_at_verdict": true,
+        "entitled_at_execution": false
+      },
+      "expected": "drift"
+    },
+    {
+      "id": "ace-drift-unbacked",
+      "step": "verdict/entitlement-drift",
+      "spec": "ACE x /review - verdict/execution drift, 4 gated outcomes (Pavlo)",
+      "desc": "never clean; authorization failure, not staleness unentitled-at-verdict is verdict_unbacked (never clean); could-not-check is unverifiable (never no-drift).",
+      "inputs": {
+        "entitled_at_verdict": false,
+        "entitled_at_execution": null
+      },
+      "expected": "verdict_unbacked"
+    },
+    {
+      "id": "ace-drift-unreadable",
+      "step": "verdict/entitlement-drift",
+      "spec": "ACE x /review - verdict/execution drift, 4 gated outcomes (Pavlo)",
+      "desc": "could-not-check never collapses to no-drift unentitled-at-verdict is verdict_unbacked (never clean); could-not-check is unverifiable (never no-drift).",
+      "inputs": {
+        "entitled_at_verdict": true,
+        "entitled_at_execution": "unknown"
+      },
+      "expected": "unverifiable"
     }
   ],
   "rounding_convention": {
