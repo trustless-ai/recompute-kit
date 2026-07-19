@@ -20,3 +20,22 @@ Deferred design notes — not urgent, but load-bearing when their moment comes. 
 **One-liner (Pavlo):** *pinned at issuance, resolved at verification.*
 
 **Status (2026-07-19):** direction ratified by all SDK authors (Jimmy, Fede, Pavlo, Tiago) — basis-points is the agreed target, not an open proposal. Jimmy is refining the Rust SDK design plans around it. **Cutover must be coordinated**: every SDK (Rust + TS reference) switches together, each pinning the new convention hash — a half-migrated family reintroduces exactly the cross-SDK mismatch this guards against. Still not urgent; no cutover scheduled.
+
+---
+
+## ACE cross-chain precedence: `entitled_at` indeterminate state + `precedence_policy` allowlist
+
+**When:** once Pavlo pins the `precedence_policy` shape + the three Δ vectors (same-chain Δ=0 determinate / cross-chain outside Δ determinate / cross-chain inside Δ indeterminate). Deferred — not urgent, no code until the policy shape + goldens land (don't retrofit `entitlement_binding.v0` — `precedence_policy` is a v1 field that regenerates every hash).
+
+**Why:** the fully-recomputable licensed-MCP audit orders a grant against an action by their on-chain positions. When grants and action anchors sit on **different chains** (our mainnet registry × Base-Sepolia per-action anchors) and their timestamps fall inside the skew bound Δ, precedence is *not* false — it's **unestablished-from-here**. The honest output is indeterminate, which must flow to the drift `unverifiable` row (= `ace-drift-unreadable`) and Fede's `vantage_limitation`, never a guessed ordering.
+
+**The shape (Pavlo, two-sided — same as canonicalization):**
+1. **Issuer declares.** `precedence_policy: { profile, delta_seconds, basis }` is pinned in the binding at issuance and **covered by `binding_hash`**. A verifier resolves *that artifact's* Δ, never today's. `basis` reports provenance, not an assertion: `same-chain` ⇒ Δ=0 (block order is total); `l2-l1` ⇒ Δ derivable from finality; `independent-chains` ⇒ Δ=∞ (precedence never established).
+2. **Consumer pins what it recognizes.** The verifier carries a list of accepted precedence profiles. Unrecognized profile → **unverifiable**; declared Δ below what the consumer deems sound for that chain pair → **unverifiable**. Same fails-closed as an unrecognized c14n profile — the issuer can declare anything, it doesn't buy admission.
+
+**Build when it lands:**
+- `mcp/entitled-at-action` (+ the drift path): return a third **indeterminate** state when the grant/action pair is cross-chain and inside Δ, instead of forcing true/false. It routes to `unverifiable`.
+- Consumer-side `precedence_policy` allowlist check (unrecognized/insufficient → unverifiable).
+- Gate against Pavlo's three vectors; the cross-chain-inside-Δ one is the whole point, the other two prove it doesn't over-fire.
+
+**Vértice's pricing (declared 2026-07-19):** the mainnet-grants / Base-anchors split is load-bearing (the registry family lives on mainnet; Base carries per-action gas), so we declare `basis:"independent-chains", delta_seconds:∞` for that pair — the indeterminate window is a **known, declared cost**, not a surprise at the boundary. Same-chain Δ=0 is the escape hatch if we ever co-locate. Credit: Pavlo (Δ two-sided shape), Fede (`vantage_limitation` home).
