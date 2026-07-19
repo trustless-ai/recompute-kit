@@ -133,6 +133,18 @@ def main():
     print(f"{d['name']} v{d['version']} — {len(d['vectors'])} vectors")
     print("─" * 56)
     fails = 0; skipped = 0
+    # Structural gate: the DECLARED rounding convention (its own content-hash, the way
+    # ruleset_version pins a recipe). Conformance is "does your convention hash match",
+    # not "did you reproduce whichever ties happen to be in the vector set today."
+    rc = d.get("rounding_convention")
+    if rc:
+        canon = json.dumps(rc["rule"], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        got = "0x" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
+        ok = got == rc["hash"]
+        print(f"{'✓' if ok else '✗'} rounding_convention  hash {rc['hash'][:16]}… — {'match' if ok else 'MISMATCH'} (governs {', '.join(rc['governs'])})")
+        if not ok:
+            print(f"    declared {rc['hash']}\n    got      {got}"); fails += 1
+        print("─" * 56)
     for v in d["vectors"]:
         got = recompute(v)
         if isinstance(got, str) and got.startswith("SKIP"):

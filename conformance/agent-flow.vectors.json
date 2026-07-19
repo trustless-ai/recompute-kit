@@ -1,7 +1,7 @@
 {
   "name": "agent-flow conformance vectors",
   "version": "0.4",
-  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added).",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added). | v0.4: declared rounding_convention (canonical structured rule + content-hash, gated in the runner) + a fuzz family of 5 non-binary-exact 4dp ties (denom 800) that catch naive round()/f64::round which the binary-exact 1/32 tie passes — three green suites said nothing about a naive impl until this family. Basis-points is the endpoint (removes the rule by construction).",
   "vectors": [
     {
       "id": "name-keccak-binding",
@@ -446,6 +446,74 @@
         "commit_gated_losses": 31
       },
       "expected": 0.0313
+    },
+    {
+      "id": "8275-reputation-tie-57-800",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — rounding fuzz family (non-binary-exact tie)",
+      "desc": "wins=57, losses=743 -> 57/800 = 0.07125, a 4th-decimal tie whose value isn't f64-representable (denominator has factor 5). Canonical ROUND_HALF_UP over exact rational = 0.0713; naive round() (banker's OR f64::round) gives 0.0712. Forces rounding_convention; catches naive round() that the binary-exact 1/32 tie cannot.",
+      "inputs": {
+        "commit_gated_wins": 57,
+        "commit_gated_losses": 743
+      },
+      "expected": 0.0713
+    },
+    {
+      "id": "8275-reputation-tie-69-800",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — rounding fuzz family (non-binary-exact tie)",
+      "desc": "wins=69, losses=731 -> 69/800 = 0.08625, a 4th-decimal tie whose value isn't f64-representable (denominator has factor 5). Canonical ROUND_HALF_UP over exact rational = 0.0863; naive round() (banker's OR f64::round) gives 0.0862. Forces rounding_convention; catches naive round() that the binary-exact 1/32 tie cannot.",
+      "inputs": {
+        "commit_gated_wins": 69,
+        "commit_gated_losses": 731
+      },
+      "expected": 0.0863
+    },
+    {
+      "id": "8275-reputation-tie-113-800",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — rounding fuzz family (non-binary-exact tie)",
+      "desc": "wins=113, losses=687 -> 113/800 = 0.14125, a 4th-decimal tie whose value isn't f64-representable (denominator has factor 5). Canonical ROUND_HALF_UP over exact rational = 0.1413; naive round() (banker's OR f64::round) gives 0.1412. Forces rounding_convention; catches naive round() that the binary-exact 1/32 tie cannot.",
+      "inputs": {
+        "commit_gated_wins": 113,
+        "commit_gated_losses": 687
+      },
+      "expected": 0.1413
+    },
+    {
+      "id": "8275-reputation-tie-139-800",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — rounding fuzz family (non-binary-exact tie)",
+      "desc": "wins=139, losses=661 -> 139/800 = 0.17375, a 4th-decimal tie whose value isn't f64-representable (denominator has factor 5). Canonical ROUND_HALF_UP over exact rational = 0.1738; naive round() (banker's OR f64::round) gives 0.1737. Forces rounding_convention; catches naive round() that the binary-exact 1/32 tie cannot.",
+      "inputs": {
+        "commit_gated_wins": 139,
+        "commit_gated_losses": 661
+      },
+      "expected": 0.1738
+    },
+    {
+      "id": "8275-reputation-tie-163-800",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — rounding fuzz family (non-binary-exact tie)",
+      "desc": "wins=163, losses=637 -> 163/800 = 0.20375, a 4th-decimal tie whose value isn't f64-representable (denominator has factor 5). Canonical ROUND_HALF_UP over exact rational = 0.2038; naive round() (banker's OR f64::round) gives 0.2037. Forces rounding_convention; catches naive round() that the binary-exact 1/32 tie cannot.",
+      "inputs": {
+        "commit_gated_wins": 163,
+        "commit_gated_losses": 637
+      },
+      "expected": 0.2038
     }
-  ]
+  ],
+  "rounding_convention": {
+    "rule": {
+      "internal": "exact-integer-or-rational",
+      "boundary_rounding": "half-away-from-zero",
+      "precision_dp": 4,
+      "float_round": false
+    },
+    "governs": [
+      "8275/reputation"
+    ],
+    "note": "Exact integer/rational division internally; round only at the output boundary, half-away-from-zero (ROUND_HALF_UP over exact Decimal); never a language float round(). Conformance gates on this hash, not on whichever ties are in the vector set. See CONVENTIONS.md. Basis-points is the destination (removes the rule by construction).",
+    "hash": "0xe4cccdfecd0a29a1703e51995883a27c58cd3edf07ea6a2070ffc912520644a5"
+  }
 }
