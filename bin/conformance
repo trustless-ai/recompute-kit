@@ -106,11 +106,32 @@ def recompute(v):
         # needs no trusted jobId->agent mapping.
         pre = f"{i['consumer'].lower()}:{i['registry'].lower()}:{i['agentId']}:{i['salt']}"
         return cast("keccak", cast("from-utf8", pre))
+    if s == "mcp/entitled-at-action":
+        # Artifact-relative entitlement (Pavlo Q1): a grant covers an action iff it PRECEDES the
+        # action by (blockNumber, logIndex) AND is live at the action's time (perpetual, or
+        # expiry > action_time). The (blockNumber, logIndex) ordering is the declared tie-break —
+        # same-block grant/action can't be ordered by timestamp, so honest verifiers agree only
+        # if the rule lives in the recipe, not the indexer. Verdict is a function of the artifact,
+        # not of when you check: an action taken BEFORE its grant reads false.
+        PERP = 2**64 - 1
+        a = i["action"]  # {blockNumber, logIndex, time}
+        apos = (int(a["blockNumber"]), int(a["logIndex"]))
+        for g in i["grants"]:  # each {blockNumber, logIndex, expiry}
+            precedes = (int(g["blockNumber"]), int(g["logIndex"])) < apos
+            live = (int(g["expiry"]) == PERP) or (int(g["expiry"]) > int(a["time"]))
+            if precedes and live:
+                return True
+        return False
     if s == "mcp/id":
-        # MCPEntitlementRegistry capability id = keccak256(utf8(slug)) — binds an
-        # agent-mcp-catalog slug to its on-chain premium-MCP id. Same shape as
-        # name/keccak-binding; verifiable against the live mainnet registry.
-        return cast("keccak", cast("from-utf8", i["slug"]))
+        # MCPEntitlementRegistry capability id = keccak256(utf8(normalize(slug))). The slug is
+        # normalized first (NFC -> lowercase -> trim, charset [a-z0-9-]) so the catalog and the
+        # chain cannot disagree on the id of one capability — "ens-write", "ENS-Write ", etc.
+        # all collapse to the same id. (Pinned per Pavlo's review, same discipline as the
+        # rounding convention.)
+        import unicodedata, re
+        norm = unicodedata.normalize("NFC", i["slug"]).lower().strip()
+        assert re.fullmatch(r"[a-z0-9-]+", norm), f"invalid slug {i['slug']!r}"
+        return cast("keccak", cast("from-utf8", norm))
     if s == "mcp/entitled":
         # isEntitled predicate: entitled = (expiry == PERPETUAL 2**64-1) OR (expiry > now).
         # A missing/past expiry reads as NOT entitled — fails closed, never a silent grant.
