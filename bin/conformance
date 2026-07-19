@@ -99,6 +99,16 @@ def recompute(v):
             if bestC * 10000 < total * q: return None
             return best
         return plur(a) != plur(a + [x])
+    if s == "ens/contenthash":
+        # ENSIP-7 IPFS contenthash = 0xe301 ‖ CID bytes. CIDv1 base32 (b-prefix): strip the
+        # multibase prefix, base32-decode, prepend the IPFS namespace varint. This is the value
+        # the first ENS-write MCP sets via setContenthash(node, hash) so a name serves via eth.limo.
+        cid = i["cid"].replace("ipfs://", "").strip()
+        ALPHA = "abcdefghijklmnopqrstuvwxyz234567"; bits = 0; val = 0; out = bytearray()
+        for ch in cid[1:].lower():
+            val = (val << 5) | ALPHA.index(ch); bits += 5
+            if bits >= 8: out.append((val >> (bits - 8)) & 0xff); bits -= 8
+        return "0xe301" + bytes(out).hex()
     if s == "ens/namehash":
         # EIP-137 namehash, recomputed by RECURSION (node = keccak(parent ‖ keccak(label)),
         # right-to-left) — independent of the recipe's `cast namehash`, so it's a real cross-check.
