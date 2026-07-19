@@ -99,6 +99,18 @@ def recompute(v):
             if bestC * 10000 < total * q: return None
             return best
         return plur(a) != plur(a + [x])
+    if s == "mcp/id":
+        # MCPEntitlementRegistry capability id = keccak256(utf8(slug)) — binds an
+        # agent-mcp-catalog slug to its on-chain premium-MCP id. Same shape as
+        # name/keccak-binding; verifiable against the live mainnet registry.
+        return cast("keccak", cast("from-utf8", i["slug"]))
+    if s == "mcp/entitled":
+        # isEntitled predicate: entitled = (expiry == PERPETUAL 2**64-1) OR (expiry > now).
+        # A missing/past expiry reads as NOT entitled — fails closed, never a silent grant.
+        # This is the predicate the licensed-MCP audit recomputes per action.
+        PERPETUAL = 2**64 - 1
+        e, now = int(i["expiry"]), int(i["now"])
+        return (e == PERPETUAL) or (e > now)
     if s == "ens/contenthash":
         # ENSIP-7 IPFS contenthash = 0xe301 ‖ CID bytes. CIDv1 base32 (b-prefix): strip the
         # multibase prefix, base32-decode, prepend the IPFS namespace varint. This is the value
