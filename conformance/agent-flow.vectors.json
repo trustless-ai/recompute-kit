@@ -1,7 +1,7 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.2",
-  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant.",
+  "version": "0.3",
+  "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd).",
   "vectors": [
     {
       "id": "name-keccak-binding",
@@ -414,6 +414,27 @@
         "remaining": 100
       },
       "expected": false
+    },
+    {
+      "id": "8281-observation-digest",
+      "step": "8281/observation-digest",
+      "spec": "ERC-8281 §1 (OCP) — IObservationCommitment",
+      "desc": "digest = keccak256(observation) — the opaque OCP commitment record()s on-chain. Canonical vector so all SDKs gate on ONE digest, not each impl's inline golden (the Rust SDK carried this leg self-gated). observation = a real agentRef + action.",
+      "inputs": {
+        "observation": "eip155:1:0xe61f5a6783ae09949b9a1b6821b68f89c0d7bb2d/2 executed:forensic-report"
+      },
+      "expected": "0xae5fa1763e69150df1a3ee3434052c345e1450d4ab5dc642c0c8dd941206da81"
+    },
+    {
+      "id": "8275-reputation-nodata",
+      "step": "8275/reputation",
+      "spec": "ERC-8275 axis — no-resolved-history edge",
+      "desc": "gated_wins=0, gated_losses=0 -> winRate is UNDEFINED (null), NOT 0.0. Fails-closed per the 'incomplete window' doctrine: a gap in evidence must never read as a clean zero record. Surfaced porting the Rust SDK compute_win_rate (returns None here) vs the naive handler which div-by-zero'd.",
+      "inputs": {
+        "commit_gated_wins": 0,
+        "commit_gated_losses": 0
+      },
+      "expected": null
     }
   ]
 }

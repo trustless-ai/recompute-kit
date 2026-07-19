@@ -59,7 +59,15 @@ def recompute(v):
         # ledger's PUBLISHED winRate (primary artifact). The composite score is an impl-defined view,
         # deliberately NOT a conformance value.
         gw, gl = i["commit_gated_wins"], i["commit_gated_losses"]
+        # No resolved history -> winRate is UNDEFINED (None), never 0 — fails-closed, per the
+        # "incomplete window" doctrine (a gap in evidence must not read as a clean 0.0 record).
+        if gw + gl == 0:
+            return None
         return round(gw / (gw + gl), 4)
+    if s == "8281/observation-digest":
+        # ERC-8281 §1 (OCP): digest = keccak256(observation) — the opaque commitment record()s
+        # on-chain. Canonicalized so all SDKs gate on ONE vector, not each impl's inline golden.
+        return cast("keccak", cast("from-utf8", i["observation"]))
     if s == "scope/bond-standing":
         # Layer 3: standing recomputed from public survival(bondId), never asserted.
         return (not i["slashed"]) and (not i["challenged"])
