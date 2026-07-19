@@ -1,6 +1,6 @@
 {
   "name": "agent-flow conformance vectors",
-  "version": "0.11",
+  "version": "0.12",
   "note": "public inputs -> expected recompute. 'conformant' = an impl reproduces every expected. The on-chain 8274 verify is a contract call, not a pure recompute, so it is checked separately (not a vector). Layer-3 bond-standing is a pure recompute over public survival(bondId) state, so it IS a vector; the live cast-call form is recompute-step scope/bond-standing. | v0.2: added 8312/budget-substrate vectors (IBudgetSubstrate: remaining = cap - spent, spent ≤ cap) — spec-formalized alias of the 8312/cap-conservation invariant. | v0.3: +8281/observation-digest (OCP digest = keccak256(observation), canonicalized from the Rust SDK's inline golden so all SDKs gate on one vector, not each impl's) + 8275 no-resolved-history edge (gw=gl=0 -> winRate null, fails-closed per the 'incomplete window' doctrine; surfaced porting the Rust compute_win_rate which returns None where the naive handler div-by-zero'd). | v0.4: +8275-reputation-rounding-tie (gw=1,gl=31 -> 1/32=0.03125 exact tie; pins half-away-from-zero as the shared rounding convention, matching Rust f64::round(), since Python's round() gives a different answer here -- the reference handler itself was hardened to Decimal+ROUND_HALF_UP in the same pass, not just the vector added). | v0.4: declared rounding_convention (canonical structured rule + content-hash, gated in the runner) + a fuzz family of 5 non-binary-exact 4dp ties (denom 800) that catch naive round()/f64::round which the binary-exact 1/32 tie passes — three green suites said nothing about a naive impl until this family. Basis-points is the endpoint (removes the rule by construction). | v0.5: +ens/contenthash (ENSIP-7 IPFS contenthash encoding = 0xe301 ‖ CID bytes) — the value the first ENS-write MCP sets via setContenthash; gates the ENS write leg's encoding, recomputable.",
   "vectors": [
     {
@@ -784,6 +784,180 @@
         "entitled_at_execution": "unknown"
       },
       "expected": "unverifiable"
+    },
+    {
+      "id": "ace-binding-prec-same-chain",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 + precedence-v0 policy (Pavlo)",
+      "desc": "binding with precedence_policy (same-chain, delta_seconds as string). delta=inf would break JSON, so it is a decimal string or \"unbounded\". outside/inside-delta share this hash: same policy, the indeterminacy is a fact of the evaluation not the artifact.",
+      "inputs": {
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
+        },
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "same-chain",
+          "delta_seconds": "0"
+        },
+        "claims": [
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "18446744073709551615"
+          }
+        ]
+      },
+      "expected": "sha256:e57c8bfdf395e561031796b60cf1507f165d6d6bdafe6b006c80b8c1dd6b40d3"
+    },
+    {
+      "id": "ace-precedence-same-chain",
+      "step": "ace/precedence",
+      "spec": "precedence-v0 evaluation — is grant->action ordering establishable from this vantage? (Pavlo)",
+      "desc": "(block,log_index) totally orders within one chain; delta unused",
+      "inputs": {
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "same-chain",
+          "delta_seconds": "0"
+        },
+        "grant": {
+          "chain_id": 1,
+          "block": 23150040,
+          "log_index": 3
+        },
+        "action": {
+          "chain_id": 1,
+          "block": 23150042,
+          "log_index": 7
+        }
+      },
+      "expected": "determinate"
+    },
+    {
+      "id": "ace-binding-prec-l2-anchored",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 + precedence-v0 policy (Pavlo)",
+      "desc": "binding with precedence_policy (l2-anchored, delta_seconds as string). delta=inf would break JSON, so it is a decimal string or \"unbounded\". outside/inside-delta share this hash: same policy, the indeterminacy is a fact of the evaluation not the artifact.",
+      "inputs": {
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
+        },
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "l2-anchored",
+          "delta_seconds": "900"
+        },
+        "claims": [
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "18446744073709551615"
+          }
+        ]
+      },
+      "expected": "sha256:286155e1fea527233067d035de8d24ef1ba38ee9e91c5d07c671dc4c0cf8dccd"
+    },
+    {
+      "id": "ace-precedence-cross-outside-delta",
+      "step": "ace/precedence",
+      "spec": "precedence-v0 evaluation — is grant->action ordering establishable from this vantage? (Pavlo)",
+      "desc": "|3600s| > 900s bound -> ordering established",
+      "inputs": {
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "l2-anchored",
+          "delta_seconds": "900"
+        },
+        "grant": {
+          "chain_id": 1,
+          "timestamp": 1763000000
+        },
+        "action": {
+          "chain_id": 8453,
+          "timestamp": 1763003600
+        }
+      },
+      "expected": "determinate"
+    },
+    {
+      "id": "ace-precedence-cross-inside-delta",
+      "step": "ace/precedence",
+      "spec": "precedence-v0 evaluation — is grant->action ordering establishable from this vantage? (Pavlo)",
+      "desc": "|120s| <= 900s -> precedence unestablished -> entitled_at = unknown -> drift = unverifiable",
+      "inputs": {
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "l2-anchored",
+          "delta_seconds": "900"
+        },
+        "grant": {
+          "chain_id": 1,
+          "timestamp": 1763000000
+        },
+        "action": {
+          "chain_id": 8453,
+          "timestamp": 1763000120
+        }
+      },
+      "expected": "indeterminate"
+    },
+    {
+      "id": "ace-binding-prec-independent-chains",
+      "step": "ace/entitlement-binding",
+      "spec": "ACE entitlement_binding.v0 + precedence-v0 policy (Pavlo)",
+      "desc": "binding with precedence_policy (independent-chains, delta_seconds as string). delta=inf would break JSON, so it is a decimal string or \"unbounded\". outside/inside-delta share this hash: same policy, the indeterminacy is a fact of the evaluation not the artifact.",
+      "inputs": {
+        "profile": "ace-entitlement-v0",
+        "registry": "0x6374556d1c19924584644bd48ebecf444e43ed9f",
+        "chain_id": 1,
+        "as_of": {
+          "block": 23150042,
+          "log_index": 7
+        },
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "independent-chains",
+          "delta_seconds": "unbounded"
+        },
+        "claims": [
+          {
+            "agent_key": "0x1c8f5b2e9d4a7c3f06e1b8d5a2f9c6e3b0d7a4f1c8e5b2d9f6a3c0e7b4d1f8a5",
+            "mcp_id": "0x6be39bd6058fbf1993356ee49f16552c058bd2082b244058de9aad18cc82f794",
+            "expiry": "18446744073709551615"
+          }
+        ]
+      },
+      "expected": "sha256:e680c9ccc6a7a1b2e0a3a1fb708de3f2d57c8bc03a8458ba96c9b44e97a8ba2d"
+    },
+    {
+      "id": "ace-precedence-independent-unbounded",
+      "step": "ace/precedence",
+      "spec": "precedence-v0 evaluation — is grant->action ordering establishable from this vantage? (Pavlo)",
+      "desc": "delta_seconds=unbounded -> no cross-chain precedence at any separation",
+      "inputs": {
+        "precedence_policy": {
+          "profile": "precedence-v0",
+          "basis": "independent-chains",
+          "delta_seconds": "unbounded"
+        },
+        "grant": {
+          "chain_id": 1,
+          "timestamp": 1763000000
+        },
+        "action": {
+          "chain_id": 84532,
+          "timestamp": 1763999999
+        }
+      },
+      "expected": "indeterminate"
     }
   ],
   "rounding_convention": {

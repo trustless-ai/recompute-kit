@@ -141,8 +141,30 @@ def recompute(v):
                 key=lambda c: (c["agent_key"], c["mcp_id"]),
             ),
         }
+        # precedence-v0 (Pavlo): the Δ policy is pinned in the binding and covered by binding_hash.
+        # delta_seconds is a decimal STRING or the literal "unbounded" — NEVER a JSON number/Infinity
+        # (json.dumps(inf) is invalid JSON, JSON.stringify(Infinity)→null silently = fails-open on the
+        # strictest stance). Second serialization catch of the week, same class as expiry.
+        if "precedence_policy" in i:
+            pp = i["precedence_policy"]
+            b["precedence_policy"] = {"profile": pp["profile"], "basis": pp["basis"], "delta_seconds": str(pp["delta_seconds"])}
         canon = json.dumps(b, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
         return "sha256:" + hashlib.sha256(canon.encode("utf-8")).hexdigest()
+    if s == "ace/precedence":
+        # precedence-v0 evaluation — is grant→action ordering ESTABLISHABLE from this vantage?
+        # Same chain: (block, log_index) totally orders → determinate. Different chains: delta bounds
+        # the clock skew — "unbounded" ⇒ never establishable (independent chains); else |t_a - t_g| > Δ
+        # ⇒ determinate, within Δ ⇒ indeterminate. Indeterminate ⇒ entitled_at=unknown ⇒ drift
+        # `unverifiable` (never clean, never drift). basis reports provenance; the consumer allowlists
+        # on the (basis, delta) pair, not the number alone.
+        pol = i.get("precedence_policy") or i["policy"]
+        g, a = i["grant"], i["action"]
+        if int(g["chain_id"]) == int(a["chain_id"]):
+            return "determinate"
+        ds = str(pol["delta_seconds"])
+        if ds == "unbounded":
+            return "indeterminate"
+        return "determinate" if abs(int(a["timestamp"]) - int(g["timestamp"])) > int(ds) else "indeterminate"
     if s == "verdict/entitlement-drift":
         # ACE × /review drift, FOUR gated outcomes (Pavlo's split — my earlier boolean was wrong:
         # it filed unentitled-at-verdict next to the healthy perpetual case, the reputation-axis
