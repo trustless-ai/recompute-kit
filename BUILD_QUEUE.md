@@ -59,3 +59,24 @@ Deferred design notes — not urgent, but load-bearing when their moment comes. 
 **Status (2026-07-21, later): FINAL set pinned by Pavlo — updated to hash-identified bytes.** crystal-receipt @ `28f0d2be`: spec SHA-256 `280b6c81…`, vectors SHA-256 `8fa6d533…` (19 normative). Recomputed both hashes over the exact committed bytes before rebuild — matched. My independent gate still passes **19/19** on the final set (22/22 golden roots), built only from the two hashed artifacts, evaluator source unopened. Final set adopted the ref-mismatch+wrong-sequence case (#99's first) and pinned shape-before-local-verify as the second precedence (earlier short-circuit) rather than #99's local-verify-before-ref; #99 closed as adopted-in-spirit. Byte-for-byte cross-evaluator diff deferred until after opening the reference source. Vendored fixture now = the exact `8fa6d533…` bytes.
 
 **Correction (2026-07-21, later): the local-verify-before-ref boundary IS distinct — 20th vector incoming.** Pavlo's catch: `predecessor_shape_malformed_and_local_verify_failed` pins shape→local-verify, which does NOT imply local-verify→ref. An evaluator could compare the ref before running predecessor local-verify and still pass all 19 — the exact prose-only gap the review targets. So #99 was reopened/rebased (GitHub refused reopen after force-rebase → continues as **#101**): dropped the now-merged ref-mismatch case, retains only `cooccur_predecessor_local_verify_fail_precedes_ref_mismatch` → **20 vectors**. My gate passes 20/20 (source unopened). This conformance copy stays pinned to the 19-vector `8fa6d533…` until #101 lands and Pavlo re-pins the fixture blob hash to the 20-vector artifact — then both repos cite the same hash. Supersedes the "#99 closed as adopted-in-spirit" note above.
+
+**Status (2026-07-21, final): PR #101 MERGED — 20-vector set is final.** crystal-receipt main @ `13187b29`: fixture SHA-256 re-pinned to `c369bd3924f5ce053c698c903345e3859e75a4daabffed1720d11351f81def93` (spec unchanged `280b6c81…`). Recomputed both over the exact committed bytes → matched. Vendored copy updated to the exact 20-vector bytes; independent gate passes **20/20** (22/22 golden roots), source still unopened. Pavlo's suite: 20 fixture vectors + 2 omitted-prev regressions = 22 focused / 206 full ReceiptOS, no evaluator source change. Full adjacent precedence chain now pinned: predecessor shape → local-verify → ref comparison → sequence. **Remaining: the direct evaluator-to-evaluator raw-object comparison across all 20** — the final independence check, which is the point at which the reference source gets opened.
+
+---
+
+## Conformance/Verify MCP — productize the machine gate as an MCP verb  [QUEUED]
+
+**What:** one new `@mcp.tool() conformance_run(...)` + one `bin/conformance-suite` generic runner + a `suite.json` manifest (hash-pinned spec/vectors). Grades a candidate against a hash-pinned conformance suite: verify suite bytes vs declared SHA-256 (fail-closed on mismatch), run every vector through a candidate **adapter**, compare to `expected`, return the house `_verdict` tri-state (0 verified-good / 1 verified-bad / 2 unverifiable). The machine gate of the agent-economics gist (§2), as a callable verb.
+
+**Why:** `bin/conformance` already runs the gate but is hardwired to `agent-flow.vectors.json` + the reference recompute. Generalize it to any hash-pinned suite + any candidate impl, so the loop we ran by hand on `chronicle_checkpoint_continuity.v0` (hash-pin → independent recompute → verdict) becomes reusable — and the on-site marketplace listing (Recomputable badge) just calls this verb.
+
+**Shape (grounded in current code):**
+- Reuses `mcp/server.py` FastMCP `@mcp.tool()` + `_run`/`_verdict` pattern (same as `verify_claim`/`recompute_step`).
+- **stdio adapter v1** (candidate = subprocess: vector JSON in → result JSON out — language-neutral, the SDK model); **remote-MCP adapter v2** (grade a live endpoint).
+- Chronicle folder retrofitted as **suite #1**; `continuity_gate.ts --grade` dogfoods it to 20/20.
+- Emits a recomputable `ConformanceRun` artifact (runner = convenience, not authority — the rotating/contestable-harness point).
+- Lane classification (read-only/write/attested) + market gate stay **caller policy**, not the MCP's job.
+
+**Milestones:** (1) `suite.json` schema + retrofit chronicle suite · (2) `bin/conformance-suite` (hash-verify + vector loop + stdio adapter + tri-state exit) · (3) `continuity_gate.ts --grade` dogfood · (4) `conformance_run` tool + README · (5) `ConformanceRun` artifact · (6) remote-MCP adapter + wire the on-site gateway endpoint.
+
+**Full plan:** Standards vault → `Drafts/conformance-verify-mcp-plan.md`. **When:** after Lisbon. Ties to agent-economics gist b7112de7 §2 + the vertice-conformance-listing build spec.

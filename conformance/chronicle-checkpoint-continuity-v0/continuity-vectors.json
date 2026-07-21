@@ -549,6 +549,38 @@
         "relation": null,
         "reason_code": "current_shape_malformed"
       }
+    },
+    {
+      "name": "cooccur_predecessor_local_verify_fail_precedes_ref_mismatch",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bbdbfd5c38f8b7981361a2826f428c4e401ef983aa89c74c30da2ba348bad6ca"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "expected": {
+        "evaluation_state": "not_evaluated",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "predecessor_local_verifier_failed"
+      }
     }
   ]
 }
