@@ -20,6 +20,10 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
     && /root/.foundry/bin/foundryup
 ENV PATH="/root/.foundry/bin:${PATH}"
 
+# Bun — runtime for stdio conformance adapters (e.g. the chronicle continuity gate)
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+
 # MCP SDK + OpenTimestamps client (for the 8263/precedence recipe)
 RUN pip install --no-cache-dir mcp opentimestamps-client pycryptodome
 
