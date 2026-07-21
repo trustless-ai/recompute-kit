@@ -71,6 +71,15 @@ gate reproduces all 20.
 `chronicle-root-golden-vectors.json` is vendored so the canonicalization self-check runs
 standalone. Both fixtures are Pavlo's; the upstream copies remain normative.
 
+## Evaluator-to-evaluator comparison (final independence check)
+
+`tmerlini-evaluator-results-20.json` is this evaluator's **raw result object per vector** over the
+`c369bd39…` fixture — the output half of the final check. The comparison is done by **exchanging
+outputs, not source**: each evaluator emits its 20 result objects, we diff field-by-field. Neither
+reads the other's implementation; the reference source is opened only if a delta appears. These 20 are
+field-identical to the fixture's pinned `expected`, so the expected delta is zero — the check confirms
+it rather than assuming it.
+
 ## Status
 
 No divergence: an implementation with no sight of the reference source lands on the same output

@@ -1,0 +1,126 @@
+{
+  "evaluator": "TMerlini/continuity_gate.ts",
+  "vectors_sha256": "c369bd3924f5ce053c698c903345e3859e75a4daabffed1720d11351f81def93",
+  "results": {
+    "valid_genesis": {
+      "evaluation_state": "evaluated",
+      "verdict": "valid",
+      "relation": "genesis",
+      "reason_code": "genesis"
+    },
+    "valid_genesis_with_supplied_predecessor_candidate": {
+      "evaluation_state": "evaluated",
+      "verdict": "valid",
+      "relation": "genesis",
+      "reason_code": "genesis"
+    },
+    "valid_successor": {
+      "evaluation_state": "evaluated",
+      "verdict": "valid",
+      "relation": "successor",
+      "reason_code": "direct_successor"
+    },
+    "predecessor_ref_mismatch": {
+      "evaluation_state": "evaluated",
+      "verdict": "invalid",
+      "relation": null,
+      "reason_code": "predecessor_ref_mismatch"
+    },
+    "predecessor_ref_mismatch_with_wrong_sequence": {
+      "evaluation_state": "evaluated",
+      "verdict": "invalid",
+      "relation": null,
+      "reason_code": "predecessor_ref_mismatch"
+    },
+    "sequence_gap": {
+      "evaluation_state": "evaluated",
+      "verdict": "invalid",
+      "relation": null,
+      "reason_code": "sequence_gap"
+    },
+    "predecessor_same_sequence": {
+      "evaluation_state": "evaluated",
+      "verdict": "invalid",
+      "relation": null,
+      "reason_code": "predecessor_same_sequence"
+    },
+    "predecessor_higher_sequence": {
+      "evaluation_state": "evaluated",
+      "verdict": "invalid",
+      "relation": null,
+      "reason_code": "predecessor_higher_sequence"
+    },
+    "predecessor_unknown": {
+      "evaluation_state": "unverifiable",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "predecessor_unknown"
+    },
+    "current_local_root_invalid": {
+      "evaluation_state": "not_evaluated",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_local_verifier_failed"
+    },
+    "current_local_verifier_false_due_to_noncanonical_entry_refs": {
+      "evaluation_state": "not_evaluated",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_local_verifier_failed"
+    },
+    "predecessor_local_root_invalid": {
+      "evaluation_state": "not_evaluated",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "predecessor_local_verifier_failed"
+    },
+    "current_malformed_non_integer_sequence": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_shape_malformed"
+    },
+    "current_malformed_negative_sequence": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_shape_malformed"
+    },
+    "current_malformed_sequence_zero_with_prev": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_shape_malformed"
+    },
+    "current_malformed_positive_sequence_with_null_prev": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_shape_malformed"
+    },
+    "predecessor_shape_malformed": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "predecessor_shape_malformed"
+    },
+    "predecessor_shape_malformed_and_local_verify_failed": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "predecessor_shape_malformed"
+    },
+    "current_shape_malformed_would_otherwise_be_sequence_gap": {
+      "evaluation_state": "malformed",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "current_shape_malformed"
+    },
+    "cooccur_predecessor_local_verify_fail_precedes_ref_mismatch": {
+      "evaluation_state": "not_evaluated",
+      "verdict": null,
+      "relation": null,
+      "reason_code": "predecessor_local_verifier_failed"
+    }
+  }
+}
