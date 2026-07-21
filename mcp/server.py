@@ -21,6 +21,7 @@ BIN = ROOT / "bin"
 ENV = dict(os.environ)
 ENV["PATH"] = os.pathsep.join([
     str(Path.home() / ".foundry" / "bin"),
+    str(Path.home() / ".bun" / "bin"),  # bun — conformance-suite adapters (e.g. the chronicle gate)
     "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin",
     ENV.get("PATH", ""),
 ])
@@ -294,6 +295,48 @@ def conformance_run(suite: str, adapter_cmd: str = "", vectors_sha256: str = "",
         "total": int(m.group(2)) if m else None,
         "evidence": _tail(out + ("\n" + err if err.strip() else ""), 24),
     }
+
+
+# ── HTTP face for the conformance gate (so the marketplace gateway / any caller can invoke it
+#    over plain HTTP, not only as an MCP tool). Same engine (bin/conformance-suite), same tri-state.
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+import json as _json
+import tempfile
+
+@mcp.custom_route("/conformance/run", methods=["POST"])
+async def conformance_http(request: Request):
+    """POST { suite, adapter_cmd?, vectors_sha256? } -> the machine gate over HTTP.
+    Returns { verdict, pass, reproduced, total, run, evidence }. Fail-closed on hash mismatch."""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "expected JSON body"}, status_code=400)
+    suite = (body or {}).get("suite")
+    if not suite:
+        return JSONResponse({"error": "missing 'suite'"}, status_code=400)
+    a = ["--suite", suite]
+    if body.get("adapter_cmd"):
+        a += ["--adapter-cmd", body["adapter_cmd"]]
+    if body.get("vectors_sha256"):
+        a += ["--vectors-sha256", body["vectors_sha256"]]
+    out_path = tempfile.mktemp(suffix=".json")
+    a += ["--out", out_path]
+    rc, out, err = _run("conformance-suite", *a)
+    run = None
+    try:
+        run = _json.load(open(out_path)); os.unlink(out_path)
+    except Exception:
+        pass
+    m = re.search(r"(\d+)/(\d+) reproduced", out)
+    return JSONResponse({
+        **_verdict(rc, reversible=False),
+        "suite": suite,
+        "reproduced": int(m.group(1)) if m else None,
+        "total": int(m.group(2)) if m else None,
+        "run": run,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 30),
+    })
 
 
 if __name__ == "__main__":
