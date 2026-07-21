@@ -260,5 +260,41 @@ def recompute_step(recipe: str = "list", args: list[str] = [], reversible: bool 
     }
 
 
+@mcp.tool()
+def conformance_run(suite: str, adapter_cmd: str = "", vectors_sha256: str = "",
+                    reversible: bool = False) -> dict:
+    """Grade a candidate against a HASH-PINNED golden-vector suite — the machine gate as a verb.
+
+    Recomputes SHA-256 over the suite's exact vector bytes and **fail-closes on a mismatch**
+    (unverifiable, never a pass), then runs every vector through the candidate `adapter` and
+    compares each result to its `expected`. Conformant iff every expected is reproduced — not
+    iff it matches a reference SDK. The run is itself recomputable.
+
+    Args:
+        suite: path to a suite dir containing `suite.json` (profile, vectors{path,sha256}, adapter).
+        adapter_cmd: override the suite's adapter — a shell cmd that reads the vectors JSON on
+            stdin and writes {name: result} JSON on stdout (any language qualifies by honoring
+            the contract). Runs with cwd = the suite dir.
+        vectors_sha256: override/require the declared vectors hash (for a bare vectors path).
+        reversible: governs the UNVERIFIABLE gate (hash mismatch / adapter couldn't run) —
+            False (default, safe) fail-closes, True annotates.
+    Returns {suite, verdict, pass, gate, reproduced, total, evidence}. verdict ∈ verified-good /
+    verified-bad (a vector mismatched) / unverifiable (hash mismatch or adapter failure).
+    """
+    a = ["--suite", suite]
+    if adapter_cmd:
+        a += ["--adapter-cmd", adapter_cmd]
+    if vectors_sha256:
+        a += ["--vectors-sha256", vectors_sha256]
+    rc, out, err = _run("conformance-suite", *a)
+    m = re.search(r"(\d+)/(\d+) reproduced", out)
+    return {
+        "suite": suite, **_verdict(rc, reversible),
+        "reproduced": int(m.group(1)) if m else None,
+        "total": int(m.group(2)) if m else None,
+        "evidence": _tail(out + ("\n" + err if err.strip() else ""), 24),
+    }
+
+
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")

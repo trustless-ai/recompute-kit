@@ -1,0 +1,8 @@
+{
+  "profile": "chronicle_checkpoint_continuity.v0",
+  "vectors": { "path": "continuity-vectors.json", "sha256": "c369bd3924f5ce053c698c903345e3859e75a4daabffed1720d11351f81def93" },
+  "specSha256": "280b6c8106e288f1c9db4535b85bb7ff04a52d4fa8507be27ed5903b80a14782",
+  "upstream": "pipavlo82/crystal-receipt @ 13187b29",
+  "adapter": { "kind": "stdio", "cmd": "bun continuity_gate.ts --grade" },
+  "laneHint": "read-only"
+}

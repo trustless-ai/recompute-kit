@@ -101,8 +101,18 @@ function evaluate(current: any, predecessor: any | null): Result {
 
 export { deriveRoot, localVerify, shapeValid, evaluate };
 
-// ---------- self-check canonicalization against golden roots, then run all vectors ----------
+// ---------- adapter mode + self-check runner ----------
 if (import.meta.main) {
+  // Adapter contract for bin/conformance-suite: fixture JSON on stdin -> {name: result} on stdout.
+  // Nothing but the results object goes to stdout; the harness parses it.
+  if (Bun.argv.includes("--grade")) {
+    const fx = JSON.parse(await Bun.stdin.text());
+    const out: Record<string, unknown> = {};
+    for (const v of fx.vectors) out[v.name] = evaluate(v.current, v.predecessor ?? null);
+    console.log(JSON.stringify(out));
+    process.exit(0);
+  }
+
   const golden = JSON.parse(await Bun.file(`${import.meta.dir}/chronicle-root-golden-vectors.json`).text());
   let gok = 0, gtot = 0;
   for (const cat of ["artifact", "collection", "portfolio", "checkpoint"] as const)

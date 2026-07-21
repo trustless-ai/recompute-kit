@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""conformance-suite — grade a candidate against a HASH-PINNED golden-vector suite.
+
+The generalization of `bin/conformance`: instead of one hardwired vector set + the reference
+recompute, this grades *any* candidate implementation against *any* content-hashed suite.
+
+  1. Pin the suite by hash.   Recompute SHA-256 over the exact vectors (and spec) bytes and
+     compare to the declared hash. A mismatch is UNVERIFIABLE (exit 2) — never a silent pass.
+  2. Recompute the vectors.   Hand the vectors to the candidate ADAPTER (a subprocess: vectors
+     JSON in on stdin -> {name: result} JSON out on stdout) and compare each result to its
+     `expected`. Conformant iff it reproduces every expected — not iff it matches a reference SDK.
+  3. Verdict.   exit 0 all reproduced · 1 a vector mismatched · 2 couldn't run (unverifiable).
+
+The run is itself recomputable: `--out` writes a ConformanceRun artifact anyone can re-verify,
+so no single runner is the authority.
+
+Usage:
+  bin/conformance-suite --suite <dir-with-suite.json> --adapter-cmd "bun gate.ts --grade"
+  bin/conformance-suite --vectors <f.json> --vectors-sha256 <hex> --adapter-cmd "<cmd>" [--out run.json]
+"""
+import sys, json, argparse, hashlib, subprocess, time
+from pathlib import Path
+
+def sha256_bytes(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+def load_suite(args):
+    """Return (vectors_path, vectors_sha, spec_path, spec_sha, adapter_cmd, profile, base_dir).
+    base_dir is where the adapter runs (so a relative adapter cmd resolves against the suite)."""
+    if args.suite:
+        d = Path(args.suite)
+        man = json.loads((d / "suite.json").read_text())
+        vp = d / man["vectors"]["path"]
+        sp = (d / man["spec"]["path"]) if man.get("spec") else None
+        return (vp, man["vectors"].get("sha256"),
+                sp, (man.get("spec") or {}).get("sha256"),
+                args.adapter_cmd or (man.get("adapter") or {}).get("cmd"),
+                man.get("profile", d.name), d)
+    if not args.vectors:
+        sys.exit("error: pass --suite <dir> or --vectors <file>")
+    vp = Path(args.vectors)
+    return (vp, args.vectors_sha256, None, None, args.adapter_cmd, vp.stem, vp.parent)
+
+def canon(o):  # order-insensitive comparison of result objects
+    return json.dumps(o, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+def fail_closed(msg: str, code: int = 2):
+    print(f"✗ {msg}")
+    print("─" * 60)
+    print("UNVERIFIABLE — couldn't establish the result; fail-closed (never a pass)." if code == 2
+          else f"✗ {msg}")
+    sys.exit(code)
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--suite"); ap.add_argument("--vectors"); ap.add_argument("--vectors-sha256")
+    ap.add_argument("--spec"); ap.add_argument("--spec-sha256")
+    ap.add_argument("--adapter-cmd"); ap.add_argument("--out")
+    args = ap.parse_args()
+
+    vp, vsha, sp, ssha, adapter, profile, base = load_suite(args)
+    if args.spec: sp, ssha = Path(args.spec), args.spec_sha256
+    if not adapter:
+        sys.exit("error: no adapter — pass --adapter-cmd or set adapter.cmd in suite.json")
+
+    print(f"suite: {profile}")
+
+    # 1. hash-pin — recompute over the exact committed bytes, fail-closed on mismatch
+    vbytes = vp.read_bytes()
+    got_v = sha256_bytes(vbytes)
+    if vsha and got_v != vsha:
+        fail_closed(f"vectors hash mismatch\n    declared {vsha}\n    got      {got_v}")
+    print(f"✓ vectors  sha256 {got_v[:16]}… {'— matches declared' if vsha else '(no declared hash — informational)'}")
+    if sp is not None:
+        got_s = sha256_bytes(sp.read_bytes())
+        if ssha and got_s != ssha:
+            fail_closed(f"spec hash mismatch\n    declared {ssha}\n    got      {got_s}")
+        print(f"✓ spec     sha256 {got_s[:16]}… {'— matches declared' if ssha else '(informational)'}")
+    print("─" * 60)
+
+    fixture = json.loads(vbytes)
+    vectors = fixture.get("vectors", fixture if isinstance(fixture, list) else [])
+
+    # 2. run the candidate adapter (vectors in -> {name: result} out); adapter failure = unverifiable
+    try:
+        p = subprocess.run(adapter, shell=True, input=vbytes, capture_output=True, timeout=1200, cwd=base)
+    except Exception as e:
+        fail_closed(f"adapter failed to run: {e}")
+    if p.returncode != 0:
+        fail_closed(f"adapter exited {p.returncode}: {p.stderr.decode('utf-8','replace')[-400:]}")
+    try:
+        out = json.loads(p.stdout.decode("utf-8"))
+        results = out.get("results", out)  # accept {results:{...}} or a bare {name: result}
+    except Exception:
+        fail_closed(f"adapter output was not JSON: {p.stdout.decode('utf-8','replace')[-300:]}")
+
+    # 3. compare each vector's result to expected
+    fails, run = 0, []
+    for v in vectors:
+        name = v["name"]; exp = v["expected"]; got = results.get(name)
+        if got is None:
+            print(f"✗ {name:<52} — adapter returned no result"); fails += 1
+            run.append({"name": name, "expected": exp, "got": None, "ok": False}); continue
+        ok = canon(got) == canon(exp)
+        mne = v.get("must_not_equal")            # negative gate: reproducing a known-wrong value is a failure
+        if mne is not None and canon(got) == canon(mne):
+            ok = False
+        print(f"{'✓' if ok else '✗'} {name:<52} -> {got.get('reason_code', canon(got)[:32]) if isinstance(got, dict) else got}")
+        if not ok:
+            print(f"    expected {canon(exp)}\n    got      {canon(got)}")
+        fails += (not ok)
+        run.append({"name": name, "expected": exp, "got": got, "ok": ok})
+
+    print("─" * 60)
+    total = len(vectors); reproduced = total - fails
+    print(f"{reproduced}/{total} reproduced")
+    print("✓ CONFORMANT — every vector reproduced" if not fails else f"✗ {fails}/{total} vector(s) FAILED — not conformant")
+
+    if args.out:
+        Path(args.out).write_text(json.dumps({
+            "profile": profile, "vectors_sha256": got_v,
+            "spec_sha256": (got_s if sp is not None else None),
+            "runner": "recompute-kit/conformance-suite", "ran_at": int(time.time()),
+            "pass": fails == 0, "total": total, "reproduced": reproduced, "results": run,
+        }, indent=2, ensure_ascii=False) + "\n")
+        print(f"run recorded -> {args.out}")
+
+    sys.exit(1 if fails else 0)
+
+if __name__ == "__main__":
+    main()
