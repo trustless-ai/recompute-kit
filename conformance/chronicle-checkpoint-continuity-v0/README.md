@@ -56,10 +56,13 @@ order-precedence vectors that pin the short-circuits the earlier set left to pro
 - `predecessor_shape_malformed_and_local_verify_failed` → `predecessor_shape_malformed`
   (predecessor shape before predecessor local-verify)
 
-The first is the case proposed in [crystal-receipt#99](https://github.com/pipavlo82/crystal-receipt/pull/99),
-adopted here under the profile author's naming; the second is the precedence the author chose to pin
-(earlier in the order than the local-verify-before-ref case #99 also raised, which the final set does
-not vector). This from-scratch gate reproduces both expected outputs.
+The first is the case originally proposed in #99, adopted here under the profile author's naming. The
+second pins predecessor **shape → local-verify**. A third, adjacent boundary — predecessor
+**local-verify → ref comparison** — is distinct (shape-before-local-verify does not imply
+local-verify-before-ref) and is being added as a 20th vector in
+[crystal-receipt#101](https://github.com/pipavlo82/crystal-receipt/pull/101). This copy stays pinned
+to the 19-vector `8fa6d533…` hash until that lands and the author re-pins the fixture blob hash to the
+20-vector set. This from-scratch gate reproduces all of them (20/20 on the pending set).
 
 `chronicle-root-golden-vectors.json` is vendored so the canonicalization self-check runs
 standalone. Both fixtures are Pavlo's; the upstream copies remain normative.
