@@ -1,0 +1,244 @@
+{
+  "artifact": [
+    {
+      "name": "empty-refs",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "empty",
+        "entry_refs": [],
+        "receipt_refs": []
+      },
+      "expected_root": "sha256:c46875a45e0032ff075da3a4bf4ee9e20bbf9e3ae5c01be3166a42abdf275897"
+    },
+    {
+      "name": "single-ref",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "single",
+        "entry_refs": ["entry-alpha"],
+        "receipt_refs": ["receipt-alpha"]
+      },
+      "expected_root": "sha256:d92e7d5387b946758024846027ab66d2643d17436d7004e393256f61c31ae1d5"
+    },
+    {
+      "name": "multiple-unsorted",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "multi",
+        "entry_refs": ["entry-gamma", "entry-alpha", "entry-beta"],
+        "receipt_refs": ["receipt-gamma", "receipt-alpha", "receipt-beta"]
+      },
+      "expected_root": "sha256:2bcf128604f5dc3570782e96b40d395c311750d2de1c8cc5d9c42836f407f1aa"
+    },
+    {
+      "name": "unicode-id",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "workspace-дані-🧪",
+        "entry_refs": ["entry-alpha", "entry-beta"],
+        "receipt_refs": ["receipt-alpha", "receipt-beta"]
+      },
+      "expected_root": "sha256:b7d4ad2ffd1d2239d95fd9fe64a691c95fa349c6c3fc78ae927316f134a7a99b"
+    },
+    {
+      "name": "nested-metadata",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "meta",
+        "entry_refs": ["entry-alpha"],
+        "receipt_refs": ["receipt-alpha"],
+        "metadata": {
+          "render": { "theme": "glass" },
+          "score": 7
+        }
+      },
+      "expected_root": "sha256:fcdf43208ad99d420cacc8ac99e2c2c8040ce31be95a895ec7137dd91a247e3f"
+    },
+    {
+      "name": "known-good-workspace",
+      "input": {
+        "artifact_version": "chronicle.position_artifact.v0",
+        "artifact_scope": "position",
+        "position_id": "workspace",
+        "entry_refs": ["entry-position-alpha", "entry-position-beta"],
+        "receipt_refs": ["receipt-alpha", "receipt-beta"]
+      },
+      "expected_root": "sha256:4a33906c34ca56c6852071e5ebd2866dcb1f8bba90e41d7e1dfd39c162c221ae"
+    }
+  ],
+  "collection": [
+    {
+      "name": "empty-refs",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "empty",
+        "artifact_refs": []
+      },
+      "expected_root": "sha256:3a0e1c15cfb25f86c52d489293addfb8ddaf49872665af1d85071dc9087aaf78"
+    },
+    {
+      "name": "single-ref",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "single",
+        "artifact_refs": ["/position/alpha/artifact"]
+      },
+      "expected_root": "sha256:da5ec048a8c63bf783d8d569478e3230b3ed2710abc5c576fe82d92567bfb2bf"
+    },
+    {
+      "name": "multiple-unsorted",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "multi",
+        "artifact_refs": ["/position/gamma/artifact", "/position/alpha/artifact", "/position/beta/artifact"]
+      },
+      "expected_root": "sha256:116261c8bdd177734bc67710aafd7dec834ab118b6fd403fd08d79ad1fc964cb"
+    },
+    {
+      "name": "unicode-id",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "workspace-дані-🧪",
+        "artifact_refs": ["/position/alpha/artifact", "/position/beta/artifact"]
+      },
+      "expected_root": "sha256:7ce8b5719ec1950ab2442afd48890320bb7f03c5152bf97b0e5ecc8cd5b1db11"
+    },
+    {
+      "name": "nested-metadata",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "meta",
+        "artifact_refs": ["/position/alpha/artifact"],
+        "metadata": {
+          "render": { "theme": "glass" },
+          "score": 7
+        }
+      },
+      "expected_root": "sha256:700faa208825aad4f35c57f9a2ed2a59bd19e47cdb176ad1f76b8c35df68b291"
+    },
+    {
+      "name": "known-good-workspace",
+      "input": {
+        "collection_version": "chronicle.collection.v0",
+        "collection_id": "workspace",
+        "artifact_refs": ["/position/position-alpha/artifact", "/position/position-beta/artifact"]
+      },
+      "expected_root": "sha256:136e8db5bf5b31bb780a153218e20c2030ed6ed94eb341efcb158f1dc9bfa0d4"
+    }
+  ],
+  "portfolio": [
+    {
+      "name": "empty-refs",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "empty",
+        "collection_refs": []
+      },
+      "expected_root": "sha256:d3b0e59ebb03758785510c1697b084963dd267082399866a5c3715317254f1ff"
+    },
+    {
+      "name": "single-ref",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "single",
+        "collection_refs": ["/collection/alpha"]
+      },
+      "expected_root": "sha256:105d31cec3ebc61b66b7d4b98ee7385904ecad8aa94eb91e7d8eb99e7dfd3df8"
+    },
+    {
+      "name": "multiple-unsorted",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "multi",
+        "collection_refs": ["/collection/gamma", "/collection/alpha", "/collection/beta"]
+      },
+      "expected_root": "sha256:5e7798bc2dcaf113ce80a57c43f3cff8a3e45a4d046ca7a2dd901b72881b501c"
+    },
+    {
+      "name": "unicode-id",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "workspace-дані-🧪",
+        "collection_refs": ["/collection/alpha", "/collection/beta"]
+      },
+      "expected_root": "sha256:c94b54a5733e384bae50b95002226d68ceba719351111d890652dab17a67631b"
+    },
+    {
+      "name": "nested-metadata",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "meta",
+        "collection_refs": ["/collection/alpha"],
+        "metadata": {
+          "render": { "theme": "glass" },
+          "score": 7
+        }
+      },
+      "expected_root": "sha256:d0d81474fdbd758db4295c2dcd71d981c1168df4cc48e444bcb0f63f270e3257"
+    },
+    {
+      "name": "known-good-workspace",
+      "input": {
+        "portfolio_version": "chronicle.portfolio.v0",
+        "portfolio_id": "workspace",
+        "collection_refs": ["/collection/collection-alpha", "/collection/collection-beta"]
+      },
+      "expected_root": "sha256:7ddd55f59ea424fda079e3b5d5a3a1497bffe460ef1339ecbbc350888bc48124"
+    }
+  ],
+  "checkpoint": [
+    {
+      "name": "empty-refs",
+      "input": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "empty",
+        "collection_ref": "/collection/empty",
+        "entry_refs": [],
+        "prev_checkpoint": null,
+        "sequence": 0
+      },
+      "expected_root": "sha256:c92cfb65eb33d6c63bbdea7a5fd6b9183316b8c497b905afa35bb6f9b9f7f2ce"
+    },
+    {
+      "name": "single-ref",
+      "input": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "single",
+        "collection_ref": "/collection/demo",
+        "entry_refs": ["entry-alpha"],
+        "prev_checkpoint": null,
+        "sequence": 0
+      },
+      "expected_root": "sha256:ab9d6573475afd3eb566a75b83a8a2f73ef3bcc2c7071e4ba7908ad48347c179"
+    },
+    {
+      "name": "multiple-unsorted",
+      "input": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "multi",
+        "collection_ref": "/collection/demo",
+        "entry_refs": ["entry-gamma", "entry-alpha", "entry-beta"],
+        "prev_checkpoint": "sha256:prev-demo",
+        "sequence": 3
+      },
+      "expected_root": "sha256:fc9a125887d65cc28a0c0a6552d625d7be171d2efc0c74fd39137c82606a8d4f"
+    },
+    {
+      "name": "unicode-id",
+      "input": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "workspace-дані-🧪",
+        "collection_ref": "/collection/workspace",
+        "entry_refs": ["entry-beta", "entry-alpha"],
+        "prev_checkpoint": null,
+        "sequence": 0
+      },
+      "expected_root": "sha256:0abced72404c0c61d756dd5d3c6a4b22c652992453347f15b854755c4ed997a9"
+    }
+  ]
+}

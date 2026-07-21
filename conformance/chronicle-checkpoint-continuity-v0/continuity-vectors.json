@@ -1,0 +1,552 @@
+{
+  "profile": "chronicle_checkpoint_continuity.v0",
+  "description": "Normative pairwise continuity vectors for chronicle_checkpoint.v0. Observation-index semantics are explicitly out of scope.",
+  "vectors": [
+    {
+      "name": "valid_genesis",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "genesis",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 0,
+        "checkpoint_root": "sha256:55e333ea1c0d025811739ed782f7992383bdc0cb8733f184185a5c37c6c6c7c0"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "valid",
+        "relation": "genesis",
+        "reason_code": "genesis"
+      }
+    },
+    {
+      "name": "valid_genesis_with_supplied_predecessor_candidate",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "genesis-with-candidate",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 0,
+        "checkpoint_root": "sha256:29881c2a858bb782d7e284c5b9c466ec2fa92dc1bafecac8e36674646a506768"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "genesis-supplied-predecessor",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-zeta"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 7,
+        "checkpoint_root": "sha256:e2c1d941ca932054d8a2a62a7b4931f01c53d66155958e01d78a28cefed5acca"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "valid",
+        "relation": "genesis",
+        "reason_code": "genesis"
+      }
+    },
+    {
+      "name": "valid_successor",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bbdbfd5c38f8b7981361a2826f428c4e401ef983aa89c74c30da2ba348bad6ca"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "valid",
+        "relation": "successor",
+        "reason_code": "direct_successor"
+      }
+    },
+    {
+      "name": "predecessor_ref_mismatch",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bb3f1b4b3e3b1479bda4b49e325570c7760f2d4fb091a3ce46fab80e08515ba3"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1-other",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:da9afc6391379c981f6f48faed6e2c855acb7340fcab29eff73e0535e9c23cab"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "invalid",
+        "relation": null,
+        "reason_code": "predecessor_ref_mismatch"
+      }
+    },
+    {
+      "name": "sequence_gap",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-4",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta",
+          "entry-gamma"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 4,
+        "checkpoint_root": "sha256:4cdcf2affe4e99837ac67f91159c9f4304c1f4cdb91cf210702597912b400265"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "invalid",
+        "relation": null,
+        "reason_code": "sequence_gap"
+      }
+    },
+    {
+      "name": "predecessor_same_sequence",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:05799d83734ea6ef383577214e5257cafb0f72b9c234afee638a6bea1a00c2aa",
+        "sequence": 2,
+        "checkpoint_root": "sha256:cb7a687580803ea826ed62ca75c4e0cbbb0f88ec858c63d4d72e71e3cdcf8a8c"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2-prev",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "sequence": 2,
+        "checkpoint_root": "sha256:05799d83734ea6ef383577214e5257cafb0f72b9c234afee638a6bea1a00c2aa"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "invalid",
+        "relation": null,
+        "reason_code": "predecessor_same_sequence"
+      }
+    },
+    {
+      "name": "predecessor_higher_sequence",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:a0f2aa26c73000eb16643236902beaab5b24a9363bb57671a2dbb6434ec6c779",
+        "sequence": 2,
+        "checkpoint_root": "sha256:74d5deef44fe4926b2a980b14a829f3053b9dcf85c5b1f322010e6d508c1c406"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-5",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta",
+          "entry-gamma"
+        ],
+        "prev_checkpoint": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "sequence": 5,
+        "checkpoint_root": "sha256:a0f2aa26c73000eb16643236902beaab5b24a9363bb57671a2dbb6434ec6c779"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "invalid",
+        "relation": null,
+        "reason_code": "predecessor_higher_sequence"
+      }
+    },
+    {
+      "name": "predecessor_unknown",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "sequence": 2,
+        "checkpoint_root": "sha256:042e8af180b24ed69d84a4d171caf51d023c4820b77031e8a79087a3de6d760e"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "unverifiable",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "predecessor_unknown"
+      }
+    },
+    {
+      "name": "current_local_root_invalid",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "current-root-invalid",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7"
+      },
+      "expected": {
+        "evaluation_state": "not_evaluated",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_local_verifier_failed"
+      }
+    },
+    {
+      "name": "current_local_verifier_false_due_to_noncanonical_entry_refs",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2-noncanonical",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-beta",
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:f0882560c66796d54c775f3418cc4d5572d627e23c3cb4945430b2f12f47de30"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7"
+      },
+      "expected": {
+        "evaluation_state": "not_evaluated",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_local_verifier_failed"
+      }
+    },
+    {
+      "name": "predecessor_local_root_invalid",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bbdbfd5c38f8b7981361a2826f428c4e401ef983aa89c74c30da2ba348bad6ca"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "expected": {
+        "evaluation_state": "not_evaluated",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "predecessor_local_verifier_failed"
+      }
+    },
+    {
+      "name": "current_malformed_non_integer_sequence",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "bad-current-float",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 0.5,
+        "checkpoint_root": "sha256:7ef2ef60c3904cc0bc17c7d88ef1015c46444684258cfc6212998cb8951f11df"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_shape_malformed"
+      }
+    },
+    {
+      "name": "current_malformed_negative_sequence",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "bad-current-negative",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": -1,
+        "checkpoint_root": "sha256:e899aa8615858e8a8a544534ea356c5c6875fb87e0ee106d6d1a3013468fb0ff"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_shape_malformed"
+      }
+    },
+    {
+      "name": "current_malformed_sequence_zero_with_prev",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "bad-current-seq0-prev",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "sequence": 0,
+        "checkpoint_root": "sha256:74fc2b26abb8dd2e6dba56bb861c1eda4adef1b169b5aa21f8dcbd384ba3030d"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_shape_malformed"
+      }
+    },
+    {
+      "name": "current_malformed_positive_sequence_with_null_prev",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "bad-current-null-prev",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 2,
+        "checkpoint_root": "sha256:bb8860de517f73a2f45ac3594c50efa548077244305cfad014789201c345ecbd"
+      },
+      "predecessor": null,
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_shape_malformed"
+      }
+    },
+    {
+      "name": "predecessor_shape_malformed",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:180e62d8031aa0b291cae171ecd43aae19e9ea3094198c2a87688d2002202eba",
+        "sequence": 2,
+        "checkpoint_root": "sha256:7682ae034cbfe50660714279ba690a0d23cf561454b464cc205312c387b833d4"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "bad-prev",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 1,
+        "checkpoint_root": "sha256:180e62d8031aa0b291cae171ecd43aae19e9ea3094198c2a87688d2002202eba"
+      },
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "predecessor_shape_malformed"
+      }
+    },
+    {
+      "name": "current_shape_malformed_would_otherwise_be_sequence_gap",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "current-malformed-would-gap",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta",
+          "entry-gamma"
+        ],
+        "prev_checkpoint": "sha256:60794c4853423bc6eb72bc9816884db71445a378d5116f5d4e92b19f18999957",
+        "sequence": 4.5,
+        "checkpoint_root": "sha256:253a3d76b4baf0c409883fda775df9907fce110b27c36a03ac9b2f9887eba022"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-gap-predecessor",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:60794c4853423bc6eb72bc9816884db71445a378d5116f5d4e92b19f18999957"
+      },
+      "expected": {
+        "evaluation_state": "malformed",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "current_shape_malformed"
+      }
+    },
+    {
+      "name": "cooccur_ref_mismatch_precedes_sequence_gap",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bbdbfd5c38f8b7981361a2826f428c4e401ef983aa89c74c30da2ba348bad6ca"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "genesis",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": null,
+        "sequence": 0,
+        "checkpoint_root": "sha256:55e333ea1c0d025811739ed782f7992383bdc0cb8733f184185a5c37c6c6c7c0"
+      },
+      "expected": {
+        "evaluation_state": "evaluated",
+        "verdict": "invalid",
+        "relation": null,
+        "reason_code": "predecessor_ref_mismatch"
+      }
+    },
+    {
+      "name": "cooccur_predecessor_local_verify_fail_precedes_ref_mismatch",
+      "current": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-2",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha",
+          "entry-beta"
+        ],
+        "prev_checkpoint": "sha256:eaa7aef9bbfeec0250b0faef4caf3c8b39fca154c07e185deb305e39bf9b7be7",
+        "sequence": 2,
+        "checkpoint_root": "sha256:bbdbfd5c38f8b7981361a2826f428c4e401ef983aa89c74c30da2ba348bad6ca"
+      },
+      "predecessor": {
+        "schema": "chronicle_checkpoint.v0",
+        "checkpoint_id": "checkpoint-1",
+        "collection_ref": "/collection/demo",
+        "entry_refs": [
+          "entry-alpha"
+        ],
+        "prev_checkpoint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "checkpoint_root": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "expected": {
+        "evaluation_state": "not_evaluated",
+        "verdict": null,
+        "relation": null,
+        "reason_code": "predecessor_local_verifier_failed"
+      }
+    }
+  ]
+}
