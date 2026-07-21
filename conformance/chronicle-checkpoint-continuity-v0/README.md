@@ -4,10 +4,14 @@ A second, clean-room implementation of Pavlo's **pairwise checkpoint continuity*
 built to the kit's own rule: *conformant iff it reproduces every `expected` from the same
 inputs — not iff it matches a reference SDK.*
 
-- **Spec + vectors (the authority):** [`pipavlo82/crystal-receipt`](https://github.com/pipavlo82/crystal-receipt) @ `4ee5a8d0` (#98)
+- **Spec + vectors (the authority) — FINAL, hash-pinned:** [`pipavlo82/crystal-receipt`](https://github.com/pipavlo82/crystal-receipt) @ `28f0d2be`
   - `docs/CHRONICLE_CHECKPOINT_CONTINUITY_V0.md` — the gate spec
+    · SHA-256 `280b6c8106e288f1c9db4535b85bb7ff04a52d4fa8507be27ed5903b80a14782`
+  - `tests/fixtures/chronicle-checkpoint-continuity-v0.json` — the 19 normative vectors
+    · SHA-256 `8fa6d5331fee156055088fa9ca69b7258e346ee84e8038ac9db1faa5cf23d3e1`
   - `docs/CHRONICLE.md` — base v0 root derivation + local-verify scope
-  - `tests/fixtures/chronicle-checkpoint-continuity-v0.json` — the vectors
+  - Hashes are SHA-256 over the exact committed blob bytes; both recomputed and matched before build.
+    The vendored `continuity-vectors.json` here is those exact bytes.
 - **Author of the profile + reference implementation:** Pavlo (`pipavlo82`).
 - **This implementation:** independent, by TMerlini, built from the spec + vectors **only** —
   `crystal-receipt/src/**` was never opened. That keeps the two implementations genuinely
@@ -44,16 +48,18 @@ Independent implementation agrees with the fixture on every vector.
 
 ## Vectors
 
-`continuity-vectors.json` = the 17 upstream base vectors **plus** the two order-precedence
-co-occurrence vectors proposed in [crystal-receipt#99](https://github.com/pipavlo82/crystal-receipt/pull/99):
+`continuity-vectors.json` is the final 19-vector normative set (hash `8fa6d533…`). It includes two
+order-precedence vectors that pin the short-circuits the earlier set left to prose:
 
-- `cooccur_ref_mismatch_precedes_sequence_gap` → `predecessor_ref_mismatch`
-  (ref comparison, step 7, before sequence classification, step 8)
-- `cooccur_predecessor_local_verify_fail_precedes_ref_mismatch` → `predecessor_local_verifier_failed`
-  (predecessor local-verify, step 6, before ref comparison, step 7)
+- `predecessor_ref_mismatch_with_wrong_sequence` → `predecessor_ref_mismatch`
+  (ref comparison before sequence classification)
+- `predecessor_shape_malformed_and_local_verify_failed` → `predecessor_shape_malformed`
+  (predecessor shape before predecessor local-verify)
 
-Those two pin the only order-dependent short-circuits the base 17 leave to prose. This
-from-scratch gate reproduces their expected outputs, which independently corroborates the PR.
+The first is the case proposed in [crystal-receipt#99](https://github.com/pipavlo82/crystal-receipt/pull/99),
+adopted here under the profile author's naming; the second is the precedence the author chose to pin
+(earlier in the order than the local-verify-before-ref case #99 also raised, which the final set does
+not vector). This from-scratch gate reproduces both expected outputs.
 
 `chronicle-root-golden-vectors.json` is vendored so the canonicalization self-check runs
 standalone. Both fixtures are Pavlo's; the upstream copies remain normative.
