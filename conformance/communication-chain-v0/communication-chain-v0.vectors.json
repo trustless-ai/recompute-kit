@@ -1,0 +1,16 @@
+{
+  "profile": "communication_chain.v0",
+  "description": "The recomputable communication act, in the grammar humans already use — Who · Said what · Through which channel · To whom · With what effect. Each link is a deterministic hash re-derivable from public inputs; a compliant capability reproduces all five, a tampered one cannot.",
+  "vectors": [
+    { "name": "who",      "w": "Who",                    "kind": "namehash", "input": "dinamic.eth",
+      "expected": { "value": "0x9548b253d5c2c63905c3b5df0257bf3f343582d80f4a993423664a9e09d1e980" } },
+    { "name": "said_what","w": "Said what",              "kind": "keccak-utf8", "input": "swap 1 ETH to USDC on Uniswap",
+      "expected": { "value": "0xc3ce10004343598730b5c9ffd0117ae0fe470a473a60d32619b1569bab5d8cf6" } },
+    { "name": "channel",  "w": "Through which channel",  "kind": "keccak-utf8", "input": "uniswap",
+      "expected": { "value": "0xa2a03459171c76bff45817330c10ef9f8af07011a33005b73b50189bbc7e7132" } },
+    { "name": "to_whom",  "w": "To whom",                "kind": "keccak-utf8", "input": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+      "expected": { "value": "0x94892be67b20bb8424c5ff656bf858a5528b540003fc4825eaf758c123bf7961" } },
+    { "name": "effect",   "w": "With what effect",       "kind": "keccak-utf8", "input": "built exactInputSingle calldata; 1 ETH -> USDC; user wallet signs",
+      "expected": { "value": "0x876937defd2cb2c9c9500fe6e2bea008cdee0987b9f18bf561ac30d41242e31a" } }
+  ]
+}

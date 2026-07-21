@@ -1,0 +1,6 @@
+{
+  "profile": "communication_chain.v0",
+  "vectors": { "path": "communication-chain-v0.vectors.json", "sha256": "2881c90587c0303b6f0179d1cac4c162772484bba3123e8f3ab49934fb2e27fe" },
+  "adapter": { "kind": "stdio", "cmd": "bun gate.ts --grade" },
+  "laneHint": "recomputable"
+}
