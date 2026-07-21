@@ -26,6 +26,7 @@ RUN pip install --no-cache-dir mcp opentimestamps-client pycryptodome
 WORKDIR /app
 COPY bin/ ./bin/
 COPY mcp/ ./mcp/
+COPY conformance/ ./conformance/
 RUN chmod +x bin/*
 
 EXPOSE 7079
