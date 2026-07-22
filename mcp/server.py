@@ -433,6 +433,14 @@ RECIPES = {
 def _derive(recipe: dict, args: dict) -> str:
     return _cast("calldata", recipe["sig"], *recipe["params"](args))
 
+# the spec governing the ENS recipes — pinned into the receipt so the suite identity is self-contained
+_RECIPE_SPEC_SHA = None
+try:
+    _RECIPE_SPEC_SHA = hashlib.sha256(
+        (ROOT / "conformance" / "ens-write-v0" / "ens-write-v0.spec.md").read_bytes()).hexdigest()
+except Exception:
+    pass
+
 @mcp.custom_route("/conformance/introspect", methods=["POST"])
 async def introspect(request: Request):
     """POST { endpoint } → introspect an MCP (tools/list), match each tool against the recompute
@@ -470,7 +478,7 @@ async def introspect(request: Request):
         rec = [g for g in graded if g["lane"] == "recomputable"]
         passed = len(rec) > 0 and all(g["ok"] for g in rec)
         run = {
-            "profile": "mcp_introspect.v0", "vectors_sha256": None,
+            "profile": "mcp_introspect.v0", "vectors_sha256": None, "spec_sha256": _RECIPE_SPEC_SHA,
             "recompute": "per tool: independent derivation from public rules (recompute-kit recipe registry)",
             "runner": "recompute-kit/introspect", "ran_at": int(time.time()),
             "pass": passed, "reproduced": sum(1 for g in rec if g["ok"]), "total": len(rec),
