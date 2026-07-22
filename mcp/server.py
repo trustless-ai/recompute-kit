@@ -385,5 +385,101 @@ async def conformance_http(request: Request):
     })
 
 
+# ── self-service: drop an MCP endpoint → detect its recomputable tools → grade → mint a receipt ──
+import asyncio
+import urllib.request
+
+def _cast(*args: str) -> str:
+    p = subprocess.run(["cast", *args], capture_output=True, text=True, env=ENV)
+    if p.returncode != 0:
+        raise RuntimeError(f"cast {args[0]}: {p.stderr.strip()}")
+    return p.stdout.strip()
+
+def _mcp_post(endpoint: str, payload: dict) -> dict:
+    req = urllib.request.Request(endpoint, method="POST",
+        headers={"Content-Type": "application/json"}, data=_json.dumps(payload).encode())
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return _json.loads(r.read())
+
+def _tool_calldata(endpoint: str, tool: str, args: dict):
+    d = _mcp_post(endpoint, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                             "params": {"name": tool, "arguments": args}})
+    inner = _json.loads(d["result"]["content"][0]["text"])
+    for v in inner.values():
+        if isinstance(v, dict) and "data" in v:
+            return v["data"]
+    return None
+
+# Recipe registry — how to INDEPENDENTLY derive a tool's output from public rules. A tool with no
+# recipe here is not recomputable (→ Attested). The registry grows; each recipe added makes one more
+# slice of any MCP auto-gradeable.
+RECIPES = {
+    "ens_set_addr":    {"desc": "setAddr(namehash(name), address)",
+                        "sample": {"name": "dinamic.eth", "address": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14"},
+                        "sig": "setAddr(bytes32,address)", "params": lambda a: [_cast("namehash", a["name"]), a["address"]]},
+    "ens_set_text":    {"desc": "setText(namehash(name), key, value)",
+                        "sample": {"name": "dinamic.eth", "key": "url", "value": "https://verticecriativo.pt"},
+                        "sig": "setText(bytes32,string,string)", "params": lambda a: [_cast("namehash", a["name"]), a["key"], a["value"]]},
+    "ens_set_primary": {"desc": "setName(name) [reverse registrar]",
+                        "sample": {"name": "dinamic.eth"},
+                        "sig": "setName(string)", "params": lambda a: [a["name"]]},
+}
+
+def _derive(recipe: dict, args: dict) -> str:
+    return _cast("calldata", recipe["sig"], *recipe["params"](args))
+
+@mcp.custom_route("/conformance/introspect", methods=["POST"])
+async def introspect(request: Request):
+    """POST { endpoint } → introspect an MCP (tools/list), match each tool against the recompute
+    recipe registry, grade the recomputable ones against the INDEPENDENT rule-derivation, and mint a
+    portable receipt over them. Tools with no recipe are reported Attested (not recomputable)."""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "expected JSON body"}, status_code=400)
+    endpoint = (body or {}).get("endpoint")
+    if not endpoint:
+        return JSONResponse({"error": "missing 'endpoint'"}, status_code=400)
+
+    def work():
+        try:
+            listing = _mcp_post(endpoint, {"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+            tools = listing.get("result", {}).get("tools", [])
+        except Exception as e:
+            return {"error": f"could not introspect endpoint: {e}"}
+        graded = []
+        for t in tools:
+            name = t.get("name"); recipe = RECIPES.get(name)
+            if not recipe:
+                graded.append({"tool": name, "lane": "attested", "reason": "no recompute recipe"})
+                continue
+            try:
+                args = recipe["sample"]
+                expected = _derive(recipe, args)
+                got = _tool_calldata(endpoint, name, args)
+                graded.append({"tool": name, "lane": "recomputable", "recompute": recipe["desc"],
+                               "args": args, "expected": {"value": expected}, "got": {"value": got},
+                               "ok": expected == got})
+            except Exception as e:
+                graded.append({"tool": name, "lane": "attested", "reason": f"recipe error: {e}"})
+        rec = [g for g in graded if g["lane"] == "recomputable"]
+        passed = len(rec) > 0 and all(g["ok"] for g in rec)
+        run = {
+            "profile": "mcp_introspect.v0", "vectors_sha256": None,
+            "recompute": "per tool: independent derivation from public rules (recompute-kit recipe registry)",
+            "runner": "recompute-kit/introspect", "ran_at": int(time.time()),
+            "pass": passed, "reproduced": sum(1 for g in rec if g["ok"]), "total": len(rec),
+            "results": [{"name": g["tool"], "recompute": g["recompute"],
+                         "expected": g["expected"], "got": g["got"], "ok": g["ok"]} for g in rec],
+        }
+        receipt = _build_receipt(run, {"label": "Submitted MCP", "endpoint": endpoint}) if rec else None
+        return {"endpoint": endpoint, "tools": graded,
+                "recomputable": len(rec), "attested": len(graded) - len(rec),
+                "pass": passed, "receipt": receipt}
+
+    result = await asyncio.to_thread(work)
+    return JSONResponse(result, status_code=(200 if "error" not in result else 502))
+
+
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")
