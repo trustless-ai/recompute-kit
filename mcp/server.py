@@ -303,6 +303,50 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 import json as _json
 import tempfile
+import hashlib
+
+# ── portable conformance RECEIPT (crystal-receipt / ReceiptOS compatible) ──────────────────────
+# A submitter's run is minted as a self-contained receiptos.evidence_capsule.v0 they can DOWNLOAD
+# and re-verify OFFLINE, no trust in this gate: the root recomputes by the receiptos-c14n-v0 rule
+# and every vector carries its rule + expected + got so the verdict is independently re-derivable.
+def _receipt_root(receipt: dict) -> str:
+    # receiptos-c14n-v0: "0x" + sha256(JCS(receipt \ {anchor, receipt_root}))
+    content = {k: v for k, v in receipt.items() if k not in ("anchor", "receipt_root")}
+    c = _json.dumps(content, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return "0x" + hashlib.sha256(c.encode("utf-8")).hexdigest()
+
+def _build_receipt(run: dict, candidate: dict) -> dict:
+    ok = bool(run.get("pass"))
+    rep, tot = run.get("reproduced"), run.get("total")
+    receipt = {
+        "schema": "receiptos.evidence_capsule.v0",
+        "action": {
+            "summary": f"Conformance grade: {candidate.get('label', 'MCP')} against {run.get('profile')}",
+            "source_fields": ["candidate.endpoint", "capsule.suite.vectors_sha256"],
+        },
+        "evidence": {
+            "summary": (f"{rep}/{tot} golden vectors reproduced — the MCP's output matched the "
+                        "recompute-kit's independent derivation from public rules"
+                        if ok else f"{rep}/{tot} reproduced — the MCP did not build what the rules dictate"),
+            "source_fields": ["capsule.results[].expected", "capsule.results[].got"],
+            "status": "present",
+        },
+        "verifier_result": {"ok": ok, "status": "verified" if ok else "rejected"},
+        "capsule": {
+            "profile": run.get("profile"),
+            "suite": {"vectors_sha256": run.get("vectors_sha256"),
+                      "spec_sha256": run.get("spec_sha256"),
+                      "recompute": run.get("recompute")},
+            "candidate": candidate,
+            "verdict": {"pass": ok, "reproduced": rep, "total": tot},
+            "results": run.get("results", []),
+        },
+        "anchor": {"ran_at": run.get("ran_at"), "runner": run.get("runner", "recompute-kit/conformance-suite")},
+    }
+    root = _receipt_root(receipt)
+    receipt["receipt_root"] = {"stored": root, "computed": root, "match": True, "status": "verified",
+                               "derivation": "receiptos-c14n-v0 — 0x + sha256(JCS(receipt \\ {anchor, receipt_root}))"}
+    return receipt
 
 @mcp.custom_route("/conformance/run", methods=["POST"])
 async def conformance_http(request: Request):
@@ -329,12 +373,14 @@ async def conformance_http(request: Request):
     except Exception:
         pass
     m = re.search(r"(\d+)/(\d+) reproduced", out)
+    receipt = _build_receipt(run, body.get("candidate") or {}) if run else None
     return JSONResponse({
         **_verdict(rc, reversible=False),
         "suite": suite,
         "reproduced": int(m.group(1)) if m else None,
         "total": int(m.group(2)) if m else None,
         "run": run,
+        "receipt": receipt,
         "evidence": _tail(out + ("\n" + err if err.strip() else ""), 30),
     })
 

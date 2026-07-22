@@ -100,7 +100,7 @@ def main():
         name = v["name"]; exp = v["expected"]; got = results.get(name)
         if got is None:
             print(f"✗ {name:<52} — adapter returned no result"); fails += 1
-            run.append({"name": name, "expected": exp, "got": None, "ok": False}); continue
+            run.append({"name": name, "recompute": v.get("recompute"), "expected": exp, "got": None, "ok": False}); continue
         ok = canon(got) == canon(exp)
         mne = v.get("must_not_equal")            # negative gate: reproducing a known-wrong value is a failure
         if mne is not None and canon(got) == canon(mne):
@@ -109,7 +109,7 @@ def main():
         if not ok:
             print(f"    expected {canon(exp)}\n    got      {canon(got)}")
         fails += (not ok)
-        run.append({"name": name, "expected": exp, "got": got, "ok": ok})
+        run.append({"name": name, "recompute": v.get("recompute"), "expected": exp, "got": got, "ok": ok})
 
     print("─" * 60)
     total = len(vectors); reproduced = total - fails
@@ -118,7 +118,7 @@ def main():
 
     if args.out:
         Path(args.out).write_text(json.dumps({
-            "profile": profile, "vectors_sha256": got_v,
+            "profile": profile, "vectors_sha256": got_v, "recompute": fixture.get("recompute"),
             "spec_sha256": (got_s if sp is not None else None),
             "runner": "recompute-kit/conformance-suite", "ran_at": int(time.time()),
             "pass": fails == 0, "total": total, "reproduced": reproduced, "results": run,
