@@ -396,8 +396,12 @@ def _cast(*args: str) -> str:
     return p.stdout.strip()
 
 def _mcp_post(endpoint: str, payload: dict) -> dict:
-    req = urllib.request.Request(endpoint, method="POST",
-        headers={"Content-Type": "application/json"}, data=_json.dumps(payload).encode())
+    req = urllib.request.Request(endpoint, method="POST", headers={
+        "Content-Type": "application/json",
+        # Cloudflare-fronted endpoints 403 the default python-urllib UA; present a normal client.
+        "User-Agent": "Mozilla/5.0 (recompute-kit/introspect)",
+        "Accept": "application/json",
+    }, data=_json.dumps(payload).encode())
     with urllib.request.urlopen(req, timeout=20) as r:
         return _json.loads(r.read())
 
