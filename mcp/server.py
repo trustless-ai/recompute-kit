@@ -387,6 +387,7 @@ async def conformance_http(request: Request):
 
 # ── self-service: drop an MCP endpoint → detect its recomputable tools → grade → mint a receipt ──
 import asyncio
+import time
 import urllib.request
 
 def _cast(*args: str) -> str:
