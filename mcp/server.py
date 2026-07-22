@@ -406,40 +406,66 @@ def _mcp_post(endpoint: str, payload: dict) -> dict:
     with urllib.request.urlopen(req, timeout=20) as r:
         return _json.loads(r.read())
 
-def _tool_calldata(endpoint: str, tool: str, args: dict):
+def _tool_inner(endpoint: str, tool: str, args: dict) -> dict:
+    """Call a tool and return its parsed inner JSON result."""
     d = _mcp_post(endpoint, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
                              "params": {"name": tool, "arguments": args}})
-    inner = _json.loads(d["result"]["content"][0]["text"])
+    return _json.loads(d["result"]["content"][0]["text"])
+
+def _tool_calldata(endpoint: str, tool: str, args: dict):
+    inner = _tool_inner(endpoint, tool, args)
     for v in inner.values():
         if isinstance(v, dict) and "data" in v:
             return v["data"]
     return None
 
+from zerog_merkle import file_root_str as _zerog_root
+
 # Recipe registry — how to INDEPENDENTLY derive a tool's output from public rules. A tool with no
 # recipe here is not recomputable (→ Attested). The registry grows; each recipe added makes one more
 # slice of any MCP auto-gradeable.
+#   kind "calldata": expected = cast calldata(sig, params); got = the tx.data the tool builds.
+#   kind "value":    expected = derive(args); got = extract(the tool's returned JSON).
 RECIPES = {
-    "ens_set_addr":    {"desc": "setAddr(namehash(name), address)",
+    "ens_set_addr":    {"kind": "calldata", "desc": "setAddr(namehash(name), address)",
+                        "spec": "ens-write-v0/ens-write-v0.spec.md",
                         "sample": {"name": "dinamic.eth", "address": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14"},
                         "sig": "setAddr(bytes32,address)", "params": lambda a: [_cast("namehash", a["name"]), a["address"]]},
-    "ens_set_text":    {"desc": "setText(namehash(name), key, value)",
+    "ens_set_text":    {"kind": "calldata", "desc": "setText(namehash(name), key, value)",
+                        "spec": "ens-write-v0/ens-write-v0.spec.md",
                         "sample": {"name": "dinamic.eth", "key": "url", "value": "https://verticecriativo.pt"},
                         "sig": "setText(bytes32,string,string)", "params": lambda a: [_cast("namehash", a["name"]), a["key"], a["value"]]},
-    "ens_set_primary": {"desc": "setName(name) [reverse registrar]",
+    "ens_set_primary": {"kind": "calldata", "desc": "setName(name) [reverse registrar]",
+                        "spec": "ens-write-v0/ens-write-v0.spec.md",
                         "sample": {"name": "dinamic.eth"},
                         "sig": "setName(string)", "params": lambda a: [a["name"]]},
+    "og_root":         {"kind": "value", "desc": "0G flow-merkle rootHash(content) — 256B chunks, keccak leaves",
+                        "spec": "storage-root-v0/storage-root-v0.spec.md",
+                        "sample": {"content": "recompute-kit 0g conformance vector — do not change"},
+                        "derive": lambda a: _zerog_root(a["content"]),
+                        "extract": lambda inner: inner.get("rootHash")},
 }
 
 def _derive(recipe: dict, args: dict) -> str:
     return _cast("calldata", recipe["sig"], *recipe["params"](args))
 
-# the spec governing the ENS recipes — pinned into the receipt so the suite identity is self-contained
-_RECIPE_SPEC_SHA = None
-try:
-    _RECIPE_SPEC_SHA = hashlib.sha256(
-        (ROOT / "conformance" / "ens-write-v0" / "ens-write-v0.spec.md").read_bytes()).hexdigest()
-except Exception:
-    pass
+def _grade_tool(endpoint: str, name: str, recipe: dict):
+    """Return (expected, got) for a recipe against a live candidate tool."""
+    args = recipe["sample"]
+    if recipe.get("kind", "calldata") == "value":
+        return args, recipe["derive"](args), recipe["extract"](_tool_inner(endpoint, name, args))
+    return args, _derive(recipe, args), _tool_calldata(endpoint, name, args)
+
+# spec pinning — each recipe's governing profile spec, hashed so a receipt's suite identity is
+# self-contained. A run pins the spec(s) of the tools it actually graded.
+def _spec_sha(rel: str):
+    try:
+        return hashlib.sha256((ROOT / "conformance" / rel).read_bytes()).hexdigest()
+    except Exception:
+        return None
+
+# back-compat single value (the ENS profile), still referenced elsewhere
+_RECIPE_SPEC_SHA = _spec_sha("ens-write-v0/ens-write-v0.spec.md")
 
 @mcp.custom_route("/conformance/introspect", methods=["POST"])
 async def introspect(request: Request):
@@ -467,9 +493,7 @@ async def introspect(request: Request):
                 graded.append({"tool": name, "lane": "attested", "reason": "no recompute recipe"})
                 continue
             try:
-                args = recipe["sample"]
-                expected = _derive(recipe, args)
-                got = _tool_calldata(endpoint, name, args)
+                args, expected, got = _grade_tool(endpoint, name, recipe)
                 graded.append({"tool": name, "lane": "recomputable", "recompute": recipe["desc"],
                                "args": args, "expected": {"value": expected}, "got": {"value": got},
                                "ok": expected == got})
@@ -477,8 +501,15 @@ async def introspect(request: Request):
                 graded.append({"tool": name, "lane": "attested", "reason": f"recipe error: {e}"})
         rec = [g for g in graded if g["lane"] == "recomputable"]
         passed = len(rec) > 0 and all(g["ok"] for g in rec)
+        # pin the spec(s) of the tools actually graded: a single hash if uniform, else a map
+        specs = {}
+        for g in rec:
+            sp = RECIPES[g["tool"]].get("spec")
+            if sp:
+                specs[sp] = _spec_sha(sp)
+        spec_pin = (next(iter(specs.values())) if len(specs) == 1 else (specs or None))
         run = {
-            "profile": "mcp_introspect.v0", "vectors_sha256": None, "spec_sha256": _RECIPE_SPEC_SHA,
+            "profile": "mcp_introspect.v0", "vectors_sha256": None, "spec_sha256": spec_pin,
             "recompute": "per tool: independent derivation from public rules (recompute-kit recipe registry)",
             "runner": "recompute-kit/introspect", "ran_at": int(time.time()),
             "pass": passed, "reproduced": sum(1 for g in rec if g["ok"]), "total": len(rec),
