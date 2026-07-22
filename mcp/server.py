@@ -420,6 +420,7 @@ def _tool_calldata(endpoint: str, tool: str, args: dict):
     return None
 
 from zerog_merkle import file_root_str as _zerog_root
+from ens_contenthash import encode_ipfs as _ipfs_contenthash
 
 # Recipe registry — how to INDEPENDENTLY derive a tool's output from public rules. A tool with no
 # recipe here is not recomputable (→ Attested). The registry grows; each recipe added makes one more
@@ -439,6 +440,11 @@ RECIPES = {
                         "spec": "ens-write-v0/ens-write-v0.spec.md",
                         "sample": {"name": "dinamic.eth"},
                         "sig": "setName(string)", "params": lambda a: [a["name"]]},
+    "ens_set_contenthash": {"kind": "calldata", "desc": "setContenthash(namehash(name), ENSIP-7 contenthash(CID))",
+                        "spec": "id-write-v0/id-write-v0.spec.md",
+                        "sample": {"name": "gobross.eth", "contenthash": "ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4"},
+                        "sig": "setContenthash(bytes32,bytes)",
+                        "params": lambda a: [_cast("namehash", a["name"]), _ipfs_contenthash(a["contenthash"])]},
     "og_root":         {"kind": "value", "desc": "0G flow-merkle rootHash(content) — 256B chunks, keccak leaves",
                         "spec": "storage-root-v0/storage-root-v0.spec.md",
                         "sample": {"content": "recompute-kit 0g conformance vector — do not change"},

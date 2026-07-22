@@ -1,0 +1,56 @@
+{
+  "profile": "id-write.v0",
+  "spec": "id-write-v0.spec.md",
+  "namespace": "ipfs-ns (0xe3)",
+  "reference": "EIP-137 namehash + ENSIP-7/EIP-1577 contenthash; independent encoder mcp/ens_contenthash.py (validated vs content-hash golden vectors + live MCP)",
+  "vectors": [
+    {
+      "name": "sample_recipe",
+      "tool": "ens_set_contenthash",
+      "recompute": "setContenthash selector || namehash(name) || abi(bytes ENSIP-7-contenthash(CID))",
+      "input": {
+        "name": "gobross.eth",
+        "contenthash": "ipfs://QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4"
+      },
+      "expected": {
+        "calldata": "0x304e6adeaa06cde76abbafa937be4a0fcbd993c511c71fc94ad12939789b86b5f2109f9a00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000026e3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f0000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "cidv1",
+      "tool": "ens_set_contenthash",
+      "recompute": "setContenthash selector || namehash(name) || abi(bytes ENSIP-7-contenthash(CID))",
+      "input": {
+        "name": "gobross.eth",
+        "contenthash": "ipfs://bafybeibj6lixxzqtsb45ysdjnupvqkufgdvzqbnvmhw2kf7cfkesy7r7d4"
+      },
+      "expected": {
+        "calldata": "0x304e6adeaa06cde76abbafa937be4a0fcbd993c511c71fc94ad12939789b86b5f2109f9a00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000026e3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f0000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "bare_cidv0",
+      "tool": "ens_set_contenthash",
+      "recompute": "setContenthash selector || namehash(name) || abi(bytes ENSIP-7-contenthash(CID))",
+      "input": {
+        "name": "dinamic.eth",
+        "contenthash": "QmRAQB6YaCyidP37UdDnjFY5vQuiBrcqdyoW1CuDgwxkD4"
+      },
+      "expected": {
+        "calldata": "0x304e6ade9548b253d5c2c63905c3b5df0257bf3f343582d80f4a993423664a9e09d1e98000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000026e3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f0000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "subname",
+      "tool": "ens_set_contenthash",
+      "recompute": "setContenthash selector || namehash(name) || abi(bytes ENSIP-7-contenthash(CID))",
+      "input": {
+        "name": "app.gobross.eth",
+        "contenthash": "ipfs://bafybeibj6lixxzqtsb45ysdjnupvqkufgdvzqbnvmhw2kf7cfkesy7r7d4"
+      },
+      "expected": {
+        "calldata": "0x304e6ade06032def1910e91b97034cd193207b21e91ea626b72bef69135bb7fa4eac62d800000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000026e3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f0000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ]
+}
