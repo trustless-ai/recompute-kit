@@ -1,0 +1,11 @@
+{
+  "profile": "ens_write.v0",
+  "description": "Golden vectors for the ENS write MCP. Each is a LIVE tool call whose deterministic calldata (namehash + resolver encoding — no live reads) is recomputed via keccak256. A compliant MCP reproduces every one; a non-compliant build (which constructs a different transaction) does not.",
+  "vectors": [
+    { "name": "ens_set_addr · dinamic.eth",     "mcp": { "tool": "ens_set_addr",    "args": { "name": "dinamic.eth", "address": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14" } }, "expected": { "value": "0xc1d03b27e4ecb5253bda08e2a6ccc11cb3d335ee4dfd836563e483b81402df70" } },
+    { "name": "ens_set_addr · gobross.eth",     "mcp": { "tool": "ens_set_addr",    "args": { "name": "gobross.eth", "address": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14" } }, "expected": { "value": "0x894b1870ebcf6712591b88055e676954165b113827f2e07d123db01aedb519a2" } },
+    { "name": "ens_set_text · url",             "mcp": { "tool": "ens_set_text",    "args": { "name": "dinamic.eth", "key": "url", "value": "https://verticecriativo.pt" } }, "expected": { "value": "0xab5a2b845a2553a264691b01b69231be686c257d79826e7e4336693a72e8f21b" } },
+    { "name": "ens_set_text · com.github",      "mcp": { "tool": "ens_set_text",    "args": { "name": "dinamic.eth", "key": "com.github", "value": "TMerlini" } }, "expected": { "value": "0xd7764fa97d52a1f51ddaf89334f5a61bb547b9dec8918dd23ca3340894af2d57" } },
+    { "name": "ens_set_primary · dinamic.eth",  "mcp": { "tool": "ens_set_primary", "args": { "name": "dinamic.eth" } }, "expected": { "value": "0x97a4da5b215acc79548bd3c9720dbacf91ab6c27fdcaacd4429cdbd80c7e7bf5" } }
+  ]
+}
