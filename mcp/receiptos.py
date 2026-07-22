@@ -74,7 +74,7 @@ DEFAULT_PROJECT_REFS = ["trustless-ai/recompute-kit", "Echo-Merlini/agent-mcp-ca
 
 
 def build_portable_object(capsule: dict, *, proof_system: str = "recompute-kit/conformance",
-                          project_refs=None, relation_type: str = "conformance-grade") -> dict:
+                          project_refs=None, relation_type: str = "external-conformance") -> dict:
     """Wrap a receiptos.evidence_capsule.v0 in a portable_proof_object.v0.
 
     Pure function of the capsule — no wall-clock, so re-export is byte-identical. Fails closed if the
@@ -99,7 +99,14 @@ def build_portable_object(capsule: dict, *, proof_system: str = "recompute-kit/c
     verdict = cap.get("verdict") or {}
 
     return {
-        "schema": "receiptos.portable_proof_object.v0",
+        # NOT receiptos.portable_proof_object.v0 — that v0 is welded to the Stealth/HandoffEvidence
+        # producer (fixed proof_system=ReceiptOS, relation_type=imported, required producer/metadata/
+        # created_at/source_evidence_ref) and an honest external conformance exporter cannot fill it
+        # without synthesizing values (which we refuse). This is our own external-conformance object
+        # whose IDENTITY lives in the receiptos namespace (proof_object_id/proof_ref/receipt_root are the
+        # audited, interop-proven chain), pending a canonical ReceiptOS external/conformance profile we'll
+        # adopt once pinned.
+        "schema": "recompute-kit.conformance_proof_object.v0",
         "proof_object_id": proof_object_id,
         "proof_ref": proof_ref,
         "proof_system": proof_system,
@@ -115,9 +122,10 @@ def build_portable_object(capsule: dict, *, proof_system: str = "recompute-kit/c
         "source_evidence_ref": None,
         "evidence_capsule": capsule,
         # deterministic projection of already-pinned capsule fields only; the verifier verdict is the
-        # capsule's own (preserved), NOT inferred from the receipt_root match.
+        # capsule's own, carried VERBATIM ({ ok, status }) — never a projected string, never inferred
+        # from the receipt_root match.
         "provenance_summary": {
-            "verifier_result": (capsule.get("verifier_result") or {}).get("status"),
+            "verifier_result": capsule.get("verifier_result"),
             "pass": verdict.get("pass"),
             "reproduced": verdict.get("reproduced"),
             "total": verdict.get("total"),
