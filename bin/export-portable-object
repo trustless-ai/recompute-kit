@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+"""export-portable-object — wrap a receiptos.evidence_capsule.v0 in a portable_proof_object.v0.
+
+Deterministic w.r.t. the capsule: no export-time wall-clock, no synthesized references, so
+re-exporting a given capsule is byte-identical. Fails closed if the capsule's stored receipt_root
+does not recompute. A matching root binds identity + integrity only — NOT proof validity; the
+capsule's verifier_result is preserved verbatim.
+
+Usage:
+  export-portable-object CAPSULE.json         # capsule file → portable object on stdout
+  cat CAPSULE.json | export-portable-object -  # or from stdin
+"""
+import sys
+import json
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mcp"))
+from receiptos import build_portable_object
+
+
+def main() -> int:
+    src = sys.argv[1] if len(sys.argv) > 1 else "-"
+    try:
+        capsule = json.load(sys.stdin if src == "-" else open(src))
+    except Exception as e:
+        print(f"error: could not read capsule JSON: {e}", file=sys.stderr)
+        return 2
+    try:
+        obj = build_portable_object(capsule)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    json.dump(obj, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

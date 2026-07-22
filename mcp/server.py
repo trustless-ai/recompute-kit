@@ -306,47 +306,11 @@ import tempfile
 import hashlib
 
 # ── portable conformance RECEIPT (crystal-receipt / ReceiptOS compatible) ──────────────────────
-# A submitter's run is minted as a self-contained receiptos.evidence_capsule.v0 they can DOWNLOAD
-# and re-verify OFFLINE, no trust in this gate: the root recomputes by the receiptos-c14n-v0 rule
-# and every vector carries its rule + expected + got so the verdict is independently re-derivable.
-def _receipt_root(receipt: dict) -> str:
-    # receiptos-c14n-v0: "0x" + sha256(JCS(receipt \ {anchor, receipt_root}))
-    content = {k: v for k, v in receipt.items() if k not in ("anchor", "receipt_root")}
-    c = _json.dumps(content, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return "0x" + hashlib.sha256(c.encode("utf-8")).hexdigest()
-
-def _build_receipt(run: dict, candidate: dict) -> dict:
-    ok = bool(run.get("pass"))
-    rep, tot = run.get("reproduced"), run.get("total")
-    receipt = {
-        "schema": "receiptos.evidence_capsule.v0",
-        "action": {
-            "summary": f"Conformance grade: {candidate.get('label', 'MCP')} against {run.get('profile')}",
-            "source_fields": ["candidate.endpoint", "capsule.suite.vectors_sha256"],
-        },
-        "evidence": {
-            "summary": (f"{rep}/{tot} golden vectors reproduced — the MCP's output matched the "
-                        "recompute-kit's independent derivation from public rules"
-                        if ok else f"{rep}/{tot} reproduced — the MCP did not build what the rules dictate"),
-            "source_fields": ["capsule.results[].expected", "capsule.results[].got"],
-            "status": "present",
-        },
-        "verifier_result": {"ok": ok, "status": "verified" if ok else "rejected"},
-        "capsule": {
-            "profile": run.get("profile"),
-            "suite": {"vectors_sha256": run.get("vectors_sha256"),
-                      "spec_sha256": run.get("spec_sha256"),
-                      "recompute": run.get("recompute")},
-            "candidate": candidate,
-            "verdict": {"pass": ok, "reproduced": rep, "total": tot},
-            "results": run.get("results", []),
-        },
-        "anchor": {"ran_at": run.get("ran_at"), "runner": run.get("runner", "recompute-kit/conformance-suite")},
-    }
-    root = _receipt_root(receipt)
-    receipt["receipt_root"] = {"stored": root, "computed": root, "match": True, "status": "verified",
-                               "derivation": "receiptos-c14n-v0 — 0x + sha256(JCS(receipt \\ {anchor, receipt_root}))"}
-    return receipt
+# Canonicalization + the evidence-capsule / portable-object builders live in receiptos.py, so the
+# gate, the export CLI, and the /conformance/export endpoint all produce byte-identical roots
+# (receiptos-c14n-v0). A run is minted as a self-contained receiptos.evidence_capsule.v0 that
+# re-verifies OFFLINE: the root recomputes by the rule and every vector carries rule+expected+got.
+from receiptos import receipt_root as _receipt_root, build_capsule as _build_receipt, build_portable_object
 
 @mcp.custom_route("/conformance/run", methods=["POST"])
 async def conformance_http(request: Request):
@@ -564,6 +528,24 @@ async def introspect(request: Request):
 
     result = await asyncio.to_thread(work)
     return JSONResponse(result, status_code=(200 if "error" not in result else 502))
+
+
+@mcp.custom_route("/conformance/export", methods=["POST"])
+async def export_portable(request: Request):
+    """POST { capsule } (a receiptos.evidence_capsule.v0) → a deterministic
+    receiptos.portable_proof_object.v0. Fails closed if the capsule's stored root does not recompute.
+    A matching root binds identity + integrity only — the capsule's verifier_result is preserved, not
+    promoted to a validity verdict."""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "expected JSON body"}, status_code=400)
+    capsule = (body or {}).get("capsule") or body
+    try:
+        obj = build_portable_object(capsule)
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    return JSONResponse({"portable_object": obj})
 
 
 if __name__ == "__main__":
