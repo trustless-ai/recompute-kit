@@ -1,0 +1,62 @@
+{
+  "profile": "dex-calldata.v0",
+  "spec": "dex-calldata-v0.spec.md",
+  "selector": "0x04e45aaf",
+  "reference": "Uniswap v3 SwapRouter02 exactInputSingle; independent ABI encoder via foundry cast",
+  "vectors": [
+    {
+      "name": "sample_recipe",
+      "tool": "uniswap_encode_swap",
+      "recompute": "exactInputSingle selector || abi(tokenIn,tokenOut,fee,recipient,amountIn,amountOutMinimum,sqrtPriceLimitX96)",
+      "input": {
+        "chainId": 1,
+        "tokenIn": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "fee": 3000,
+        "recipient": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "amountIn": "100000000000000000",
+        "amountOutMinimum": "0",
+        "sqrtPriceLimitX96": "0"
+      },
+      "expected": {
+        "calldata": "0x04e45aaf000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000ff9a176577fb42b6bc9c19fd05a241e8fcd0ca14000000000000000000000000000000000000000000000000016345785d8a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "weth_usdc_500",
+      "tool": "uniswap_encode_swap",
+      "recompute": "exactInputSingle selector || abi(tokenIn,tokenOut,fee,recipient,amountIn,amountOutMinimum,sqrtPriceLimitX96)",
+      "input": {
+        "chainId": 1,
+        "tokenIn": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "fee": 500,
+        "recipient": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "amountIn": "250000000000000000",
+        "amountOutMinimum": "900000000",
+        "sqrtPriceLimitX96": "0"
+      },
+      "expected": {
+        "calldata": "0x04e45aaf000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000001f4000000000000000000000000ff9a176577fb42b6bc9c19fd05a241e8fcd0ca1400000000000000000000000000000000000000000000000003782dace9d900000000000000000000000000000000000000000000000000000000000035a4e9000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "base_weth_usdc",
+      "tool": "uniswap_encode_swap",
+      "recompute": "exactInputSingle selector || abi(tokenIn,tokenOut,fee,recipient,amountIn,amountOutMinimum,sqrtPriceLimitX96)",
+      "input": {
+        "chainId": 8453,
+        "tokenIn": "0x4200000000000000000000000000000000000006",
+        "tokenOut": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "fee": 3000,
+        "recipient": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "amountIn": "100000000000000000",
+        "amountOutMinimum": "0",
+        "sqrtPriceLimitX96": "0"
+      },
+      "expected": {
+        "calldata": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda029130000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000ff9a176577fb42b6bc9c19fd05a241e8fcd0ca14000000000000000000000000000000000000000000000000016345785d8a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ]
+}

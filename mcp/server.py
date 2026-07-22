@@ -450,6 +450,15 @@ RECIPES = {
                         "sample": {"content": "recompute-kit 0g conformance vector — do not change"},
                         "derive": lambda a: _zerog_root(a["content"]),
                         "extract": lambda inner: inner.get("rootHash")},
+    "uniswap_encode_swap": {"kind": "calldata", "desc": "exactInputSingle(params) SwapRouter02 v3 calldata",
+                        "spec": "dex-calldata-v0/dex-calldata-v0.spec.md",
+                        "sample": {"chainId": 1, "tokenIn": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                                   "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "fee": 3000,
+                                   "recipient": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+                                   "amountIn": "100000000000000000", "amountOutMinimum": "0", "sqrtPriceLimitX96": "0"},
+                        "sig": "exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))",
+                        "params": lambda a: ["(%s,%s,%s,%s,%s,%s,%s)" % (a["tokenIn"], a["tokenOut"], a["fee"],
+                                             a["recipient"], a["amountIn"], a["amountOutMinimum"], a.get("sqrtPriceLimitX96", "0"))]},
 }
 
 def _derive(recipe: dict, args: dict) -> str:
