@@ -462,7 +462,33 @@ RECIPES = {
 }
 
 def _derive(recipe: dict, args: dict) -> str:
-    return _cast("calldata", recipe["sig"], *recipe["params"](args))
+    sig = recipe["sig"](args) if callable(recipe["sig"]) else recipe["sig"]
+    return _cast("calldata", sig, *recipe["params"](args))
+
+# Seaport BasicOrderParameters -> a cast tuple string (the OpenSea fulfillment_data.parameters shape)
+_SEAPORT_ORDER = ["considerationToken", "considerationIdentifier", "considerationAmount", "offerer", "zone",
+                  "offerToken", "offerIdentifier", "offerAmount", "basicOrderType", "startTime", "endTime",
+                  "zoneHash", "salt", "offererConduitKey", "fulfillerConduitKey", "totalOriginalAdditionalRecipients"]
+def _seaport_tuple(p: dict) -> str:
+    f = [str(p[k]) for k in _SEAPORT_ORDER]
+    f.append("[" + ",".join("(%s,%s)" % (r["amount"], r["recipient"]) for r in p.get("additionalRecipients", [])) + "]")
+    f.append(p["signature"])
+    return "(" + ",".join(f) + ")"
+
+def _load_json(rel: str):
+    try:
+        return _json.loads((ROOT / "conformance" / rel).read_text())
+    except Exception:
+        return None
+_OPENSEA_SAMPLE = _load_json("nft-fulfill-v0/nft-fulfill-v0.sample.json") or {"function": "", "parameters": {}}
+
+RECIPES["opensea_encode_fulfillment"] = {
+    "kind": "calldata", "desc": "Seaport fulfillBasicOrder calldata from explicit BasicOrderParameters",
+    "spec": "nft-fulfill-v0/nft-fulfill-v0.spec.md",
+    "sample": _OPENSEA_SAMPLE,
+    "sig": lambda a: a["function"],
+    "params": lambda a: [_seaport_tuple(a["parameters"])],
+}
 
 def _grade_tool(endpoint: str, name: str, recipe: dict):
     """Return (expected, got) for a recipe against a live candidate tool."""

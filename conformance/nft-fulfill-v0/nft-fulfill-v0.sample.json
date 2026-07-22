@@ -1,0 +1,28 @@
+{
+  "function": "fulfillBasicOrder_efficient_6GL6yc((address,uint256,uint256,address,address,address,uint256,uint256,uint8,uint256,uint256,bytes32,uint256,bytes32,bytes32,uint256,(uint256,address)[],bytes))",
+  "parameters": {
+    "considerationToken": "0x0000000000000000000000000000000000000000",
+    "considerationIdentifier": "0",
+    "considerationAmount": "8886240000000000000",
+    "offerer": "0x73e4fdd812a1c28706cfbd03249731ef50f6f520",
+    "zone": "0x0000000000000000000000000000000000000000",
+    "offerToken": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+    "offerIdentifier": "7855",
+    "offerAmount": "1",
+    "basicOrderType": 0,
+    "startTime": "1784361301",
+    "endTime": "1792137301",
+    "zoneHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "salt": "27855337018906766782546881864045825683096516384821792734238612106295209960001",
+    "offererConduitKey": "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+    "fulfillerConduitKey": "0x0000007b02230091a7ed01230072f7006a004d60a8d4e71d599b8104250f0000",
+    "totalOriginalAdditionalRecipients": "1",
+    "additionalRecipients": [
+      {
+        "amount": "89760000000000000",
+        "recipient": "0x0000a26b00c1f0df003000390027140000faa719"
+      }
+    ],
+    "signature": "0x3f91d198e7615fed83fb06d5720963eb27256e5858a0f8c3d7fbc42b1719ac0f07ae05fbf65faf0ecb9f6e581bb5e9f7689acdff2e13ad1fbdb52c336d1d55ad1c"
+  }
+}
