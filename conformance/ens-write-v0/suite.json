@@ -1,1 +1,12 @@
-{ "profile": "ens_write.v0", "vectors": { "path": "ens-write-v0.vectors.json", "sha256": "29d57fd5534c8d25f37b2ae6428846c4522a43a2bf8b3ee6c6c70089abf06491" }, "adapter": { "kind": "stdio", "cmd": "bun gate.ts --grade" }, "laneHint": "recomputable" }
+{
+"profile": "ens_write.v0",
+"vectors": {
+"path": "ens-write-v0.vectors.json",
+"sha256": "f4fec32aafb2dcc19c537e29339fb86db8d9e770cd20d25b8ccfab1fc5e333a7"
+},
+"adapter": {
+"kind": "stdio",
+"cmd": "bun gate.ts --grade"
+},
+"laneHint": "recomputable"
+}
