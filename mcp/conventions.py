@@ -35,7 +35,8 @@ def _win_rate_float_4dp(wins: int, losses: int):
 def _win_rate_bps(wins: int, losses: int):
     if wins == 0 and losses == 0:
         raise ValueError("cannot compute win rate: both wins and losses are zero")
-    return round(wins * 10000 / (wins + losses))     # integer basis points 0..10000, round-half-to-even
+    total = wins + losses
+    return (wins * 20000 + total) // (2 * total)     # exact integer, round-half-UP (half-away-from-zero)
 
 
 CONVENTIONS = {
@@ -55,12 +56,11 @@ CONVENTIONS = {
         "spec": {
             "id": "win_rate.bps.v0",
             "quantity": "erc8275.win_rate",
-            "formula": "winRateBps = gated_wins * 10000 / (gated_wins + gated_losses)",
+            "formula": "winRateBps = (gated_wins*20000 + total) // (2*total), total = wins+losses",
             "representation": "integer basis points, 0..10000",
-            "rounding_mode": "round-half-to-even",
+            "rounding_mode": "round-half-up (half-away-from-zero), exact integer division — never a float round()",
             "erc": "ERC-8275",
-            "note": "computed directly from integers (not float-then-scale) to avoid double-rounding",
-            "source": "basis-points cutover (agent-sdk#5); winRateBps live on babyblueviper /ledger",
+            "source": "agent-sdk#5 @87b08f3 reputation/erc8275 — Python/Rust/TS identical; winRateBps live on babyblueviper /ledger",
         },
         "compute": _win_rate_bps,
     },

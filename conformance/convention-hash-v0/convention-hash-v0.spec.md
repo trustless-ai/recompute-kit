@@ -37,10 +37,18 @@ Two genuinely exist as of the basis-points cutover (agent-sdk#5; `winRateBps` li
 | convention | rule | `governing_convention_hash` |
 | --- | --- | --- |
 | `win_rate.float-4dp.v0` | `round(wins/(wins+losses), 4)` — float, 4 dp, round-half-to-even | `0xf08010c4…0227` |
-| `win_rate.bps.v0` | `round(wins*10000/(wins+losses))` — integer bps, round-half-to-even | `0x3308be08…4250` |
+| `win_rate.bps.v0` | `(wins*20000 + total) // (2*total)` — exact integer, **round-half-up** | `0x0501b75d…8daf` |
 
 The full pinned specs (with rounding mode) are carried in `convention-hash-v0.vectors.json`; the hashes
 above are `sha256(JCS(spec))` over those exact objects.
+
+**Converged against the shipped code, not inferred.** The `bps` rule is locked to `trustless-ai/agent-sdk#5`
+(`@87b08f3`, reputation/erc8275 — Python/Rust/TS identical: `(wins*20000 + total)//(2*total)`, half-away-
+from-zero, *"Never a float round()"*), and this suite **reproduces its golden vectors** —
+`0/15→0`, `16/0→10000`, `1/2→3333`, `16/15→5161`. An earlier *inferred* rule (`round(...)`, round-half-to-
+**even**) produced a different hash and a different value at ties — e.g. `1 win / 31 losses` = exactly
+312.5 bps → **313** under the shipped round-half-up vs **312** under round-half-even. That 1-bps split is
+exactly what the `governing_convention_hash` makes explicit instead of silent.
 
 ## Why it matters (the disambiguation)
 
