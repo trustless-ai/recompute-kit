@@ -37,7 +37,7 @@ Two genuinely exist as of the basis-points cutover (agent-sdk#5; `winRateBps` li
 | convention | rule | `governing_convention_hash` |
 | --- | --- | --- |
 | `win_rate.float-4dp.v0` | `round(wins/(wins+losses), 4)` — float, 4 dp, round-half-to-even | `0xf08010c4…0227` |
-| `win_rate.bps.v0` | `(wins*20000 + total) // (2*total)` — exact integer, **round-half-up** | `0x0501b75d…8daf` |
+| `win_rate.bps.halfup.v0` | `(wins*20000 + total) // (2*total)` — exact integer, **round-half-up** | `0x2a6ffa51…b25d` |
 
 The full pinned specs (with rounding mode) are carried in `convention-hash-v0.vectors.json`; the hashes
 above are `sha256(JCS(spec))` over those exact objects.

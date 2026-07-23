@@ -14,10 +14,10 @@
         "source": "trustless-ai/agent-sdk reputation/erc8275/recompute.py compute_win_rate"
       }
     },
-    "win_rate.bps.v0": {
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+    "win_rate.bps.halfup.v0": {
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "spec": {
-        "id": "win_rate.bps.v0",
+        "id": "win_rate.bps.halfup.v0",
         "quantity": "erc8275.win_rate",
         "formula": "winRateBps = (gated_wins*20000 + total) // (2*total), total = wins+losses",
         "representation": "integer basis points, 0..10000",
@@ -27,74 +27,84 @@
       }
     }
   },
-  "converged_against": "trustless-ai/agent-sdk#5 @87b08f3 reputation/erc8275 (py/rust/ts) golden vectors",
+  "converged_against": "trustless-ai/agent-sdk#5 @87b08f3 reputation/erc8275 (py/rust/ts); babyblueviper /ledger",
   "vectors": [
     {
       "name": "bps_golden_0_15",
       "wins": 0,
       "losses": 15,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 0,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {
       "name": "bps_golden_16_0",
       "wins": 16,
       "losses": 0,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 10000,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {
       "name": "bps_golden_1_2",
       "wins": 1,
       "losses": 2,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 3333,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {
       "name": "bps_golden_16_15",
       "wins": 16,
       "losses": 15,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 5161,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {
       "name": "bps_golden_0_10",
       "wins": 0,
       "losses": 10,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 0,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {
-      "name": "bps_tie_half_up_313",
+      "name": "bps_golden_1_31",
       "wins": 1,
       "losses": 31,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 313,
       "expected": {
         "status": "verified",
-        "convention": "win_rate.bps.v0"
-      },
-      "note": "exactly 312.5 bps; round-half-up=313. round-half-even would be 312 = a DIFFERENT convention."
+        "convention": "win_rate.bps.halfup.v0"
+      }
+    },
+    {
+      "name": "bps_golden_9_23",
+      "wins": 9,
+      "losses": 23,
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
+      "value": 2813,
+      "expected": {
+        "status": "verified",
+        "convention": "win_rate.bps.halfup.v0"
+      }
     },
     {
       "name": "float_4dp_match",
@@ -108,14 +118,26 @@
       }
     },
     {
+      "name": "half_even_value_rejected_under_halfup",
+      "wins": 1,
+      "losses": 31,
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
+      "value": 312,
+      "expected": {
+        "status": "rejected",
+        "convention": "win_rate.bps.halfup.v0"
+      },
+      "note": "312 = round-half-even; a different convention → rejected under half-up"
+    },
+    {
       "name": "old_float_value_under_bps_rejected",
       "wins": 19,
       "losses": 1,
-      "governing_convention_hash": "0x0501b75db8e9ef4ef67c74efcfbe2a200b0a7e5aea5ca62f778c91c119e68daf",
+      "governing_convention_hash": "0x2a6ffa519d28125c74c3ac14bc61d30367529d706653c39b98af0ef58468b25d",
       "value": 0.95,
       "expected": {
         "status": "rejected",
-        "convention": "win_rate.bps.v0"
+        "convention": "win_rate.bps.halfup.v0"
       }
     },
     {

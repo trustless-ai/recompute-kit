@@ -52,9 +52,9 @@ CONVENTIONS = {
         },
         "compute": _win_rate_float_4dp,
     },
-    "win_rate.bps.v0": {
+    "win_rate.bps.halfup.v0": {
         "spec": {
-            "id": "win_rate.bps.v0",
+            "id": "win_rate.bps.halfup.v0",
             "quantity": "erc8275.win_rate",
             "formula": "winRateBps = (gated_wins*20000 + total) // (2*total), total = wins+losses",
             "representation": "integer basis points, 0..10000",
