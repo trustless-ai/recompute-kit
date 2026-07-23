@@ -530,6 +530,31 @@ async def introspect(request: Request):
     return JSONResponse(result, status_code=(200 if "error" not in result else 502))
 
 
+import conventions as _conv
+
+@mcp.custom_route("/conventions", methods=["GET"])
+async def conventions_registry(request: Request):
+    """The registered rounding conventions + their content-addressed governing_convention_hash."""
+    return JSONResponse({"conventions": {cid: {"governing_convention_hash": _conv.CONVENTION_HASH[cid],
+                                               "spec": c["spec"]} for cid, c in _conv.CONVENTIONS.items()}})
+
+
+@mcp.custom_route("/conventions/verify", methods=["POST"])
+async def conventions_verify(request: Request):
+    """POST { value, governing_convention_hash, wins, losses } → tri-state (verified/rejected/
+    unverifiable). Recompute under the PINNED convention, resolved from the hash — never the current
+    default; unknown convention fails closed."""
+    try:
+        b = await request.json()
+    except Exception:
+        return JSONResponse({"error": "expected JSON body"}, status_code=400)
+    try:
+        r = _conv.verify(b.get("value"), b.get("governing_convention_hash"), int(b["wins"]), int(b["losses"]))
+    except (KeyError, ValueError, TypeError) as e:
+        return JSONResponse({"error": f"bad request: {e}"}, status_code=400)
+    return JSONResponse(r)
+
+
 @mcp.custom_route("/conformance/export", methods=["POST"])
 async def export_portable(request: Request):
     """POST { capsule } (a receiptos.evidence_capsule.v0) → a deterministic

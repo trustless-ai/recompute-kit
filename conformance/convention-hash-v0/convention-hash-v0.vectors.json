@@ -1,0 +1,87 @@
+{
+  "profile": "convention-hash.v0",
+  "spec": "convention-hash-v0.spec.md",
+  "conventions": {
+    "win_rate.float-4dp.v0": {
+      "governing_convention_hash": "0xf08010c434aa6affafb8f8976be12cab526471093e241c88f3218be2ac380227",
+      "spec": {
+        "id": "win_rate.float-4dp.v0",
+        "quantity": "erc8275.win_rate",
+        "formula": "winRate = gated_wins / (gated_wins + gated_losses)",
+        "representation": "float in [0,1], 4 decimal places",
+        "rounding_mode": "round-half-to-even",
+        "erc": "ERC-8275",
+        "source": "trustless-ai/agent-sdk reputation/erc8275/recompute.py compute_win_rate"
+      }
+    },
+    "win_rate.bps.v0": {
+      "governing_convention_hash": "0x3308be08c648c3fe61a48b2db4d8672e400d35409a2909c5b01a8ac6672b4250",
+      "spec": {
+        "id": "win_rate.bps.v0",
+        "quantity": "erc8275.win_rate",
+        "formula": "winRateBps = gated_wins * 10000 / (gated_wins + gated_losses)",
+        "representation": "integer basis points, 0..10000",
+        "rounding_mode": "round-half-to-even",
+        "erc": "ERC-8275",
+        "note": "computed directly from integers (not float-then-scale) to avoid double-rounding",
+        "source": "basis-points cutover (agent-sdk#5); winRateBps live on babyblueviper /ledger"
+      }
+    }
+  },
+  "vectors": [
+    {
+      "name": "float_4dp_match",
+      "wins": 19,
+      "losses": 1,
+      "governing_convention_hash": "0xf08010c434aa6affafb8f8976be12cab526471093e241c88f3218be2ac380227",
+      "value": 0.95,
+      "expected": {
+        "status": "verified",
+        "convention": "win_rate.float-4dp.v0"
+      }
+    },
+    {
+      "name": "bps_match",
+      "wins": 19,
+      "losses": 1,
+      "governing_convention_hash": "0x3308be08c648c3fe61a48b2db4d8672e400d35409a2909c5b01a8ac6672b4250",
+      "value": 9500,
+      "expected": {
+        "status": "verified",
+        "convention": "win_rate.bps.v0"
+      }
+    },
+    {
+      "name": "old_float_value_under_bps_convention_rejected",
+      "wins": 19,
+      "losses": 1,
+      "governing_convention_hash": "0x3308be08c648c3fe61a48b2db4d8672e400d35409a2909c5b01a8ac6672b4250",
+      "value": 0.95,
+      "expected": {
+        "status": "rejected",
+        "convention": "win_rate.bps.v0"
+      }
+    },
+    {
+      "name": "wrong_value_rejected",
+      "wins": 19,
+      "losses": 1,
+      "governing_convention_hash": "0xf08010c434aa6affafb8f8976be12cab526471093e241c88f3218be2ac380227",
+      "value": 0.9,
+      "expected": {
+        "status": "rejected",
+        "convention": "win_rate.float-4dp.v0"
+      }
+    },
+    {
+      "name": "unknown_convention_unverifiable",
+      "wins": 19,
+      "losses": 1,
+      "governing_convention_hash": "0xdededededededededededededededededededededededededededededededede",
+      "value": 0.95,
+      "expected": {
+        "status": "unverifiable"
+      }
+    }
+  ]
+}
