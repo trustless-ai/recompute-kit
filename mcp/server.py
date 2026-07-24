@@ -454,6 +454,38 @@ RECIPES["opensea_encode_fulfillment"] = {
     "params": lambda a: [_seaport_tuple(a["parameters"])],
 }
 
+# ── The Graph: a subgraph read PINNED to a finalized block is byte-reproducible ──
+# Any indexer serving that deployment returns identical data for that block, so the kit re-runs the
+# exact pinned query independently and compares the canonical JSON byte-for-byte. Live (latest) reads
+# have no recipe → Attested; block-pinned reads are Recomputable. Needs THEGRAPH_API_KEY (shared env).
+def _graph_fetch_at_block(a: dict):
+    key = os.environ.get("THEGRAPH_API_KEY", "")
+    sub = a.get("subgraphId") or os.environ.get("THEGRAPH_DEFAULT_SUBGRAPH", "")
+    url = f"https://gateway.thegraph.com/api/{key}/subgraphs/id/{sub}"
+    payload = _json.dumps({"query": a["query"], "variables": {**a.get("variables", {}), "block": a["block"]}})
+    # curl, not urllib: The Graph's gateway Cloudflare-blocks urllib's TLS fingerprint (403); curl passes.
+    out = subprocess.run(["curl", "-s", "--max-time", "30", "-X", "POST", url,
+                          "-H", "content-type: application/json", "-d", payload],
+                         capture_output=True, text=True, timeout=35).stdout
+    return _json.loads(out).get("data")
+
+def _canon_json(o) -> str:
+    return _json.dumps(o, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+RECIPES["graph_query_at_block"] = {
+    "kind": "value",
+    "desc": "A subgraph read pinned to a finalized block — byte-reproducible across indexers",
+    "spec": "graph-query-v0/graph-query-v0.spec.md",
+    "sample": {
+        "subgraphId": "5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
+        "block": 20000000,
+        "query": 'query($block:Int!){ pool(id:"0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640", block:{number:$block}){ totalValueLockedUSD } }',
+    },
+    "derive": lambda a: _canon_json(_graph_fetch_at_block(a)),
+    "extract": lambda inner: _canon_json(inner.get("data")),
+}
+
+
 def _grade_tool(endpoint: str, name: str, recipe: dict):
     """Return (expected, got) for a recipe against a live candidate tool."""
     args = recipe["sample"]
