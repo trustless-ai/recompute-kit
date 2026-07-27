@@ -146,18 +146,18 @@
     {
       "name": "check_request_binding_not_client_recomputable",
       "check": "request_binding",
-      "evidence_basis": "attested",
+      "evidence_basis": "broker-asserted",
       "inputs": {
         "client_request_hash": "bef2fb3b9781c4555778afafb5f352fa8342ef168613748e9ad2d30d2dfbf23f",
-        "attested_request_hash": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51",
-        "construction": "hash1 = sha256(reqBody) where reqBody is the body the broker FORWARDS UPSTREAM (Alibaba DashScope) — bytes only the enclave sees (0gfoundation/0g-serving-broker signing.go signChatWithKey / FormatRoutingProofText)"
+        "broker_asserted_request_hash": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51",
+        "construction": "hash1 = sha256(reqBody) where reqBody is the body the broker FORWARDS UPSTREAM (Alibaba DashScope) — bytes only the enclave sees (0gfoundation/0g-serving-broker signing.go signCentralizedRoutingProof / FormatRoutingProofText)"
       },
       "expected": {
         "status": "unverifiable",
-        "evidence_basis": "attested",
+        "evidence_basis": "broker-asserted",
         "client_request_reproduces_hash1": false
       },
-      "note": "for a centralized/relay provider the request digest is over the broker-forwarded upstream request, not the client request — so request binding is attested (enclave-asserted), NOT independently client-recomputable. No client canonicalization reproduces hash1."
+      "note": "the broker signature over hash1 is established, but the client cannot independently verify that the hidden forwarded upstream body is byte-equivalent to the request it submitted — so request binding is broker-asserted, NOT independently recomputable from the client vantage. No client canonicalization reproduces hash1."
     },
     {
       "name": "check3b_enclave_quote_unavailable_relay",

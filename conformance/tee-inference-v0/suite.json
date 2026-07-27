@@ -2,7 +2,7 @@
   "profile": "tee-inference.v0",
   "vectors": {
     "path": "tee-inference-v0.vectors.json",
-    "sha256": "4206b62752617f2bf70d168b7ee1dec6fbfec4a1dbd503137546698fb535ed2b"
+    "sha256": "c02f8af51edef5038a76b9e30ab7ef4781d3d66bd4eafe00146fe225ddbb2a69"
   },
   "adapter": {
     "kind": "stdio",
@@ -11,6 +11,6 @@
   "laneHint": "recomputable+attested",
   "spec": {
     "path": "tee-inference-v0.spec.md",
-    "sha256": "53388517a0f23e1c63485d6682706c108fb93efa81afb462b868a277287163b4"
+    "sha256": "57faa873b0c83ba9f95260353e6400d422bc861f52ccd3aecf6c651aabb1ce03"
   }
 }

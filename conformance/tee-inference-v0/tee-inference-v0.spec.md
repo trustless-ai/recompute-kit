@@ -40,7 +40,7 @@ check 1 agree cross-language (ethers.js + Python `eth_account`).
 | --- | --- | --- | --- |
 | 1 | `signature_recovery` — `ecrecover(EIP-191(preimage)) == signer` | **recomputed** | **established** (cross-language) |
 | 2 | `response_digest_binding` — `sha256(JSON(completion)) == H(response)` | **recomputed** | **established** |
-| 3 | `request_binding` — `H(request)` over the broker-forwarded upstream body | **attested** | **not client-recomputable** — enclave-internal bytes |
+| 3 | `request_binding` — `H(request)` over the broker-forwarded upstream body | **broker-asserted** | **not independently recomputable from the client vantage** |
 | 4 | `provider_binding` — recovered signer == on-chain registry signer for `0xa48f` | **recomputed** | **established** |
 | 5 | `enclave_quote_parse` — a parseable dstack MRTD/RTMR quote | **attested** | **unavailable** (relay) |
 | 6 | `anti_replay_binding` — `chatID` in the preimage / a per-call nonce | **recomputed** | **none** — transport-level only |
@@ -56,9 +56,11 @@ and `hash3` is a constant TLS fingerprint, so neither binds replay.
 2. **The TEE signs `sha256(JSON)`, not RFC-8785 JCS** — `H(response)` reproduces as
    `sha256(JSON.stringify(completion))`; binding it with **JCS** yields a **false mismatch** (`rejected`).
    Tamper the response → `rejected`.
-3. **Request binding is attested, not client-recomputable** — no client canonicalization reproduces
-   `hash1` (it's over the enclave's forwarded upstream body), so `request_binding` is `unverifiable` from
-   the client vantage, tagged `attested`. Green request-recompute is impossible for a relay by construction.
+3. **Request binding is broker-asserted, not independently recomputable from the client vantage** — the
+   broker signature over `hash1` is established, but the client cannot verify the hidden forwarded upstream
+   body is byte-equivalent to the request it submitted (no client canonicalization reproduces `hash1`). So
+   `request_binding` is `unverifiable` from the client vantage, tagged `broker-asserted` — distinct from a
+   hardware attestation. Green request-recompute is impossible for a relay by construction.
 4. **Provider binding** — the recovered signer equals the address the on-chain 0G provider registry
    declares for `0xa48f` → `verified`.
 5. **No enclave quote** — the provider's `/v1/proxy/attestation/report` returns *"LLM attestation report
@@ -73,8 +75,10 @@ and `hash3` is a constant TLS fingerprint, so neither binds replay.
 
 `tee-inference-v0.vectors.json` — 10 vectors: 3 `verified` (signer recovery, response digest, provider
 binding), 4 `rejected` (two tampers + the wrong-canonicalization false-mismatch), 3 `unverifiable`
-(chatID-not-bound, request-not-client-recomputable, enclave-quote-unavailable). Conformant iff an
-implementation reproduces every per-check verdict + derived value.
+(chatID-not-bound, request-broker-asserted, enclave-quote-unavailable). The evidence bases are distinct:
+`recomputed`, `broker-asserted` (a signature over a value, not a re-derivation), and `attested` (a
+hardware quote — here unavailable). Conformant iff an implementation reproduces every per-check verdict +
+derived value.
 
 ```sh
 bin/conformance-suite --suite conformance/tee-inference-v0

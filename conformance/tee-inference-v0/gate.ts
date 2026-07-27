@@ -16,7 +16,7 @@ import { ethers } from "ethers";
 import { createHash } from "node:crypto";
 
 const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
-const RECOMPUTED = "recomputed", ATTESTED = "attested";
+const RECOMPUTED = "recomputed", ATTESTED = "attested", BROKER_ASSERTED = "broker-asserted";
 
 function verdictFor(v: any, tamper: boolean): Record<string, unknown> {
   const i = v.inputs;
@@ -43,9 +43,10 @@ function verdictFor(v: any, tamper: boolean): Record<string, unknown> {
       return { status: ok ? "verified" : "rejected", evidence_basis: RECOMPUTED, recovered };
     }
     case "request_binding": {
-      // hash1 is over the broker-forwarded upstream body (enclave-internal); no client canonicalization reproduces it
-      const reproduces = i.client_request_hash === i.attested_request_hash;
-      return { status: reproduces ? "verified" : "unverifiable", evidence_basis: ATTESTED, client_request_reproduces_hash1: reproduces };
+      // hash1 is over the broker-forwarded upstream body (enclave-internal). The broker SIGNATURE over hash1 is
+      // established, but the client cannot verify the hidden forwarded body is byte-equal to its request -> broker-asserted.
+      const reproduces = i.client_request_hash === i.broker_asserted_request_hash;
+      return { status: reproduces ? "verified" : "unverifiable", evidence_basis: BROKER_ASSERTED, client_request_reproduces_hash1: reproduces };
     }
     case "enclave_quote_parse": {
       // A quote is parseable only if the provider actually serves a local-TEE attestation report.
