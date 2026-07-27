@@ -35,6 +35,18 @@ function verdictFor(v: any, tamper: boolean): Record<string, unknown> {
       const ok = sha256(String(i.response_canonical_string)) === i.attested_response_hash;
       return { status: ok ? "verified" : "rejected", evidence_basis: RECOMPUTED, recomputed_hash: sha256(String(i.response_canonical_string)) };
     }
+    case "provider_binding": {
+      // recover the signer and bind it to the address the on-chain provider registry declares
+      let recovered: string;
+      try { recovered = ethers.verifyMessage(i.preimage, i.signature); } catch { recovered = "0xINVALID"; }
+      const ok = recovered.toLowerCase() === String(i.registry_signer).toLowerCase();
+      return { status: ok ? "verified" : "rejected", evidence_basis: RECOMPUTED, recovered };
+    }
+    case "request_binding": {
+      // hash1 is over the broker-forwarded upstream body (enclave-internal); no client canonicalization reproduces it
+      const reproduces = i.client_request_hash === i.attested_request_hash;
+      return { status: reproduces ? "verified" : "unverifiable", evidence_basis: ATTESTED, client_request_reproduces_hash1: reproduces };
+    }
     case "enclave_quote_parse": {
       // A quote is parseable only if the provider actually serves a local-TEE attestation report.
       const report = String(i.attestation_report_response);
