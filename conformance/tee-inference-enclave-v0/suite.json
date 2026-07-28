@@ -2,7 +2,7 @@
   "profile": "tee-inference-enclave.v0",
   "vectors": {
     "path": "tee-inference-enclave-v0.vectors.json",
-    "sha256": "4e77a3036e49911c52614ee70a071b1ba8e98c5ff45379b4e7c5dccb2fbffaea"
+    "sha256": "b197809da7198f8854cc9d17036b46c7ad16466155bc0657c5197d204da82d2e"
   },
   "adapter": {
     "kind": "stdio",
@@ -11,6 +11,6 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "tee-inference-enclave-v0.spec.md",
-    "sha256": "d6f5a932bb20041e7b4458ac10698ae917d2a1bdb5ca1adb50717ccdbe2ad8d5"
+    "sha256": "44a6a9ad474ce79b659379cf3c99b8e6f46466fa22c78e2428726208a0a821bd"
   }
 }

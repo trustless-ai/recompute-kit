@@ -25,16 +25,27 @@ the plain 2-field `H(request):H(response)` (`signChatWithKey`), **not** the rela
 | `rtmr_replay` | SHA-384-extend the RTMR event log == the TDX quote's RTMR0-3 | **recomputed** |
 | `equality` — signer↔enclave | quote `report_data` == the recovered response signer | **recomputed** |
 | `equality` — provider registry | on-chain 0G registry `teeSignerAddress` == quote `report_data` | **recomputed** |
+| `dcap_quote_sig` — hardware root | PCK cert chain → **pinned** Intel SGX Root CA + QE sig + att-key↔QE binding + TD-quote sig | **recomputed** |
 
 The full binding: **live response ← signed by → `0xA46EA4` ← attested by → the enclave's TDX quote
-(`report_data`, MRTD, RTMR chain) ← declared by → the on-chain 0G provider registry.** Every arrow recomputed.
+(`report_data`, MRTD, RTMR chain) ← rooted in → a genuine Intel-provisioned TDX part (dcap-qvl, chained to
+Intel's pinned root) ← declared by → the on-chain 0G provider registry.** Every arrow recomputed.
+
+The `dcap_quote_sig` check runs the **dcap-qvl core** over the raw quote bytes, with **no vendor SDK**: it
+parses the embedded PCK cert chain (leaf ← PCK Platform CA ← Intel SGX Root CA), verifies each signature,
+**pins the root** to Intel's known DER (`SHA-256 44a0196b…74d3`), verifies the QE-report signature under the
+PCK leaf, the attestation-key↔QE binding (`report_data == sha256(attpub‖auth)`), and the TD-quote signature
+under the attestation key. It runs identically in Node (`node:crypto`) and in the browser (`@peculiar/x509` +
+Web Crypto) on the live `/verify` panel.
 
 ## Vectors
 
-`tee-inference-enclave-v0.vectors.json` — 9 vectors, every `expected` recomputed from the artifact: 6
-`verified` (signer, request, response, RTMR replay, signer↔enclave, provider↔registry) + 3 `rejected` (a
-one-byte preimage tamper, a tampered response body → digest breaks, a tampered event digest → RTMR breaks).
-Conformant iff an implementation reproduces every verdict + derived value.
+`tee-inference-enclave-v0.vectors.json` — 11 vectors, every `expected` recomputed from the artifact: 7
+`verified` (signer, request, response, RTMR replay, signer↔enclave, provider↔registry, **dcap quote sig**) + 4
+`rejected` (a one-byte preimage tamper, a tampered response body → digest breaks, a tampered event digest →
+RTMR breaks, **a one-byte tamper in the TD-quote signed body → the TD-quote signature no longer verifies while
+the cert chain / QE / binding still hold**). Conformant iff an implementation reproduces every verdict +
+derived value.
 
 ```sh
 bin/conformance-suite --suite conformance/tee-inference-enclave-v0
@@ -42,10 +53,10 @@ bin/conformance-suite --suite conformance/tee-inference-enclave-v0
 
 ## Out of scope (v0)
 
-- **Intel PCS quote signature** (dcap-qvl) — the quote's ECDSA signature + PCK cert-chain to Intel's root.
-  The RTMR replay + report_data binding prove internal consistency + the signer link; the Intel-sig check is
-  the additional hardware root, a residual trust root until added.
 - **Known-good image** — whether MRTD / `os_image_hash` matches 0G's *published* glm-5.2 enclave image
-  (needs the expected measurement from 0G's registry/manifest).
+  (needs the expected measurement from 0G's registry/manifest). The one remaining residual.
+- **TCB status / CRL freshness** — the Intel PCS *collateral* (TCBInfo, QE identity, revocation lists). The
+  `dcap_quote_sig` check establishes the quote is signed by a genuine Intel-provisioned part; whether that
+  part's TCB is current/unrevoked is a separate liveness check against Intel's PCS.
 - The **model call itself** is attested by the enclave, never recomputed — that's the whole point of the
   fusion. Everything *around* it is recomputed here.
