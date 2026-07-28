@@ -1,0 +1,395 @@
+{
+  "profile": "tee-inference-enclave.v0",
+  "spec": "tee-inference-enclave-v0.spec.md",
+  "description": "Fully-recomputed genuine-enclave 0G TeeML inference (glm-5.2 mainnet) — every check re-derived from public bytes, no tee_verified flag.",
+  "converged_against": "0G Compute mainnet broker path (processResponse); provider 0x7DCFe6…, signer 0xA46EA4…; quote /v1/quote (report_data==signer, MRTD b24d3b24…); live answer \"recompute\". gist TMerlini/19d532bc",
+  "primary_artifact": {
+    "provider": "0x7DCFe6AEa70350C2090041524c9B4A9262DCe87D",
+    "signer": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+    "model": "glm-5.2",
+    "chain": "0G mainnet (16661)",
+    "answer": "recompute"
+  },
+  "vectors": [
+    {
+      "name": "signer_recovery_match",
+      "check": "signature_recovery",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "b296ce4e0d825e83b741a18783d7d6436adf7eb7d314e9644297a094f8351ce7:042d4ce7695a01ffe675bd6da4c805d0cd5baeca1f40aeacef2d48a7ba4a9555",
+        "signature": "0x10ad522c1f539887c53934999eeef188ff826b57b7567b8de9d96162263549f467a3a3060f50a13adda9516eaeca14fefa8523d018f5c66024ff88dc66406fba1b",
+        "claimed_signer": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+        "scheme": "EIP-191 (hashMessage)+recoverAddress"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recovered": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9"
+      }
+    },
+    {
+      "name": "signer_recovery_tampered_preimage",
+      "check": "signature_recovery",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "b296ce4e0d825e83b741a18783d7d6436adf7eb7d314e9644297a094f8351ce0:042d4ce7695a01ffe675bd6da4c805d0cd5baeca1f40aeacef2d48a7ba4a9555",
+        "signature": "0x10ad522c1f539887c53934999eeef188ff826b57b7567b8de9d96162263549f467a3a3060f50a13adda9516eaeca14fefa8523d018f5c66024ff88dc66406fba1b",
+        "claimed_signer": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recovered": "0xbA4E9E70aC3A8FD9B8FA1b2C1395Cf5F0CB0f15B"
+      }
+    },
+    {
+      "name": "request_digest_match",
+      "check": "request_digest",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "canonical": "{\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly one word: recompute.\"}],\"model\":\"glm-5.2\"}",
+        "attested_hash": "b296ce4e0d825e83b741a18783d7d6436adf7eb7d314e9644297a094f8351ce7",
+        "hash": "sha256(JSON(reqBody))"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "b296ce4e0d825e83b741a18783d7d6436adf7eb7d314e9644297a094f8351ce7"
+      },
+      "note": "genuine enclave — request is client-recomputable (relay is broker-asserted)"
+    },
+    {
+      "name": "response_digest_match",
+      "check": "response_digest",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "canonical": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"logprobs\":null,\"matched_stop\":154827,\"message\":{\"content\":\"recompute\",\"reasoning_content\":\"1.  **Analyze the Request:**\\n    *   Input: \\\"Reply with exactly one word: recompute.\\\"\\n    *   Constraints: Exactly one word.\\n    *   Target word: \\\"recompute\\\" (or acknowledging the instruction to reply *with* \\\"recompute\\\").\\n\\n2.  **Formulate the Output:**\\n    *   The prompt specifically asks to reply with *exactly one word*: \\\"recompute\\\".\\n    *   I must output just that word, no punctuation, no extra text.\\n\\n3.  **Verify Constraints:**\\n    *   Word count: 1 (\\\"recompute\\\").\\n    *   No surrounding whitespaces if possible, or just the single word.\\n\\n4.  **Final Output Generation:**\\n    *   recompute\",\"role\":\"assistant\",\"tool_calls\":null}}],\"created\":1785238697,\"id\":\"chatcmpl-16052fa5-fca4-47d2-b5a8-c40b91dcce6b\",\"metadata\":{\"weight_version\":\"default\"},\"model\":\"glm-5.2\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":159,\"prompt_tokens\":21,\"prompt_tokens_details\":null,\"reasoning_tokens\":156,\"total_tokens\":180}}",
+        "attested_hash": "042d4ce7695a01ffe675bd6da4c805d0cd5baeca1f40aeacef2d48a7ba4a9555",
+        "hash": "sha256(JSON(completion))"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "042d4ce7695a01ffe675bd6da4c805d0cd5baeca1f40aeacef2d48a7ba4a9555"
+      }
+    },
+    {
+      "name": "response_digest_tampered",
+      "check": "response_digest",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "canonical": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"logprobs\":null,\"matched_stop\":154827,\"message\":{\"content\":\"recomputed\",\"reasoning_content\":\"1.  **Analyze the Request:**\\n    *   Input: \\\"Reply with exactly one word: recompute.\\\"\\n    *   Constraints: Exactly one word.\\n    *   Target word: \\\"recompute\\\" (or acknowledging the instruction to reply *with* \\\"recompute\\\").\\n\\n2.  **Formulate the Output:**\\n    *   The prompt specifically asks to reply with *exactly one word*: \\\"recompute\\\".\\n    *   I must output just that word, no punctuation, no extra text.\\n\\n3.  **Verify Constraints:**\\n    *   Word count: 1 (\\\"recompute\\\").\\n    *   No surrounding whitespaces if possible, or just the single word.\\n\\n4.  **Final Output Generation:**\\n    *   recompute\",\"role\":\"assistant\",\"tool_calls\":null}}],\"created\":1785238697,\"id\":\"chatcmpl-16052fa5-fca4-47d2-b5a8-c40b91dcce6b\",\"metadata\":{\"weight_version\":\"default\"},\"model\":\"glm-5.2\",\"object\":\"chat.completion\",\"usage\":{\"completion_tokens\":159,\"prompt_tokens\":21,\"prompt_tokens_details\":null,\"reasoning_tokens\":156,\"total_tokens\":180}}",
+        "attested_hash": "042d4ce7695a01ffe675bd6da4c805d0cd5baeca1f40aeacef2d48a7ba4a9555",
+        "hash": "sha256(JSON(completion))"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "b3730821fec5284d894c3f8db7e3bcdb0e49824e00f96d3438ee29de0a2aed8d"
+      }
+    },
+    {
+      "name": "rtmr_replay_match",
+      "check": "rtmr_replay",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "event_log": [
+          {
+            "imr": 0,
+            "digest": "53463ae04b471637983d15f9f41780859a60e70595e56be96bc69acf6efc3174a3fa258b5da897785cad4ca8fcb8a723"
+          },
+          {
+            "imr": 0,
+            "digest": "344bc51c980ba621aaa00da3ed7436f7d6e549197dfe699515dfa2c6583d95e6412af21c097d473155875ffd561d6790"
+          },
+          {
+            "imr": 0,
+            "digest": "9dc3a1f80bcec915391dcda5ffbb15e7419f77eab462bbf72b42166fb70d50325e37b36f93537a863769bcf9bedae6fb"
+          },
+          {
+            "imr": 0,
+            "digest": "6f2e3cbc14f9def86980f5f66fd85e99d63e69a73014ed8a5633ce56eca5b64b692108c56110e22acadcef58c3250f1b"
+          },
+          {
+            "imr": 0,
+            "digest": "d607c0efb41c0d757d69bca0615c3a9ac0b1db06c557d992e906c6b7dee40e0e031640c7bfd7bcd35844ef9edeadc6f9"
+          },
+          {
+            "imr": 0,
+            "digest": "08a74f8963b337acb6c93682f934496373679dd26af1089cb4eaf0c30cf260a12e814856385ab8843e56a9acea19e127"
+          },
+          {
+            "imr": 0,
+            "digest": "18cc6e01f0c6ea99aa23f8a280423e94ad81d96d0aeb5180504fc0f7a40cb3619dd39bd6a95ec1680a86ed6ab0f9828d"
+          },
+          {
+            "imr": 0,
+            "digest": "394341b7182cd227c5c6b07ef8000cdfd86136c4292b8e576573ad7ed9ae41019f5818b4b971c9effc60e1ad9f1289f0"
+          },
+          {
+            "imr": 0,
+            "digest": "b1450b2471fab51d8dd43cab61d46c8070083aa01738f9e7f387cea9f8b586aee95db67aa14cd532ae8c91cc11a2748c"
+          },
+          {
+            "imr": 0,
+            "digest": "513c9fba36d564c93fa92b8464d759443bc189272ad790b48a5bab7b27db0b5f5e5cdece59b37b212b4b2d777525fb2d"
+          },
+          {
+            "imr": 0,
+            "digest": "48f902c8cd7a473f32840b805a37e6dfe5e696e411d370f08a143908c518c96df74bd4e86b1a758b2d11f30b9d52229b"
+          },
+          {
+            "imr": 1,
+            "digest": "ab4e4faca918c5faeebe3a64f39f68a0bd4c77bc08b2bacbf8a2af5eb90ac20124d151b9ad611cfa8f7fb46b7cd0ca9a"
+          },
+          {
+            "imr": 0,
+            "digest": "1dd6f7b457ad880d840d41c961283bab688e94e4b59359ea45686581e90feccea3c624b1226113f824f315eb60ae0a7c"
+          },
+          {
+            "imr": 0,
+            "digest": "23ada07f5261f12f34a0bd8e46760962d6b4d576a416f1fea1c64bc656b1d28eacf7047ae6e967c58fd2a98bfa74c298"
+          },
+          {
+            "imr": 1,
+            "digest": "77a0dab2312b4e1e57a84d865a21e5b2ee8d677a21012ada819d0a98988078d3d740f6346bfe0abaa938ca20439a8d71"
+          },
+          {
+            "imr": 1,
+            "digest": "394341b7182cd227c5c6b07ef8000cdfd86136c4292b8e576573ad7ed9ae41019f5818b4b971c9effc60e1ad9f1289f0"
+          },
+          {
+            "imr": 2,
+            "digest": "a4ec3ed5827bca501d0d0525ddb3875b5048b8f56413dc8baf4ee539c525c279716bcf408550e5a2ae0dc2d54d9957b4"
+          },
+          {
+            "imr": 2,
+            "digest": "63e06e29cf98f2fce71abd3a9629dff48457b47c010b64e11f7a2b42dd99bfa14ee35660b3f5d3fc376261d6ba9a6d6b"
+          },
+          {
+            "imr": 1,
+            "digest": "214b0bef1379756011344877743fdc2a5382bac6e70362d624ccf3f654407c1b4badf7d8f9295dd3dabdef65b27677e0"
+          },
+          {
+            "imr": 1,
+            "digest": "0a2e01c85deae718a530ad8c6d20a84009babe6c8989269e950d8cf440c6e997695e64d455c4174a652cd080f6230b74"
+          },
+          {
+            "imr": 3,
+            "digest": "f9974020ef507068183313d0ca808e0d1ca9b2d1ad0c61f5784e7157c362c06536f5ddacdad4451693f48fcc72fff624"
+          },
+          {
+            "imr": 3,
+            "digest": "8e1e4650fd96b8317c3a9460179cafe1682a0f1d2201df0775cd5da0b6f2a51ae3d3e682e7457ca1040efc6e714987b4"
+          },
+          {
+            "imr": 3,
+            "digest": "9bd77be91ec1b7e1e87b37609f323c4e1156ce23e8eea34df83d18ce529e171ebe9ecdb5e56ab23eacb09d25a7d41f05"
+          },
+          {
+            "imr": 3,
+            "digest": "3111a734ce44efc6cffa61ecd992281b8105022b0a1290e1b341f5163f95773f5b5b1e75b416a40ae4a8647745196327"
+          },
+          {
+            "imr": 3,
+            "digest": "98bd7e6bd3952720b65027fd494834045d06b4a714bf737a06b874638b3ea00ff402f7f583e3e3b05e921c8570433ac6"
+          },
+          {
+            "imr": 3,
+            "digest": "26da6669ce4f66bf74ba4f351968f484ab41f2d7834693a4d6b8ffa0e37ccbc96758d14a033032905c91d86d530e0aa2"
+          },
+          {
+            "imr": 3,
+            "digest": "f59e1daecdf5fc3ef078374f0fecb6f50cf4d61614904feaa46062fc0ab8be68637d3f541a9c15c5b0676e37e845338a"
+          },
+          {
+            "imr": 3,
+            "digest": "1a76b2a80a0be71eae59f80945d876351a7a3fb8e9fd1ff1cede5734aa84ea11fd72b4edfbb6f04e5a85edd114c751bd"
+          }
+        ],
+        "quote_rtmrs": [
+          "a8b67ce10c63d0692ad01a59bd0035f507cc51bb92ae2b7872d39cdcf7e1253e235767b1076abb434c883aca6cd7e80c",
+          "6e1afb7464ed0b941e8f5bf5b725cf1df9425e8105e3348dca52502f27c453f3018a28b90749cf05199d5a17820101a7",
+          "54a76ae236a9ab1699379c54d70252cd8e6d20ae398fd8cdb240e39bf3a51074aeeee255a375772b8b431421a5435a0d",
+          "e93ef2905ee74bf03492e147ea630533df3df6df552b8453b52ece4e5e752bc7b1435102acfb96ad98099bf2630387c1"
+        ],
+        "extend": "SHA-384(acc||digest), start 48 zero bytes"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "matched": [
+          true,
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "name": "rtmr_replay_tampered_event",
+      "check": "rtmr_replay",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "event_log": [
+          {
+            "imr": 0,
+            "digest": "53463ae04b471637983d15f9f41780859a60e70595e56be96bc69acf6efc3174a3fa258b5da897785cad4ca8fcb8a720"
+          },
+          {
+            "imr": 0,
+            "digest": "344bc51c980ba621aaa00da3ed7436f7d6e549197dfe699515dfa2c6583d95e6412af21c097d473155875ffd561d6790"
+          },
+          {
+            "imr": 0,
+            "digest": "9dc3a1f80bcec915391dcda5ffbb15e7419f77eab462bbf72b42166fb70d50325e37b36f93537a863769bcf9bedae6fb"
+          },
+          {
+            "imr": 0,
+            "digest": "6f2e3cbc14f9def86980f5f66fd85e99d63e69a73014ed8a5633ce56eca5b64b692108c56110e22acadcef58c3250f1b"
+          },
+          {
+            "imr": 0,
+            "digest": "d607c0efb41c0d757d69bca0615c3a9ac0b1db06c557d992e906c6b7dee40e0e031640c7bfd7bcd35844ef9edeadc6f9"
+          },
+          {
+            "imr": 0,
+            "digest": "08a74f8963b337acb6c93682f934496373679dd26af1089cb4eaf0c30cf260a12e814856385ab8843e56a9acea19e127"
+          },
+          {
+            "imr": 0,
+            "digest": "18cc6e01f0c6ea99aa23f8a280423e94ad81d96d0aeb5180504fc0f7a40cb3619dd39bd6a95ec1680a86ed6ab0f9828d"
+          },
+          {
+            "imr": 0,
+            "digest": "394341b7182cd227c5c6b07ef8000cdfd86136c4292b8e576573ad7ed9ae41019f5818b4b971c9effc60e1ad9f1289f0"
+          },
+          {
+            "imr": 0,
+            "digest": "b1450b2471fab51d8dd43cab61d46c8070083aa01738f9e7f387cea9f8b586aee95db67aa14cd532ae8c91cc11a2748c"
+          },
+          {
+            "imr": 0,
+            "digest": "513c9fba36d564c93fa92b8464d759443bc189272ad790b48a5bab7b27db0b5f5e5cdece59b37b212b4b2d777525fb2d"
+          },
+          {
+            "imr": 0,
+            "digest": "48f902c8cd7a473f32840b805a37e6dfe5e696e411d370f08a143908c518c96df74bd4e86b1a758b2d11f30b9d52229b"
+          },
+          {
+            "imr": 1,
+            "digest": "ab4e4faca918c5faeebe3a64f39f68a0bd4c77bc08b2bacbf8a2af5eb90ac20124d151b9ad611cfa8f7fb46b7cd0ca9a"
+          },
+          {
+            "imr": 0,
+            "digest": "1dd6f7b457ad880d840d41c961283bab688e94e4b59359ea45686581e90feccea3c624b1226113f824f315eb60ae0a7c"
+          },
+          {
+            "imr": 0,
+            "digest": "23ada07f5261f12f34a0bd8e46760962d6b4d576a416f1fea1c64bc656b1d28eacf7047ae6e967c58fd2a98bfa74c298"
+          },
+          {
+            "imr": 1,
+            "digest": "77a0dab2312b4e1e57a84d865a21e5b2ee8d677a21012ada819d0a98988078d3d740f6346bfe0abaa938ca20439a8d71"
+          },
+          {
+            "imr": 1,
+            "digest": "394341b7182cd227c5c6b07ef8000cdfd86136c4292b8e576573ad7ed9ae41019f5818b4b971c9effc60e1ad9f1289f0"
+          },
+          {
+            "imr": 2,
+            "digest": "a4ec3ed5827bca501d0d0525ddb3875b5048b8f56413dc8baf4ee539c525c279716bcf408550e5a2ae0dc2d54d9957b4"
+          },
+          {
+            "imr": 2,
+            "digest": "63e06e29cf98f2fce71abd3a9629dff48457b47c010b64e11f7a2b42dd99bfa14ee35660b3f5d3fc376261d6ba9a6d6b"
+          },
+          {
+            "imr": 1,
+            "digest": "214b0bef1379756011344877743fdc2a5382bac6e70362d624ccf3f654407c1b4badf7d8f9295dd3dabdef65b27677e0"
+          },
+          {
+            "imr": 1,
+            "digest": "0a2e01c85deae718a530ad8c6d20a84009babe6c8989269e950d8cf440c6e997695e64d455c4174a652cd080f6230b74"
+          },
+          {
+            "imr": 3,
+            "digest": "f9974020ef507068183313d0ca808e0d1ca9b2d1ad0c61f5784e7157c362c06536f5ddacdad4451693f48fcc72fff624"
+          },
+          {
+            "imr": 3,
+            "digest": "8e1e4650fd96b8317c3a9460179cafe1682a0f1d2201df0775cd5da0b6f2a51ae3d3e682e7457ca1040efc6e714987b4"
+          },
+          {
+            "imr": 3,
+            "digest": "9bd77be91ec1b7e1e87b37609f323c4e1156ce23e8eea34df83d18ce529e171ebe9ecdb5e56ab23eacb09d25a7d41f05"
+          },
+          {
+            "imr": 3,
+            "digest": "3111a734ce44efc6cffa61ecd992281b8105022b0a1290e1b341f5163f95773f5b5b1e75b416a40ae4a8647745196327"
+          },
+          {
+            "imr": 3,
+            "digest": "98bd7e6bd3952720b65027fd494834045d06b4a714bf737a06b874638b3ea00ff402f7f583e3e3b05e921c8570433ac6"
+          },
+          {
+            "imr": 3,
+            "digest": "26da6669ce4f66bf74ba4f351968f484ab41f2d7834693a4d6b8ffa0e37ccbc96758d14a033032905c91d86d530e0aa2"
+          },
+          {
+            "imr": 3,
+            "digest": "f59e1daecdf5fc3ef078374f0fecb6f50cf4d61614904feaa46062fc0ab8be68637d3f541a9c15c5b0676e37e845338a"
+          },
+          {
+            "imr": 3,
+            "digest": "1a76b2a80a0be71eae59f80945d876351a7a3fb8e9fd1ff1cede5734aa84ea11fd72b4edfbb6f04e5a85edd114c751bd"
+          }
+        ],
+        "quote_rtmrs": [
+          "a8b67ce10c63d0692ad01a59bd0035f507cc51bb92ae2b7872d39cdcf7e1253e235767b1076abb434c883aca6cd7e80c",
+          "6e1afb7464ed0b941e8f5bf5b725cf1df9425e8105e3348dca52502f27c453f3018a28b90749cf05199d5a17820101a7",
+          "54a76ae236a9ab1699379c54d70252cd8e6d20ae398fd8cdb240e39bf3a51074aeeee255a375772b8b431421a5435a0d",
+          "e93ef2905ee74bf03492e147ea630533df3df6df552b8453b52ece4e5e752bc7b1435102acfb96ad98099bf2630387c1"
+        ]
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "matched": [
+          false,
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "name": "enclave_signer_binding",
+      "check": "equality",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "a": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+        "b": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+        "meaning": "quote report_data == the recovered response signer"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed"
+      }
+    },
+    {
+      "name": "provider_registry_binding",
+      "check": "equality",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "a": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+        "b": "0xA46EA4FC5889AD35A1487e1Ed04dCcfa872146B9",
+        "meaning": "on-chain 0G registry teeSignerAddress == quote report_data"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed"
+      }
+    }
+  ]
+}
