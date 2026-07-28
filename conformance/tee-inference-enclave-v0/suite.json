@@ -11,6 +11,6 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "tee-inference-enclave-v0.spec.md",
-    "sha256": "44a6a9ad474ce79b659379cf3c99b8e6f46466fa22c78e2428726208a0a821bd"
+    "sha256": "f912211313b633234a158421ae0a0b7e4b5787c6e42665cbbc2f080bc566d239"
   }
 }

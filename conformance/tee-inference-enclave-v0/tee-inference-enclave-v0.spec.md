@@ -53,10 +53,17 @@ bin/conformance-suite --suite conformance/tee-inference-enclave-v0
 
 ## Out of scope (v0)
 
-- **Known-good image** — whether MRTD / `os_image_hash` matches 0G's *published* glm-5.2 enclave image
-  (needs the expected measurement from 0G's registry/manifest). The one remaining residual.
-- **TCB status / CRL freshness** — the Intel PCS *collateral* (TCBInfo, QE identity, revocation lists). The
-  `dcap_quote_sig` check establishes the quote is signed by a genuine Intel-provisioned part; whether that
-  part's TCB is current/unrevoked is a separate liveness check against Intel's PCS.
+Three *distinct* claims sit around the quote — they are not the same claim, and only the first is recomputed here:
+
+1. **Hardware authenticity** — the quote is signed by a genuine Intel-provisioned TDX part. **In scope, recomputed**
+   (`dcap_quote_sig`: PCK chain → pinned Intel root + QE sig + att-key binding + TD-quote sig).
+2. **Expected-image authorization** — MRTD / `os_image_hash` matches 0G's *published* glm-5.2 enclave measurement.
+   **Out of scope, the one honest residual** — needs the expected measurement from 0G's registry/manifest.
+3. **PCS freshness** — the part's TCB is current/unrevoked against Intel's PCS *collateral* (TCBInfo, QE identity,
+   revocation lists). **Out of scope** — a separate liveness claim, not a statement about hardware authenticity.
+
+Conflating (1)/(2)/(3) is the failure this profile refuses: authenticity is not authorization is not freshness.
+(2) is what remains amber on the live panel; (3) is a different kind of check entirely.
+
 - The **model call itself** is attested by the enclave, never recomputed — that's the whole point of the
   fusion. Everything *around* it is recomputed here.
