@@ -1,0 +1,94 @@
+{
+  "profile": "aggregate_budget.v0",
+  "description": "Root-keyed conservation for ERC-8312, recomputed from the Drawn event LOG (the complement to the storage-proof cap-conservation lane). The conserved carrier is ONE root-keyed meter: for a pinned (rootId, periodIndex), Σ of the amounts of the ADMITTED Drawn events ≤ the pinned root cap. Edge/node is attribution (a breakdown label on each draw), NEVER the conserved quantity — a per-edge counter treated as the aggregate is the non-conformant counterexample a fan-out/re-delegation walks past the root cap with. Two honest bounds: the claim is asserted only over draws routed through the meter (non-bypassability is the substrate's obligation, not recomputed here); and (rootId, periodIndex) is a stored key, so the predicate is assertable at any observing block with no timestamp replay. Predicate, not number: what conformance pins is the PREDICATE `Σ admitted Drawn for (rootId,periodIndex) ≤ cap` and the ROOT-KEYED method of computing it — a candidate that reproduces the numbers by the wrong method (per-edge max as aggregate) fails the fan-out vector, which is the point.",
+  "recompute": "admittedSum = Σ { amount : e ∈ log, e.rootId = rootId, e.periodIndex = periodIndex, e.admitted } ; conserves = admittedSum ≤ cap",
+  "vectors": [
+    {
+      "name": "single-edge-within-cap",
+      "note": "One attributed edge draws under the root cap — conserves.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "root", "amount": "1200", "admitted": true }
+      ],
+      "expected": { "admittedSum": "1200", "conserves": true }
+    },
+    {
+      "name": "multi-edge-attributed-within-cap",
+      "note": "Three edges attribute their draws; the ROOT sum (1400) is the conserved quantity and stays ≤ cap. Attribution is a breakdown, not the meter.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "600", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "500", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "c", "amount": "300", "admitted": true }
+      ],
+      "expected": { "admittedSum": "1400", "conserves": true }
+    },
+    {
+      "name": "fanout-exceeds-root-cap",
+      "note": "THE COUNTEREXAMPLE. Each edge (900/800/700) is individually under the 2000 cap, so a per-edge counter treated as the aggregate would pass all three — but the root-keyed sum is 2400 > cap. Root-keyed conservation correctly reports non-conservation; a per-edge view is the leak the profile closes.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "900", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "800", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "c", "amount": "700", "admitted": true }
+      ],
+      "expected": { "admittedSum": "2400", "conserves": false }
+    },
+    {
+      "name": "exact-cap-boundary",
+      "note": "Sum equals the cap exactly — conserves (the predicate is ≤, not <).",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "1000", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "1000", "admitted": true }
+      ],
+      "expected": { "admittedSum": "2000", "conserves": true }
+    },
+    {
+      "name": "unadmitted-draws-excluded",
+      "note": "Only ADMITTED Drawn events count. A rejected/unadmitted draw (1000) is excluded, so the metered sum is 1500 ≤ cap. Admission is the gate; a non-admitted attempt never touches the meter.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "1500", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "1000", "admitted": false }
+      ],
+      "expected": { "admittedSum": "1500", "conserves": true }
+    },
+    {
+      "name": "period-index-isolation",
+      "note": "period-index-as-stored-key. The cap is scoped to (rootId, periodIndex=7); draws in period 8 (5000) are a different meter and are excluded. Only period-7 admitted draws (1800) count.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "800", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "1000", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 8, "edge": "a", "amount": "5000", "admitted": true }
+      ],
+      "expected": { "admittedSum": "1800", "conserves": true }
+    },
+    {
+      "name": "cross-root-isolation",
+      "note": "Conservation is per-ROOT. The cap is root 0x…01's; draws under root 0x…02 (9000) are a different meter and are excluded. Only root-1 admitted draws (1900) count toward root-1's cap.",
+      "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "periodIndex": 7,
+      "cap": "2000",
+      "log": [
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "a", "amount": "900", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000001", "periodIndex": 7, "edge": "b", "amount": "1000", "admitted": true },
+        { "rootId": "0x0000000000000000000000000000000000000000000000000000000000000002", "periodIndex": 7, "edge": "a", "amount": "9000", "admitted": true }
+      ],
+      "expected": { "admittedSum": "1900", "conserves": true }
+    }
+  ]
+}

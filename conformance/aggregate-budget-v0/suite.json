@@ -1,0 +1,7 @@
+{
+  "profile": "aggregate_budget.v0",
+  "vectors": { "path": "aggregate-budget-v0.vectors.json", "sha256": "ac6f6efd485e887a7f82140ac5be234643af17efb24506d9cd40e87ecd2bcb85" },
+  "adapter": { "kind": "stdio", "cmd": "bun gate.ts --grade" },
+  "laneHint": "recomputable",
+  "spec": { "path": "aggregate-budget-v0.spec.md", "sha256": "55d6fb1721ba2885e78722012b6e291d94072551e5fe5534859ebbb45dfc2f18" }
+}
