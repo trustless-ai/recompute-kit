@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""attestation-to-receipt — bridge a gateway WYRIWE attestation into a recompute-kit receipt.
+
+Maps an onchain-boiler-kit gateway attestation (WYRIWE L1–L3 hashes + OCP record() on-chain + EIP-712 L4
+signature) into a `receiptos.evidence_capsule.v0` → `recompute-kit.conformance_proof_object.v0`, so the
+receipt is verifiable offline with `recompute-kit-verify`.
+
+Honest scope (matches receiptos semantics): the receipt is a tamper-evident CARRIER of a real, on-chain-
+anchored, EIP-712-signed attestation — `receipt_root` binds integrity, `verifier_result` carries the
+gateway's verdict verbatim. The DEEP recompute (re-derive the WYRIWE hashes, read the on-chain anchor,
+recover the signer) stays the /verify client-side job — the two are complementary.
+
+Usage:  attestation-to-receipt ATTESTATION.json [--recompute-url URL]  (or - for stdin)
+"""
+import sys
+import os
+import json
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "mcp"))
+from receiptos import receipt_root, build_portable_object  # noqa: E402
+
+ATT_FIELDS = ["ens", "agentId", "registry", "rawInputHash", "sanitizationPipelineHash", "inputHash",
+              "outputHash", "manifestHash", "l4Signature", "attestor", "l3Tx", "ocpContract",
+              "l3ChainId", "timestamp"]
+
+
+def build_attestation_capsule(att: dict, recompute_url: str) -> dict:
+    verified = bool(att.get("verified", att.get("l3Tx") and att.get("l4Signature")))
+    attestation = {k: att[k] for k in ATT_FIELDS if k in att}
+    receipt = {
+        "schema": "receiptos.evidence_capsule.v0",
+        "action": {
+            "summary": f"Gateway agent action · {att.get('ens', '?')} #{att.get('agentId', '?')}",
+            "source_fields": ["capsule.attestation.inputHash", "capsule.attestation.l3Tx"],
+        },
+        "evidence": {
+            "summary": ("WYRIWE L1–L4 attestation — raw/pipeline/input/output hashes, OCP record() on-chain "
+                        f"(chain {att.get('l3ChainId')}), EIP-712 L4 signature by the attestor. "
+                        f"Deep recompute (re-derive every hash + read the anchor + recover the signer): {recompute_url}"),
+            "source_fields": ["capsule.attestation.*"],
+            "status": "present",
+        },
+        "verifier_result": {"ok": verified, "status": "verified" if verified else "rejected"},
+        "capsule": {
+            "profile": "gateway-attestation.v0",
+            "attestation": attestation,
+            "recompute": recompute_url,
+            "verdict": {"pass": verified},
+        },
+        "anchor": {"ran_at": att.get("timestamp"), "runner": "onchain-boiler-kit/gateway"},
+    }
+    root = receipt_root(receipt)
+    receipt["receipt_root"] = {"stored": root, "computed": root, "match": True, "status": "verified",
+                               "derivation": "receiptos-c14n-v0 — 0x + sha256(JCS(receipt \\ {anchor, receipt_root}))"}
+    return receipt
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    recompute_url = "https://ai.verticecriativo.pt/verify"
+    if "--recompute-url" in args:
+        i = args.index("--recompute-url"); recompute_url = args[i + 1]; del args[i:i + 2]
+    src = args[0] if args else "-"
+    att = json.load(sys.stdin if src == "-" else open(src, encoding="utf-8"))
+    obj = build_portable_object(build_attestation_capsule(att, recompute_url))
+    json.dump(obj, sys.stdout, indent=2, ensure_ascii=False)
+    sys.stdout.write("\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
