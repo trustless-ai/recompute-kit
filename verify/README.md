@@ -12,6 +12,7 @@ capsule's own conformance verdict *verbatim* — so a receipt is only trusted on
 
 ```sh
 pip install recompute-kit-verify
+# or from source: pip install "git+https://github.com/trustless-ai/recompute-kit.git#subdirectory=verify"
 ```
 
 ## Use
