@@ -57,6 +57,21 @@ from the same inputs — so the counterexample is what the profile actually test
 any conserved-quantity predicate, pin the vector where the sound aggregation and the tempting-but-wrong
 aggregation disagree.
 
+## Constructive unreachability (safety-by-construction)
+
+`fanout-exceeds-root-cap` is stronger than a vector that flags a violation after the fact: on a sound
+implementation the non-conserving log is **unreachable, not merely rejected**. Verified against the
+reference `AggregateBudgetCursor` (an independent third implementation; stdlib recompute + Forge replay,
+7/7 at `afab44c`): draws of 900 and 800 admit; the 700 that would make 2400 **reverts
+`RootBoundExceeded`** and the meter stays at 1700. So the non-conserving trace is precisely a log a sound
+implementation **cannot emit** — the vector's predicate coincides with the contract's *reachability
+boundary*.
+
+This sharpens **predicate-not-number**: the counterexample isn't an error to catch downstream, it's a
+state the conserved-meter construction forbids at the source. The recompute side (this suite) and the
+construction side (the reverting cursor) meet on the same fact from two directions — the log-level
+predicate and the on-chain impossibility are one conservation law.
+
 ## Adapter contract
 
 `bin/conformance-suite` feeds the vectors JSON on stdin and reads `{ name: { admittedSum, conserves } }`
