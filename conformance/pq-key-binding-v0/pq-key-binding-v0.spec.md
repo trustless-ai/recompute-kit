@@ -108,8 +108,16 @@ proves inclusion with a Merkle path against the anchored root; the anchor's bloc
 Fully recomputable, cold: re-derive the agent's `canonical_content_sha256` from its statement, fold it with
 its path to the root (`node = sha256(min(x,y) ++ max(x,y))`), and read the same root back from the on-chain
 OCP `record()`. A live snapshot is pinned in `pq-key-binding-v0.per-agent-anchor.json` (a real agent from
-`gateway.ensub.org/pq/agent/<registry>/<id>/binding`). Per-attestation companion signing under each agent's
-key is the next lane.
+`gateway.ensub.org/pq/agent/<registry>/<id>/binding`).
+
+**Per-attestation companion (per-agent Phase 3, live).** Every attestation now carries a per-agent
+**ML-DSA-65 companion** signing the attestation's content-address (`sha256(JCS(WYRIWE commitment +
+identity))`) under that agent's OWN bound key — verifiable by recompute at
+`gateway.ensub.org/pq/companion/<inputHash>` (re-derive the content-address from the attestation, then
+`ml_dsa65.verify(agent pq_pubkey, cc, signature)`). The companion is bound per-agent (another agent's key
+does not verify it). It is recorded and checkable on every agent today; it becomes *load-bearing* — the
+enforcer's `valid_pq_companion` path required rather than optional — when a consumer sets an active cutoff
+(Phase 4). The `{algorithm}` split holds: attestor genesis = SLH-DSA, per-agent companions = ML-DSA.
 
 ## Conformance (this suite)
 The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
