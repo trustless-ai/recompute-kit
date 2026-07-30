@@ -53,6 +53,18 @@ companion signature under the pre-bound `pq_pubkey`. The cutoff is by **anchor t
 pre-cutoff-anchored events stay eligible for classical-only verification; PQ companions for them are
 optional.
 
+**Reference enforcer (this suite — `cutoff_enforce.py`).** The rule is executable and recomputable. Given
+the binding chain, a consumer cutoff, and an artifact, it (1) resolves the **in-force binding** — the one
+governing the artifact at *its* anchor time — then (2) admits iff the artifact is proven anchored before
+the cutoff, **or** carries a PQ companion valid *under that in-force key* (so the companion is bound to the
+resolution — a valid signature under a non-in-force key does not count). By design (pipavlo82) it resolves
+from the chain **even at length one**, and the admit/reject path carries a **revocation slot** from the
+start: a binding's authority ends at its `revoked_at`, an artifact anchored at/after that time is no longer
+governed by it, and artifacts anchored earlier stay valid. Its vectors assert the **resolution step**, not
+only the admit/reject outcome — so exercised rotation and the revocation lane *extend* this predicate
+rather than rewrite it. **Until a consumer deploys this rule the companion is available but not
+load-bearing** — that is the gap between a binding being *demonstrated* and the migration being *operative*.
+
 ## Rotation
 An **anchored chain** of binding statements plus a **deterministic in-force rule** — "which binding
 governed the artifact at its anchor time" — the `ruleset_version` shape. Post-cutoff rotations are signed
