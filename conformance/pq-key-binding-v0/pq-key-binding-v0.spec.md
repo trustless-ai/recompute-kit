@@ -70,6 +70,19 @@ An **anchored chain** of binding statements plus a **deterministic in-force rule
 governed the artifact at its anchor time" — the `ruleset_version` shape. Post-cutoff rotations are signed
 by the current PQ key so rotation survives the classical break.
 
+**Exercised (#133), not just specified.** `kya-l4-genesis` (SLH-DSA `638c79a2…`) is rotated to
+`kya-l4-rotation-1` — a new SLH-DSA key `8488157a…`, content-address `4fe636a4…` — whose statement links
+the predecessor (`predecessor_content_address`) and is dual-signed over its own content-address by the
+**predecessor PQ key** (continuity: the retired key authorizes its successor, so the chain survives the
+classical break) and the **new key** (possession); both verify in the deep lane
+(`pq-key-binding-v0.rotation.json`). The resolution is run across the two-binding chain in
+`pq-key-binding-v0.rotation-vectors.json`: an artifact anchored *between* the rotations resolves to
+genesis, one at/after resolves to rotation-1, and — the enforcement consequence — a post-cutoff artifact
+whose companion is valid only under the **retired** key is rejected while the same under the new key
+admits. Rotation is enforced, not declared; `cutoff_enforce.py`'s predicate consumed the length-2 chain
+unchanged. rotation-1's on-chain anchor is the production-hardening step (as the mainnet record() was for
+genesis).
+
 ## Conformance (this suite)
 The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
 sha256(JCS(statement))` and, for a NIP-01 carrier, `event_id = sha256(compact-JSON[0, pubkey, created_at,

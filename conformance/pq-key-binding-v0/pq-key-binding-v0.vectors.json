@@ -55,6 +55,23 @@
       "expected": {
         "canonical_content_sha256": "b26a01590215926373544dc82d22fadc8d97c98debaae5d6ce8899b83ffd05da"
       }
+    },
+    {
+      "name": "kya-l4-pq-key-binding-v0-rotation-1-slh-dsa",
+      "note": "ROTATION binding #1 (#133): same classical identity 0xFf9a, NEW SLH-DSA key 8488157a…, links predecessor via predecessor_content_address = vector 2's cc b26a0159…. Dual-signed over its own content-address by the PREDECESSOR PQ key (continuity — the old key authorizes the rotation, so it survives the classical break) AND by the new key (possession); both signatures + the served artifact live in pq-key-binding-v0.rotation.json (deep lane, SLH-DSA verify in-browser). Here the hash lane pins the content-address the chain resolves over; the in-force resolution across {vector2, this} is exercised in pq-key-binding-v0.rotation-vectors.json via cutoff_enforce.py.",
+      "statement": {
+        "schema": "kya.pq_key_binding.v0",
+        "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "pq_pubkey": "8488157a2b55ba45f7dd6768db29bc9013936ea668a3001ca33cc817328c373c714d84d3872f1bb619bec02268ab34b5",
+        "algorithm": "SLH-DSA-SHA2-192s",
+        "bound_at": 1788000000,
+        "profile": "pq_key_binding.v0",
+        "predecessor_content_address": "b26a01590215926373544dc82d22fadc8d97c98debaae5d6ce8899b83ffd05da",
+        "rotation_index": 1
+      },
+      "expected": {
+        "canonical_content_sha256": "4fe636a4d0db42061aec75dc07747fdd3be68d0d2985d783e71a0cfa98960028"
+      }
     }
   ]
 }
