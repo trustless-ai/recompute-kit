@@ -62,7 +62,11 @@ by the current PQ key so rotation survives the classical break.
 The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
 sha256(JCS(statement))` and, for a NIP-01 carrier, `event_id = sha256(compact-JSON[0, pubkey, created_at,
 kind, tags, canonical_content])`, and match the claimed values. The BIP-340 + ML-DSA/SLH-DSA signature
-checks and the anchor read are the separate deep lane. Vector 1 is
+checks and the anchor read are the separate deep lane. The gate **also lints this spec** (blockbird found
+it, pipavlo82 named the class, 2026-07-30): every hex digest cited *in this document* MUST resolve to a
+current pinned vector/artifact — because hash-pinning the spec proves the prose is *unaltered*, not
+*correct*, and a stale digest once lingered in exactly this document. An orphaned digest fails the gate
+(so the spec may never cite an unresolvable hash, not even in a cautionary aside — as this sentence obeys). Vector 1 is
 **`invinoveritas.pq_key_binding.v1`** — the first real live binding
 (`api.babyblueviper.com/.well-known/pq-key-binding.json`), binding the pinned invinoveritas verifier key
 `6786e18a…` to an ML-DSA-65 PQ key, OTS-anchored, `canonical_content_sha256 7b85c0ae…`, `event_id
