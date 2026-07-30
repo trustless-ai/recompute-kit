@@ -1,0 +1,64 @@
+# pq_key_binding.v0 — anchored PQ-key binding + cutoff (shared cross-impl profile)
+
+The post-quantum migration shape for signature-based identity, converged in the working group
+(babyblueviper1 · pipavlo82 · blockbird · TMerlini, 2026-07-30). Both **invinoveritas** (Nostr verdicts,
+OTS→Bitcoin anchor) and the **KYA-L4 attestor** (gateway EIP-712, OCP→chain anchor) conform to this
+shape, so a verifier binds identically regardless of implementation.
+
+## Why (the load-bearing point)
+A supplementary PQ signature is **decorative** on its own: a post-CRQC forger who derives the classical
+key mints valid classical events and simply **omits** the second signature — indistinguishable from
+honest pre-cutoff history. Security lives in **an anchored key-binding + a cutoff**, not in the second
+signature. Also: the PQ risk is *prospective forgery, not retroactive decryption* — so **everything
+already anchored is already PQ-safe** (you can't backdate into an anchor). This profile gates only *new*
+statements minted after the cutoff.
+
+## The binding statement — byte-compatible via JCS
+```
+canonical_content        = JCS(statement)                    # RFC-8785 / receiptos-c14n: sorted-key, compact, non-ASCII literal
+canonical_content_sha256 = sha256(canonical_content)
+```
+`statement` MUST carry at least `{ schema, secp256k1_pubkey (classical key), pq_pubkey, algorithm }` (a
+`bound_at` and a `profile`/version tag are RECOMMENDED). **Byte-compatibility across impls is exactly:
+canonicalize the same field set with JCS → the same `canonical_content_sha256`.** That's the whole
+interop requirement; the family already shares JCS via receiptos-c14n.
+
+## Companion, not tag
+The binding rides a **detached companion** that signs the primary object's **content-address** — the
+NIP-01 `event_id` for a Nostr carrier, the attestation/OCP digest for KYA-L4 — never an in-object tag. A
+tag lives inside the id preimage, so retrofitting one re-mints the id and **orphans the existing anchor**;
+the companion signs the 32-byte id everyone already computes, identically for past and future events.
+
+## Dual-signed, self-verifying, anchored
+- **Dual-signed:** both signatures cover the **same** content-address. Classical = BIP-340 Schnorr
+  (invinoveritas) / EIP-712 ECDSA (KYA-L4). PQ signs the 32-byte id directly. `algorithm` ∈
+  { **ML-DSA-65** (FIPS-204, operational default) · **SLH-DSA** (FIPS-205, hash-only profile) } — a
+  field in the statement, not a fork. Co-sign the **genesis** binding with **both** keys (proof of
+  possession of each; neither key alone can claim the other).
+- **Self-verifying:** the verifier **recomputes** `canonical_content_sha256` and the companion id from
+  raw bytes. The key manifest (`verifier-keys.json` / KYA-L4 key manifest) is **discovery only, never
+  authority** — OTS proves *content existed before T*, not *what the endpoint serves now*.
+- **Anchored:** the binding's content-address is anchored — OTS→Bitcoin (invinoveritas) or OCP→chain
+  (KYA-L4). The anchor substrate is a field; what it proves is *existence before time T*.
+
+## Verifier rule — cutoff by ANCHOR TIME, consumer policy
+Accept an event iff it is **proven anchored before the consumer's cutoff**, **OR** it carries a valid PQ
+companion signature under the pre-bound `pq_pubkey`. The cutoff is by **anchor time, never `created_at`**
+(backdatable), and is **consumer-side policy**, not issuer-declared. The back catalog is owed nothing:
+pre-cutoff-anchored events stay eligible for classical-only verification; PQ companions for them are
+optional.
+
+## Rotation
+An **anchored chain** of binding statements plus a **deterministic in-force rule** — "which binding
+governed the artifact at its anchor time" — the `ruleset_version` shape. Post-cutoff rotations are signed
+by the current PQ key so rotation survives the classical break.
+
+## Conformance (this suite)
+The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
+sha256(JCS(statement))` and, for a NIP-01 carrier, `event_id = sha256(compact-JSON[0, pubkey, created_at,
+kind, tags, canonical_content])`, and match the claimed values. The BIP-340 + ML-DSA/SLH-DSA signature
+checks and the anchor read are the separate deep lane. Vector 1 is
+**`invinoveritas.pq_key_binding.v1`** — the first real live binding
+(`api.babyblueviper.com/.well-known/pq-key-binding.json`), binding the pinned invinoveritas verifier key
+`6786e18a…` to an ML-DSA-65 PQ key, OTS-anchored, `canonical_content_sha256 7b85c0ae…`, `event_id
+14a7335d…` — independently recomputed byte-exact.

@@ -1,0 +1,7 @@
+{
+  "profile": "pq_key_binding.v0",
+  "vectors": { "path": "pq-key-binding-v0.vectors.json", "sha256": "923bbf10b2f1fee307add0cc48e9bedb0945130b9314b0eb1239476877ef6051" },
+  "adapter": { "kind": "stdio", "cmd": "python3 gate.py --grade" },
+  "laneHint": "recomputable",
+  "spec": { "path": "pq-key-binding-v0.spec.md", "sha256": "82fb320bd1606ca1dd9fdcdd17655057cefb983a70b117bc96ed2091fb8568a0" }
+}
