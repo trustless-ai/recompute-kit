@@ -39,6 +39,23 @@ def resolve_in_force(bindings, at_time):
     return max(eligible, key=lambda b: b["binding_anchor_time"]), "resolved_at_anchor_time"
 
 
+def apply_revocations(bindings, revocations):
+    """Revocation lane (#134): a revocation is its OWN anchored statement class — it names the binding it
+    revokes (by content_address) and takes effect at ITS OWN anchor time (never a self-declared field, same
+    reason cutoff uses anchor time not created_at). Here it fills the `revoked_at` slot that resolve_in_force
+    already honours, so revocation extends the predicate rather than rewriting it. Returns a copy; artifacts
+    anchored before the revocation's anchor time stay governed, at/after do not."""
+    if not revocations:
+        return bindings
+    earliest = {}
+    for r in revocations:
+        cc, t = r["revokes_content_address"], r["revocation_anchor_time"]
+        if cc not in earliest or t < earliest[cc]:
+            earliest[cc] = t                            # earliest anchored revocation of a binding wins
+    return [({**b, "revoked_at": earliest[b["content_address"]]}
+             if b.get("content_address") in earliest else b) for b in bindings]
+
+
 def admit(bindings, consumer_cutoff, artifact):
     """Resolve the in-force binding FIRST (the step the vector asserts), then apply the cutoff rule."""
     at = artifact["anchor_time"]
@@ -70,9 +87,11 @@ def admit(bindings, consumer_cutoff, artifact):
 def run(path):
     fx = json.load(open(path))
     base_bindings, base_cutoff = fx.get("bindings", []), fx["consumer_cutoff"]
+    base_revocations = fx.get("revocations", [])
     fails = 0
     for c in fx["cases"]:
         bindings = c.get("bindings", base_bindings)
+        bindings = apply_revocations(bindings, c.get("revocations", base_revocations))
         cutoff = c.get("consumer_cutoff", base_cutoff)
         got, exp = admit(bindings, cutoff, c["artifact"]), c["expected"]
         # assert the RESOLUTION step (which binding, by which reason) AND the decision+rule — not just the boolean

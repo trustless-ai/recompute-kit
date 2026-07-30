@@ -83,6 +83,22 @@ admits. Rotation is enforced, not declared; `cutoff_enforce.py`'s predicate cons
 unchanged. rotation-1's on-chain anchor is the production-hardening step (as the mainnet record() was for
 genesis).
 
+## Revocation (not rotation)
+Revocation is **not** rotation. Rotation is orderly succession — the retired binding still governed its
+era. Revocation **invalidates** a binding. It is its **own anchored statement class**
+(`kya.pq_key_revocation.v0`), names the binding it revokes by content-address, and takes effect at **its
+own anchor time** — never a self-declared field (a self-declared `revoked_at` is backdatable, the same
+trap as `created_at`). Artifacts anchored **before** the revocation's anchor time stay valid; artifacts
+anchored **at/after** are no longer governed by that binding, and — absent a successor — are ungoverned.
+
+**Exercised (#134).** An example binding (`964af387…`) is revoked by a `kya.pq_key_revocation.v0` statement
+(`f01f7087…`) that names it and is PQ-authorized by the binding's own key
+(`pq-key-binding-v0.revocation.json`, deep lane). `pq-key-binding-v0.revocation-vectors.json` runs the
+temporal rule through `cutoff_enforce.py`: an artifact anchored before the revocation admits, at/after is
+ungoverned — and a valid companion under the **revoked** key does not rescue a post-revocation artifact,
+because the binding itself is gone (distinct from a missing-companion rejection). The revocation fills the
+`revoked_at` slot `resolve_in_force` already honoured, so it extended the #132 predicate without a rewrite.
+
 ## Conformance (this suite)
 The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
 sha256(JCS(statement))` and, for a NIP-01 carrier, `event_id = sha256(compact-JSON[0, pubkey, created_at,

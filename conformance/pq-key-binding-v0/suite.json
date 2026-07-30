@@ -2,7 +2,7 @@
   "profile": "pq_key_binding.v0",
   "vectors": {
     "path": "pq-key-binding-v0.vectors.json",
-    "sha256": "b9129077077dd830a44a37b0a23449a3efed2fa9e92234b49e3ef0dda462a8cd"
+    "sha256": "9ee62960f0fade98ee107ee600feac3bca9b6b1157c273568ee060efec235823"
   },
   "adapter": {
     "kind": "stdio",
@@ -11,6 +11,6 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "pq-key-binding-v0.spec.md",
-    "sha256": "2f4ebdea655213d9f80a2cf104885b8c71ea03c30d3bcabb35001bccca1540f7"
+    "sha256": "40b69fae105a9da58d447cd3b5fe5aff8dd3ac6309cb0807c5d0c79a537eabf0"
   }
 }

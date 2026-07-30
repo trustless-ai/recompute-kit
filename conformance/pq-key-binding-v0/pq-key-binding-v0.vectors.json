@@ -72,6 +72,35 @@
       "expected": {
         "canonical_content_sha256": "4fe636a4d0db42061aec75dc07747fdd3be68d0d2985d783e71a0cfa98960028"
       }
+    },
+    {
+      "name": "kya-example-binding-v0-slh-dsa",
+      "note": "A DEDICATED example binding (SLH-DSA key 0b15e3ba…) used only to demonstrate the revocation lane (#134), so the production genesis/rotation chain is untouched. Content-address recomputes here; it is the target of the revocation in the next vector.",
+      "statement": {
+        "schema": "kya.pq_key_binding.v0",
+        "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "pq_pubkey": "0b15e3baa3918b23b1a975d4aa2039cda772e4c5f070096ceebfed05e3c0933f26058db24d618704c66a4e41e25962c7",
+        "algorithm": "SLH-DSA-SHA2-192s",
+        "bound_at": 1786000000,
+        "profile": "pq_key_binding.v0"
+      },
+      "expected": {
+        "canonical_content_sha256": "964af387798109a23d12bab0cc10c578dc27b61d494cf79591cf82f53c72a471"
+      }
+    },
+    {
+      "name": "kya-key-revocation-v0-of-example",
+      "note": "A REVOCATION statement — its own class (schema kya.pq_key_revocation.v0), NOT a binding: it names the binding it revokes by content-address (964af387… above) and is PQ-authorized by that binding's key (pq_key_revocation.v0, signature in pq-key-binding-v0.revocation.json). It carries NO trusted revoked_at — a revocation takes effect at ITS OWN anchor time (never a self-declared field). The hash lane pins its content-address; the temporal rule is exercised in pq-key-binding-v0.revocation-vectors.json.",
+      "statement": {
+        "schema": "kya.pq_key_revocation.v0",
+        "revokes_content_address": "964af387798109a23d12bab0cc10c578dc27b61d494cf79591cf82f53c72a471",
+        "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "profile": "pq_key_binding.v0",
+        "reason": "example: key-compromise"
+      },
+      "expected": {
+        "canonical_content_sha256": "f01f7087637a7e0cd8d6c7576310ed71401b6cd3abd2b14fb785553934480cc5"
+      }
     }
   ]
 }
