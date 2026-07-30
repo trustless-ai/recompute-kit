@@ -39,7 +39,12 @@ the companion signs the 32-byte id everyone already computes, identically for pa
   raw bytes. The key manifest (`verifier-keys.json` / KYA-L4 key manifest) is **discovery only, never
   authority** — OTS proves *content existed before T*, not *what the endpoint serves now*.
 - **Anchored:** the binding's content-address is anchored — OTS→Bitcoin (invinoveritas) or OCP→chain
-  (KYA-L4). The anchor substrate is a field; what it proves is *existence before time T*.
+  (KYA-L4). The anchor substrate is a field; what it proves is *existence before time T*. **An anchor is
+  only a cutoff for a verifier who can *fetch* it (blockbird, 2026-07-30):** an on-chain anchor is
+  permissionless — anyone reads the chain and recovers the anchor time, today — whereas an off-chain
+  proof (`.ots`) is only as available as the endpoint serving it. An implementation MUST serve its anchor
+  proof bytes for the cutoff to be publicly evaluable; an unreachable proof (a 404'd `.ots`) collapses the
+  cutoff to something only the holder can check, losing parity with the on-chain lane.
 
 ## Verifier rule — cutoff by ANCHOR TIME, consumer policy
 Accept an event iff it is **proven anchored before the consumer's cutoff**, **OR** it carries a valid PQ
@@ -63,9 +68,14 @@ checks and the anchor read are the separate deep lane. Vector 1 is
 `6786e18a…` to an ML-DSA-65 PQ key, OTS-anchored, `canonical_content_sha256 7b85c0ae…`, `event_id
 14a7335d…` — independently recomputed byte-exact.
 
-**Dual-algorithm convergence (vector 2, `kya.pq_key_binding.v0`):** the KYA-L4 reference binding uses
-**SLH-DSA-SHA2-192s** (SPHINCS+, hash-based, NIST level 3 to match ML-DSA-65), anchored on-chain via OCP
-(no NIP-01 carrier). Two independent NIST-PQC families — ML-DSA (lattice) and SLH-DSA (hash) — reproduce
-**byte-compatible content-addresses under one profile** via the same JCS canon, cross-language (the
-`@noble/post-quantum` JS generator and this Python gate agree on `273f7b0e…`). That proves `{algorithm}`
-is a field, not a fork — interop rests on the shared canonicalization, not a shared signature scheme.
+**Dual-algorithm convergence (vector 2, `kya.pq_key_binding.v0`):** the KYA-L4 **production** binding uses
+**SLH-DSA-SHA2-192s** (SPHINCS+, hash-based, NIST level 3 to match ML-DSA-65), anchored on **Ethereum
+mainnet** via OCP `record(bytes32)` (no NIP-01 carrier). Two independent NIST-PQC families — ML-DSA
+(lattice) and SLH-DSA (hash) — reproduce **byte-compatible content-addresses under one profile** via the
+same JCS canon, cross-language (the `@noble/post-quantum` JS generator and this Python gate agree on
+`b26a0159…`). That proves `{algorithm}` is a field, not a fork — interop rests on the shared
+canonicalization, not a shared signature scheme. The content-address is recorded at TruthAnchor
+`0x1e2A118a2bf1C240aE6fDe187c07f905D360f094` (tx `0x469655a08accf0300def211bf0c9ebd463e65b89f4ede1ac372ed2796e7ba916`,
+block 25646404) — and the sharper result: the `record()` sender is the same `0xFf9a…ca14` the statement
+names, so **the anchor transaction itself is the classical proof-of-possession**, no detached co-sign for
+a post-CRQC forger to omit.
