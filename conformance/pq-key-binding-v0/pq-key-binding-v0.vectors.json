@@ -43,17 +43,17 @@
     },
     {
       "name": "kya-l4-pq-key-binding-v0-slh-dsa",
-      "note": "KYA-L4 reference binding (SLH-DSA-SHA2-192s, SPHINCS+, NIST level 3 to match ML-DSA-65): binds the attestor's classical EIP-712 identity to a hash-based PQ key, anchored on-chain via OCP (not OTS) \u2014 no NIP-01 carrier. SLH-DSA keypair generated with @noble/post-quantum, sign\u2192verify round-trip green (sig 16224 B). Reference shape; the live gateway instance binds the production attestor key + its OCP anchor tx. Same JCS canon as vector 1 \u2192 byte-compatible content-address, different PQ family.",
+      "note": "KYA-L4 reference binding (SLH-DSA-SHA2-192s, SPHINCS+, NIST level 3 to match ML-DSA-65): binds the attestor's classical EIP-712 identity to a hash-based PQ key, anchored on-chain via OCP (not OTS), no NIP-01 carrier. Served live + recomputed in-browser at ai.verticecriativo.pt/quantum; keypair we control so the SLH-DSA sign\u2192verify round-trips (sig 16224 B). Same JCS canon as vector 1 \u2192 byte-compatible content-address, different PQ family.",
       "statement": {
         "schema": "kya.pq_key_binding.v0",
         "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
-        "pq_pubkey": "7511000789c36a1917d13c7955cf5bda0618ab7df4039b5504db7dadcf402e5f75972ccb98c313c0c5deeb3d6f8961a3",
+        "pq_pubkey": "5c11bfc2762811b4ab11b8b032701797fe7ed79a58b5e97dcd934112cc65c7cd5c19d07e3a418901dce4f88718f805c8",
         "algorithm": "SLH-DSA-SHA2-192s",
         "bound_at": 1785420000,
         "profile": "pq_key_binding.v0"
       },
       "expected": {
-        "canonical_content_sha256": "273f7b0ee46fc16fe986c2beb4981af572b4c03c4809f98195913d3165e8b553"
+        "canonical_content_sha256": "6b69b749b4502cfe92ec9132e0625a6ce208ca6bb9500b3e0e9935a79ffc44bb"
       }
     }
   ]
