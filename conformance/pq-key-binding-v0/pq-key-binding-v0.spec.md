@@ -62,3 +62,10 @@ checks and the anchor read are the separate deep lane. Vector 1 is
 (`api.babyblueviper.com/.well-known/pq-key-binding.json`), binding the pinned invinoveritas verifier key
 `6786e18a…` to an ML-DSA-65 PQ key, OTS-anchored, `canonical_content_sha256 7b85c0ae…`, `event_id
 14a7335d…` — independently recomputed byte-exact.
+
+**Dual-algorithm convergence (vector 2, `kya.pq_key_binding.v0`):** the KYA-L4 reference binding uses
+**SLH-DSA-SHA2-192s** (SPHINCS+, hash-based, NIST level 3 to match ML-DSA-65), anchored on-chain via OCP
+(no NIP-01 carrier). Two independent NIST-PQC families — ML-DSA (lattice) and SLH-DSA (hash) — reproduce
+**byte-compatible content-addresses under one profile** via the same JCS canon, cross-language (the
+`@noble/post-quantum` JS generator and this Python gate agree on `273f7b0e…`). That proves `{algorithm}`
+is a field, not a fork — interop rests on the shared canonicalization, not a shared signature scheme.

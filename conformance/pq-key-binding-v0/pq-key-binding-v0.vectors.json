@@ -1,6 +1,6 @@
 {
   "profile": "pq_key_binding.v0",
-  "description": "Anchored PQ-key binding \u2014 the verifier RE-DERIVES the binding's content-address from raw bytes; the key manifest is discovery only. Recompute lane (hash-only, no signature libs): canonical_content = JCS(statement); canonical_content_sha256 = sha256(canonical_content); and the NIP-01 carrier event_id = sha256(compact-JSON [0,pubkey,created_at,kind,tags,content]). The BIP-340 Schnorr + ML-DSA-65 signature checks are the separate deep lane (need secp256k1/dilithium libs); this suite pins the self-verifying content-address that both must sign.",
+  "description": "Anchored PQ-key binding \u2014 the verifier RE-DERIVES the binding's content-address from raw bytes; the key manifest is discovery only. canonical_content = JCS(statement); canonical_content_sha256 = sha256(canonical_content). For a NIP-01 carrier also: event_id = sha256(compact-JSON [0,pubkey,created_at,kind,tags,content]). DUAL-ALGORITHM CONVERGENCE: vector 1 (invinoveritas) uses ML-DSA-65 (lattice) with a Nostr carrier; vector 2 (KYA-L4) uses SLH-DSA-SHA2-192s (hash-based) anchored on-chain via OCP \u2014 two independent NIST-PQC families reproducing byte-compatible content-addresses under ONE profile via the same JCS canon, proving {algorithm} is a field, not a fork. Signature checks (BIP-340 / ML-DSA / SLH-DSA) are the separate deep lane; this suite pins the self-verifying content-address both must sign.",
   "vectors": [
     {
       "name": "invinoveritas-pq-key-binding-v1-live",
@@ -39,6 +39,21 @@
       "expected": {
         "canonical_content_sha256": "7b85c0aef61fdb99ebd7ee391e9bfeec37d9e0d50139fe937d403a50eb6d1997",
         "event_id": "14a7335db681753638bc3395afee2c7358ee53ecd15ca523fc0ca38465510445"
+      }
+    },
+    {
+      "name": "kya-l4-pq-key-binding-v0-slh-dsa",
+      "note": "KYA-L4 reference binding (SLH-DSA-SHA2-192s, SPHINCS+, NIST level 3 to match ML-DSA-65): binds the attestor's classical EIP-712 identity to a hash-based PQ key, anchored on-chain via OCP (not OTS) \u2014 no NIP-01 carrier. SLH-DSA keypair generated with @noble/post-quantum, sign\u2192verify round-trip green (sig 16224 B). Reference shape; the live gateway instance binds the production attestor key + its OCP anchor tx. Same JCS canon as vector 1 \u2192 byte-compatible content-address, different PQ family.",
+      "statement": {
+        "schema": "kya.pq_key_binding.v0",
+        "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+        "pq_pubkey": "7511000789c36a1917d13c7955cf5bda0618ab7df4039b5504db7dadcf402e5f75972ccb98c313c0c5deeb3d6f8961a3",
+        "algorithm": "SLH-DSA-SHA2-192s",
+        "bound_at": 1785420000,
+        "profile": "pq_key_binding.v0"
+      },
+      "expected": {
+        "canonical_content_sha256": "273f7b0ee46fc16fe986c2beb4981af572b4c03c4809f98195913d3165e8b553"
       }
     }
   ]

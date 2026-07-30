@@ -19,12 +19,14 @@ def compact(v): # positional (NIP-01 array is not key-sorted)
     return json.dumps(v, separators=(",", ":"), ensure_ascii=False)
 
 def recompute(vec):
-    st, c = vec["statement"], vec["carrier"]
+    st = vec["statement"]
     content = jcs(st)
-    cc = hashlib.sha256(content.encode()).hexdigest()
-    ser = compact([0, c["pubkey"], c["created_at"], c["kind"], c["tags"], content])
-    eid = hashlib.sha256(ser.encode()).hexdigest()
-    return {"canonical_content_sha256": cc, "event_id": eid}
+    out = {"canonical_content_sha256": hashlib.sha256(content.encode()).hexdigest()}
+    c = vec.get("carrier")   # optional: a NIP-01 carrier (Nostr). Absent for on-chain-anchored bindings.
+    if c:
+        ser = compact([0, c["pubkey"], c["created_at"], c["kind"], c["tags"], content])
+        out["event_id"] = hashlib.sha256(ser.encode()).hexdigest()
+    return out
 
 if __name__ == "__main__":
     if "--grade" in sys.argv:
@@ -38,6 +40,7 @@ if __name__ == "__main__":
         got, exp = recompute(v), v["expected"]
         ok = got == exp
         fails += not ok
-        print(f"{'OK ' if ok else 'BAD'} {v['name']:<38} cc={got['canonical_content_sha256'][:12]}… id={got['event_id'][:12]}…")
+        idp = f" id={got['event_id'][:12]}…" if "event_id" in got else " (on-chain-anchored, no NIP-01 carrier)"
+        print(f"{'OK ' if ok else 'BAD'} {v['name']:<38} cc={got['canonical_content_sha256'][:12]}…{idp}")
     print(f"{len(fx['vectors']) - fails}/{len(fx['vectors'])} reproduced")
     sys.exit(1 if fails else 0)

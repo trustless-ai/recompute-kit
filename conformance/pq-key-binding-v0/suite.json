@@ -1,7 +1,16 @@
 {
   "profile": "pq_key_binding.v0",
-  "vectors": { "path": "pq-key-binding-v0.vectors.json", "sha256": "923bbf10b2f1fee307add0cc48e9bedb0945130b9314b0eb1239476877ef6051" },
-  "adapter": { "kind": "stdio", "cmd": "python3 gate.py --grade" },
+  "vectors": {
+    "path": "pq-key-binding-v0.vectors.json",
+    "sha256": "b39de7dc016f6316f5a32fc70f4e360983fcbdde8d9efebf0c6afc649acc6784"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 gate.py --grade"
+  },
   "laneHint": "recomputable",
-  "spec": { "path": "pq-key-binding-v0.spec.md", "sha256": "82fb320bd1606ca1dd9fdcdd17655057cefb983a70b117bc96ed2091fb8568a0" }
+  "spec": {
+    "path": "pq-key-binding-v0.spec.md",
+    "sha256": "3191f7d672545e60638523c73c23fae1b67079db496dd09860c5ac393bfd181f"
+  }
 }
