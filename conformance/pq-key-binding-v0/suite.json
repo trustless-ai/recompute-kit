@@ -2,7 +2,7 @@
   "profile": "pq_key_binding.v0",
   "vectors": {
     "path": "pq-key-binding-v0.vectors.json",
-    "sha256": "b72141539ba691415e2bb816da41508bde10e9526bcc81beb0ba3b4be0304040"
+    "sha256": "19179a6fbc1a79a6af9c3550f8809ca68f34f10bd61745c351b92f532717acc2"
   },
   "adapter": {
     "kind": "stdio",

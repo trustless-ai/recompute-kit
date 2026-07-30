@@ -43,17 +43,17 @@
     },
     {
       "name": "kya-l4-pq-key-binding-v0-slh-dsa",
-      "note": "KYA-L4 reference binding (SLH-DSA-SHA2-192s, SPHINCS+, NIST level 3 to match ML-DSA-65): binds the attestor's classical EIP-712 identity to a hash-based PQ key, anchored on-chain via OCP (not OTS), no NIP-01 carrier. Served live + recomputed in-browser at ai.verticecriativo.pt/quantum; keypair we control so the SLH-DSA sign\u2192verify round-trips (sig 16224 B). Same JCS canon as vector 1 \u2192 byte-compatible content-address, different PQ family.",
+      "note": "KYA-L4 PRODUCTION binding (SLH-DSA-SHA2-192s, SPHINCS+, NIST level 3 to match ML-DSA-65): binds the 0xFf9a\u2026ca14 classical identity to a hash-based PQ key, OCP-anchored on Ethereum MAINNET \u2014 record(bytes32) of this content-address at TruthAnchor 0x1e2A118a2bf1C240aE6fDe187c07f905D360f094, tx 0x469655a08accf0300def211bf0c9ebd463e65b89f4ede1ac372ed2796e7ba916 (block 25646404). The anchor tx is sent BY 0xFf9a, so it doubles as the classical proof-of-possession; the SLH-DSA companion signs the content-address (sig 16224 B). No NIP-01 carrier. Served live + recomputed in-browser at ai.verticecriativo.pt/quantum. Same JCS canon as vector 1 \u2192 byte-compatible content-address, different NIST-PQC family.",
       "statement": {
         "schema": "kya.pq_key_binding.v0",
         "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
-        "pq_pubkey": "5c11bfc2762811b4ab11b8b032701797fe7ed79a58b5e97dcd934112cc65c7cd5c19d07e3a418901dce4f88718f805c8",
+        "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
         "algorithm": "SLH-DSA-SHA2-192s",
-        "bound_at": 1785420000,
+        "bound_at": 1785422037,
         "profile": "pq_key_binding.v0"
       },
       "expected": {
-        "canonical_content_sha256": "6b69b749b4502cfe92ec9132e0625a6ce208ca6bb9500b3e0e9935a79ffc44bb"
+        "canonical_content_sha256": "b26a01590215926373544dc82d22fadc8d97c98debaae5d6ce8899b83ffd05da"
       }
     }
   ]
