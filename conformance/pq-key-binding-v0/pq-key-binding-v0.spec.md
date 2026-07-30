@@ -99,6 +99,18 @@ ungoverned — and a valid companion under the **revoked** key does not rescue a
 because the binding itself is gone (distinct from a missing-companion rejection). The revocation fills the
 `revoked_at` slot `resolve_in_force` already honoured, so it extended the #132 predicate without a rewrite.
 
+## Per-agent bindings, batch-Merkle anchored (per-agent Phase 2)
+Beyond the single attestor binding, each agent carries its OWN PQ key (ML-DSA-65) bound by a
+`pq_key_binding.v0` statement (owner-authorized). Anchoring one binding per agent doesn't scale, so all
+active agent bindings are batched into a single **Merkle root** — sorted-pair sha256 over the sorted
+per-agent binding content-addresses — and that root is `record()`'d on-chain once per epoch. An agent
+proves inclusion with a Merkle path against the anchored root; the anchor's block time is the cutoff.
+Fully recomputable, cold: re-derive the agent's `canonical_content_sha256` from its statement, fold it with
+its path to the root (`node = sha256(min(x,y) ++ max(x,y))`), and read the same root back from the on-chain
+OCP `record()`. A live snapshot is pinned in `pq-key-binding-v0.per-agent-anchor.json` (a real agent from
+`gateway.ensub.org/pq/agent/<registry>/<id>/binding`). Per-attestation companion signing under each agent's
+key is the next lane.
+
 ## Conformance (this suite)
 The recompute lane is **hash-only** (no signature libraries): re-derive `canonical_content_sha256 =
 sha256(JCS(statement))` and, for a NIP-01 carrier, `event_id = sha256(compact-JSON[0, pubkey, created_at,
