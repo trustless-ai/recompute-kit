@@ -20,7 +20,11 @@ def commit(parsed_content):
     return "sha256:" + hashlib.sha256(jcs(parsed_content).encode("utf-8")).hexdigest()
 
 def check(case):
-    committed_hash = commit(case["committed_content"])          # rule: jcs(parsed(content))
+    # Two ways to name the commitment: recompute it from committed_content (synthetic vectors), OR pin
+    # it to the STORED commitment_hash string a real record actually published (blind-hit against a live
+    # record — e.g. Fede's content_withheld/reveal cycle). When a stored hash is given we do NOT trust it;
+    # we still recompute from the revealed content below and check the recompute equals what was stored.
+    committed_hash = case.get("stored_commitment_hash") or commit(case["committed_content"])  # rule: jcs(parsed(content))
     rc = case.get("revealed_content", None)
     state = "content_withheld" if rc is None else (
         "content_bound" if commit(rc) == committed_hash else "content_commitment_mismatch")
