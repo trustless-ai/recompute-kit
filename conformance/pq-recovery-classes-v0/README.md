@@ -39,6 +39,30 @@ most powerful class inheriting the weakest authorization. The `seed_epoch_rotati
 checks the authority *domain*, not just key derivation: a fleet statement presented under `siwe_owner` is
 `rejected` (see `seed_falsify_siwe_domain_violation`). Domain separation is recomputed, not assumed.
 
+## Terminality is a standing binding-path constraint, not an auditor snapshot
+
+`agent_terminal`'s `terminated` verdict says *no key is in force after this anchor* — but a checker re-run
+today only reports today's state; a later-anchored epoch would silently resurrect the agent. So terminality
+has to be enforced **going forward, on the binding path itself** (babyblueviper1): before accepting any new
+binding for an agent, reject it at anchor time if an *unlifted* `agent_terminal` exists — the same discipline
+as leg-2's terminal `content_commitment_mismatch` (fail-closed, never retried). `mode=bind_gate` in the
+checker + `vectors.json` pins exactly this; it's a constraint the live rotate/bind path must run, not only an
+audit.
+
+**Terminality is split by intent, because "retire this agent" and "kill a compromised key" are different
+claims** (decided 2026-07-31, folding Fede's lift-ability sub-question):
+
+| subtype | meaning | liftable? |
+|---|---|---|
+| `terminal_owner` | deliberate retirement | **No — absolute.** No later binding, ever. |
+| `terminal_incident` | defensive kill (e.g. compromised key) | **Only** by a *valid fleet* `seed_epoch_rotation` covering the agent — never by a per-agent path |
+
+The lift is itself domain-separated: an incident-kill can be undone only by the fleet-scoped,
+deployer-authorized recovery — not by a per-agent rotation, which would let the compromised key resurrect
+itself. So "no unlifted terminal" (`bind_gate`) is precise: a `terminal_owner` never lifts; a
+`terminal_incident` lifts iff a `systemic_recovery` for that agent anchored after the kill and by bind time.
+This is the case where a full-agent kill and a fleet seed reset genuinely interact, and both stay recomputable.
+
 ## Explicitly out of scope (stated, not silent)
 
 **What authorizes replacing the deployer key itself is outside this recompute profile.** It is not an
