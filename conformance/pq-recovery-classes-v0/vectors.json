@@ -1,0 +1,284 @@
+{
+  "description": "pq-recovery-classes.v0 \u2014 rotation/kill/seed-rotation as recomputable falsifiable claims; each judged only against its declared class (cross-class confusion \u2192 rejected, never relabeled). Authority domains are in-predicate (per-agent SIWE vs deployer-tx fleet). derive() is the pinned key-derivation shape, not the live master seed.",
+  "cases": [
+    {
+      "case_id": "rotation_valid_continuity",
+      "expected_verdict": "continuity",
+      "statement": {
+        "class": "rotation",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1700,
+        "revokes_content_address": "cc_e0",
+        "superseded_by_content_address": "cc_e1"
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e0",
+          "binding_anchor_time": 1600,
+          "revoked_at": 1700
+        },
+        {
+          "content_address": "cc_e1",
+          "binding_anchor_time": 1700,
+          "revoked_at": null
+        }
+      ]
+    },
+    {
+      "case_id": "rotation_falsify_successor_absent (NOT a kill)",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "rotation",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1700,
+        "revokes_content_address": "cc_e0",
+        "superseded_by_content_address": "cc_MISSING"
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e0",
+          "binding_anchor_time": 1600,
+          "revoked_at": 1700
+        }
+      ]
+    },
+    {
+      "case_id": "rotation_falsify_successor_revoked",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "rotation",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1700,
+        "revokes_content_address": "cc_e0",
+        "superseded_by_content_address": "cc_e1"
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e1",
+          "binding_anchor_time": 1700,
+          "revoked_at": 1710
+        }
+      ]
+    },
+    {
+      "case_id": "rotation_falsify_not_owner_authorized",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "rotation",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "deployer_tx",
+          "identity": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14",
+          "anchor_tx_from": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14"
+        },
+        "anchor_time": 1700,
+        "revokes_content_address": "cc_e0",
+        "superseded_by_content_address": "cc_e1"
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e1",
+          "binding_anchor_time": 1700,
+          "revoked_at": null
+        }
+      ]
+    },
+    {
+      "case_id": "kill_valid_terminated",
+      "expected_verdict": "terminated",
+      "statement": {
+        "class": "agent_terminal",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1800,
+        "revokes_all": [
+          "cc_e0",
+          "cc_e1"
+        ],
+        "successor": null
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e0",
+          "binding_anchor_time": 1600,
+          "revoked_at": 1800
+        },
+        {
+          "content_address": "cc_e1",
+          "binding_anchor_time": 1700,
+          "revoked_at": 1800
+        }
+      ]
+    },
+    {
+      "case_id": "kill_falsify_surviving_epoch (NOT a rotation)",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "agent_terminal",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1800,
+        "revokes_all": [
+          "cc_e0"
+        ],
+        "successor": null
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e0",
+          "binding_anchor_time": 1600,
+          "revoked_at": 1800
+        },
+        {
+          "content_address": "cc_e1",
+          "binding_anchor_time": 1700,
+          "revoked_at": null
+        }
+      ]
+    },
+    {
+      "case_id": "kill_falsify_revoked_after_anchor",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "agent_terminal",
+        "owner": "0xabc0000000000000000000000000000000000abc",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1800,
+        "revokes_all": [
+          "cc_e0"
+        ],
+        "successor": null
+      },
+      "history_after": [
+        {
+          "content_address": "cc_e0",
+          "binding_anchor_time": 1600,
+          "revoked_at": 1850
+        }
+      ]
+    },
+    {
+      "case_id": "seed_valid_systemic_recovery",
+      "expected_verdict": "systemic_recovery",
+      "statement": {
+        "class": "seed_epoch_rotation",
+        "seed_epoch": 1,
+        "scope": "fleet",
+        "auth": {
+          "path": "deployer_tx",
+          "identity": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14",
+          "anchor_tx_from": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14"
+        },
+        "anchor_time": 1900,
+        "new_keys": [
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "8",
+            "pq_pubkey": "kd:36910cf255faaaa2d62326c365a82f805ebc021149a5821cd81a509f82094c97"
+          },
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "7",
+            "pq_pubkey": "kd:9b7be74868d78cd0b5adf21afe7950799b727a2a699aa2f41d4a63669f260d3e"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "seed_falsify_wrong_derived_key",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "seed_epoch_rotation",
+        "seed_epoch": 1,
+        "scope": "fleet",
+        "auth": {
+          "path": "deployer_tx",
+          "identity": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14",
+          "anchor_tx_from": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14"
+        },
+        "anchor_time": 1900,
+        "new_keys": [
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "8",
+            "pq_pubkey": "kd:deadbeef"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "seed_falsify_siwe_domain_violation (per-agent\u2192fleet BLOCKED)",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "seed_epoch_rotation",
+        "seed_epoch": 1,
+        "scope": "fleet",
+        "auth": {
+          "path": "siwe_owner",
+          "identity": "0xabc0000000000000000000000000000000000abc"
+        },
+        "anchor_time": 1900,
+        "new_keys": [
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "8",
+            "pq_pubkey": "kd:36910cf255faaaa2d62326c365a82f805ebc021149a5821cd81a509f82094c97"
+          },
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "7",
+            "pq_pubkey": "kd:9b7be74868d78cd0b5adf21afe7950799b727a2a699aa2f41d4a63669f260d3e"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "seed_falsify_deployer_not_tx_proven",
+      "expected_verdict": "rejected",
+      "statement": {
+        "class": "seed_epoch_rotation",
+        "seed_epoch": 1,
+        "scope": "fleet",
+        "auth": {
+          "path": "deployer_tx",
+          "identity": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14",
+          "anchor_tx_from": "0x0000000000000000000000000000000000000000"
+        },
+        "anchor_time": 1900,
+        "new_keys": [
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "8",
+            "pq_pubkey": "kd:36910cf255faaaa2d62326c365a82f805ebc021149a5821cd81a509f82094c97"
+          },
+          {
+            "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+            "agent_id": "7",
+            "pq_pubkey": "kd:9b7be74868d78cd0b5adf21afe7950799b727a2a699aa2f41d4a63669f260d3e"
+          }
+        ]
+      }
+    }
+  ]
+}
