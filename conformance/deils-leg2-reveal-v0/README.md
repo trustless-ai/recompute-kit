@@ -30,3 +30,37 @@ content_bound · near-miss→bound · single_byte_flip→mismatch · content_wit
 verified **live**, blind: the on-the-wire `proof_eac5…` response recomputed byte-exact to its
 `commitment_hash` from the rule alone. Two suites, two implementations, same verdicts, neither importing
 the other's code.
+
+## The committed content is `proof_payload`, and the disclosure surface must serve exactly that
+
+The commitment is over **`proof_payload` alone** — never the signature or ledger-event envelope that wraps
+it. A signature can't be inside the content it signs, and the nostr-style `event` (its own id/pubkey/sig,
+kind 30078) is the transport wrapper, not the content. So:
+
+    committed content = proof_payload         (NOT proof_payload ∪ {signature, event})
+    commitment_hash   = "sha256:" + sha256(JCS(proof_payload)).hexdigest()   # ensure_ascii=False
+
+**Two real bugs of this exact class, both caught by recomputing from the primary artifact** (blind hit on
+live invinoveritas records, 2026-07-31; records frozen in `invinoveritas_real_records_2026-07-31.json`,
+vectors in `vectors_invinoveritas_blindhit.json`, run with `stored_commitment_hash` mode):
+
+1. **Commit/store mismatch (invinoveritas fix, commit earlier that day).** `payload_json` stored
+   `{proof_payload, signature}` merged, but `commitment_hash` was computed over `proof_payload` alone — so
+   any revealer submitting the held content verbatim got a false, terminal `content_commitment_mismatch`.
+   Independent recompute converged on this root cause from the bytes: `proof_b0ce6e66`'s stored commitment
+   binds the **clean** projection, and only mismatches if you hash the envelope in — i.e. the commitment was
+   never wrong, the pre-fix verifier's field projection was. Fix: `payload_json` stores exactly
+   `proof_payload`; signature/event moved to a separate column.
+
+2. **Disclosure-surface mismatch (invinoveritas commit `00209da`).** After (1), `GET /attestations/{id}`
+   still merged `signature_type`/`event` back into the served `proof` at read time — so `hash(served proof)`
+   did **not** bind verbatim; an independent auditor pulling the URL cold needed an out-of-band projection to
+   land on the commitment. Same failure class, moved to the read surface. Fix (**option a**): serve exactly
+   `proof_payload` as `proof`, authenticity data in a separate top-level `signature` field. Verified live +
+   blind: `hash(GET …/proof_ba17ddf4)` == `commitment_hash` == `sha256:6211de06…`, **zero projection**.
+
+**Conformance rule for any implementer:** the disclosure endpoint MUST serve exactly the committed
+`proof_payload` as the hashable field, so `hash(served) == commitment_hash` **verbatim**. Signature/event
+authenticity data belongs in a sibling field, never merged into the hashable content. `reveal_check.py`
+takes an optional `stored_commitment_hash` per case to verify a recompute against a record's *own published*
+commitment (not a recomputed one) — the mode used for these live blind hits.

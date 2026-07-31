@@ -1,0 +1,308 @@
+{
+  "b0ce6e66": {
+    "agent_id": null,
+    "attestation_url": "https://api.babyblueviper.com/attestations/proof_b0ce6e66a0676a507568",
+    "commitment_hash": "sha256:8f77a15e0e959eb179d9f004c53c7f315499ea3dca0feaf3e99246ae13fc4fc8",
+    "created_at": 1785502436,
+    "ledger_position": 12,
+    "proof": {
+      "action_id": "exec_57cdad9817ca27d675ed",
+      "artifact_id": "",
+      "audit_created_at": 1785502432,
+      "bitcoin_only": true,
+      "conformance_suite": "https://github.com/babyblueviper1/preaction-governance-conformance",
+      "duration_ms": 592,
+      "event": {
+        "content": "{\"action_id\":\"exec_57cdad9817ca27d675ed\",\"artifact_id\":\"\",\"audit_created_at\":1785502432,\"bitcoin_only\":true,\"conformance_suite\":\"https://github.com/babyblueviper1/preaction-governance-conformance\",\"duration_ms\":592,\"independent_nodes\":[\"https://invinoveritas-castra.babyblueviper.workers.dev/verify\",\"https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run\"],\"input_hash\":\"e8f0f71e41d0c57de6c8a25c345830044170526fc45eecf1ec4133d0fc40925f\",\"key_id\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"kind\":\"execute\",\"output_hash\":\"04a6e3a5959632fdd6db4f7677932f164b431a8ea59ab4df31ecd9603eb78238\",\"payment\":\"Lightning/Bearer sats\",\"platform\":\"invinoveritas\",\"price_sats\":700,\"proved_at\":1785502436,\"schema\":\"invinoveritas.proof.v1\",\"status\":\"success\",\"target_hash\":\"11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1\",\"verifier_keys\":\"https://api.babyblueviper.com/.well-known/verifier-keys.json\",\"verifier_pubkey\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"verify_how\":\"Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \\u21d2 invinoveritas issued this, untampered. No trust required.\",\"verify_offline\":\"npm i invinoveritas-verify  \\u00b7  pip install invinoveritas-verify  \\u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.\",\"verify_url\":\"https://api.babyblueviper.com/verify-proof\",\"version\":\"1.12.1\"}",
+        "created_at": 1785502436,
+        "id": "f8b851dd70bd34a7b96c3615c71da34ac43a4a0cb03eecbcbbf7c5fcb9d15026",
+        "kind": 30078,
+        "pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+        "sig": "88297d7bc24c324fe1b4f1c35bcf5302c63dfe2e916722c12edfa22ad6bfe25fd3ebf77fd241e177e850fdeb550a70c3265e752cf120324dd678be5fefba149f",
+        "tags": [
+          [
+            "d",
+            "invinoveritas-proof-exec_57cdad9817ca27d675ed"
+          ],
+          [
+            "t",
+            "invinoveritas"
+          ],
+          [
+            "t",
+            "proof"
+          ],
+          [
+            "action_id",
+            "exec_57cdad9817ca27d675ed"
+          ],
+          [
+            "tool",
+            "execute"
+          ],
+          [
+            "output_hash",
+            "04a6e3a5959632fdd6db4f7677932f164b431a8ea59ab4df31ecd9603eb78238"
+          ]
+        ]
+      },
+      "independent_nodes": [
+        "https://invinoveritas-castra.babyblueviper.workers.dev/verify",
+        "https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run"
+      ],
+      "input_hash": "e8f0f71e41d0c57de6c8a25c345830044170526fc45eecf1ec4133d0fc40925f",
+      "key_id": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "kind": "execute",
+      "output_hash": "04a6e3a5959632fdd6db4f7677932f164b431a8ea59ab4df31ecd9603eb78238",
+      "payment": "Lightning/Bearer sats",
+      "platform": "invinoveritas",
+      "price_sats": 700,
+      "proved_at": 1785502436,
+      "schema": "invinoveritas.proof.v1",
+      "signature_type": "nostr_event",
+      "status": "success",
+      "target_hash": "11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1",
+      "verifier_keys": "https://api.babyblueviper.com/.well-known/verifier-keys.json",
+      "verifier_pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "verify_how": "Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \u21d2 invinoveritas issued this, untampered. No trust required.",
+      "verify_offline": "npm i invinoveritas-verify  \u00b7  pip install invinoveritas-verify  \u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.",
+      "verify_url": "https://api.babyblueviper.com/verify-proof",
+      "version": "1.12.1"
+    },
+    "proof_hash": "a98eaa5953808639798d5f75c9745dd661bc18cbdbf0cce72901fcda19608293",
+    "proof_id": "proof_b0ce6e66a0676a507568",
+    "reveal_state": "content_commitment_mismatch",
+    "signature_type": "nostr_event",
+    "verify": "SHA-256 the sorted proof_payload JSON and compare to proof_hash to confirm integrity."
+  },
+  "ba17ddf4": {
+    "agent_id": null,
+    "attestation_url": "https://api.babyblueviper.com/attestations/proof_ba17ddf4caca7523d49d",
+    "commitment_hash": "sha256:6211de0617ceee314b584edef2987a948b5146c31582b818c376fcbada28a0ae",
+    "created_at": 1785502906,
+    "ledger_position": 14,
+    "proof": {
+      "action_id": "exec_e2e9576092ba98ec73ea",
+      "artifact_id": "",
+      "audit_created_at": 1785502906,
+      "bitcoin_only": true,
+      "conformance_suite": "https://github.com/babyblueviper1/preaction-governance-conformance",
+      "duration_ms": 338,
+      "event": {
+        "content": "{\"action_id\":\"exec_e2e9576092ba98ec73ea\",\"artifact_id\":\"\",\"audit_created_at\":1785502906,\"bitcoin_only\":true,\"conformance_suite\":\"https://github.com/babyblueviper1/preaction-governance-conformance\",\"duration_ms\":338,\"independent_nodes\":[\"https://invinoveritas-castra.babyblueviper.workers.dev/verify\",\"https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run\"],\"input_hash\":\"4c64370c7667483c6a3344939714d60a99fd7a3e4111288874e78fe093cd9c72\",\"key_id\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"kind\":\"execute\",\"output_hash\":\"61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1\",\"payment\":\"Lightning/Bearer sats\",\"platform\":\"invinoveritas\",\"price_sats\":700,\"proved_at\":1785502906,\"schema\":\"invinoveritas.proof.v1\",\"status\":\"success\",\"target_hash\":\"11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1\",\"verifier_keys\":\"https://api.babyblueviper.com/.well-known/verifier-keys.json\",\"verifier_pubkey\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"verify_how\":\"Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \\u21d2 invinoveritas issued this, untampered. No trust required.\",\"verify_offline\":\"npm i invinoveritas-verify  \\u00b7  pip install invinoveritas-verify  \\u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.\",\"verify_url\":\"https://api.babyblueviper.com/verify-proof\",\"version\":\"1.12.1\"}",
+        "created_at": 1785502906,
+        "id": "ec32999c9a5fabd8a9b6782e5edbd95134fee126465768178204ad6f37a720fd",
+        "kind": 30078,
+        "pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+        "sig": "a7e8455036a937e30d33666a899233286e3110999ed6505bd6a0607b0d6ad8775ebb97ff7a00a65084db399f323e1618b7a005708afd05fa5feb1681ad8894ad",
+        "tags": [
+          [
+            "d",
+            "invinoveritas-proof-exec_e2e9576092ba98ec73ea"
+          ],
+          [
+            "t",
+            "invinoveritas"
+          ],
+          [
+            "t",
+            "proof"
+          ],
+          [
+            "action_id",
+            "exec_e2e9576092ba98ec73ea"
+          ],
+          [
+            "tool",
+            "execute"
+          ],
+          [
+            "output_hash",
+            "61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1"
+          ]
+        ]
+      },
+      "independent_nodes": [
+        "https://invinoveritas-castra.babyblueviper.workers.dev/verify",
+        "https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run"
+      ],
+      "input_hash": "4c64370c7667483c6a3344939714d60a99fd7a3e4111288874e78fe093cd9c72",
+      "key_id": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "kind": "execute",
+      "output_hash": "61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1",
+      "payment": "Lightning/Bearer sats",
+      "platform": "invinoveritas",
+      "price_sats": 700,
+      "proved_at": 1785502906,
+      "schema": "invinoveritas.proof.v1",
+      "signature_type": "nostr_event",
+      "status": "success",
+      "target_hash": "11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1",
+      "verifier_keys": "https://api.babyblueviper.com/.well-known/verifier-keys.json",
+      "verifier_pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "verify_how": "Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \u21d2 invinoveritas issued this, untampered. No trust required.",
+      "verify_offline": "npm i invinoveritas-verify  \u00b7  pip install invinoveritas-verify  \u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.",
+      "verify_url": "https://api.babyblueviper.com/verify-proof",
+      "version": "1.12.1"
+    },
+    "proof_hash": "6eb0d92aeffd3898c139d739d15b22301a4e61d7d42c714c358904696a2949c4",
+    "proof_id": "proof_ba17ddf4caca7523d49d",
+    "reveal_state": "content_bound",
+    "signature_type": "nostr_event",
+    "verify": "SHA-256 the sorted proof_payload JSON and compare to proof_hash to confirm integrity."
+  },
+  "ba17ddf4_POSTFIX_00209da": {
+    "agent_id": null,
+    "attestation_url": "https://api.babyblueviper.com/attestations/proof_ba17ddf4caca7523d49d",
+    "commitment_hash": "sha256:6211de0617ceee314b584edef2987a948b5146c31582b818c376fcbada28a0ae",
+    "created_at": 1785502906,
+    "ledger_position": 14,
+    "proof": {
+      "action_id": "exec_e2e9576092ba98ec73ea",
+      "artifact_id": "",
+      "audit_created_at": 1785502906,
+      "bitcoin_only": true,
+      "conformance_suite": "https://github.com/babyblueviper1/preaction-governance-conformance",
+      "duration_ms": 338,
+      "independent_nodes": [
+        "https://invinoveritas-castra.babyblueviper.workers.dev/verify",
+        "https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run"
+      ],
+      "input_hash": "4c64370c7667483c6a3344939714d60a99fd7a3e4111288874e78fe093cd9c72",
+      "key_id": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "kind": "execute",
+      "output_hash": "61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1",
+      "payment": "Lightning/Bearer sats",
+      "platform": "invinoveritas",
+      "price_sats": 700,
+      "proved_at": 1785502906,
+      "schema": "invinoveritas.proof.v1",
+      "status": "success",
+      "target_hash": "11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1",
+      "verifier_keys": "https://api.babyblueviper.com/.well-known/verifier-keys.json",
+      "verifier_pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "verify_how": "Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \u21d2 invinoveritas issued this, untampered. No trust required.",
+      "verify_offline": "npm i invinoveritas-verify  \u00b7  pip install invinoveritas-verify  \u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.",
+      "verify_url": "https://api.babyblueviper.com/verify-proof",
+      "version": "1.12.1"
+    },
+    "proof_hash": "6eb0d92aeffd3898c139d739d15b22301a4e61d7d42c714c358904696a2949c4",
+    "proof_id": "proof_ba17ddf4caca7523d49d",
+    "reveal_state": "content_bound",
+    "signature": {
+      "event": {
+        "content": "{\"action_id\":\"exec_e2e9576092ba98ec73ea\",\"artifact_id\":\"\",\"audit_created_at\":1785502906,\"bitcoin_only\":true,\"conformance_suite\":\"https://github.com/babyblueviper1/preaction-governance-conformance\",\"duration_ms\":338,\"independent_nodes\":[\"https://invinoveritas-castra.babyblueviper.workers.dev/verify\",\"https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run\"],\"input_hash\":\"4c64370c7667483c6a3344939714d60a99fd7a3e4111288874e78fe093cd9c72\",\"key_id\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"kind\":\"execute\",\"output_hash\":\"61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1\",\"payment\":\"Lightning/Bearer sats\",\"platform\":\"invinoveritas\",\"price_sats\":700,\"proved_at\":1785502906,\"schema\":\"invinoveritas.proof.v1\",\"status\":\"success\",\"target_hash\":\"11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1\",\"verifier_keys\":\"https://api.babyblueviper.com/.well-known/verifier-keys.json\",\"verifier_pubkey\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"verify_how\":\"Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \\u21d2 invinoveritas issued this, untampered. No trust required.\",\"verify_offline\":\"npm i invinoveritas-verify  \\u00b7  pip install invinoveritas-verify  \\u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.\",\"verify_url\":\"https://api.babyblueviper.com/verify-proof\",\"version\":\"1.12.1\"}",
+        "created_at": 1785502906,
+        "id": "ec32999c9a5fabd8a9b6782e5edbd95134fee126465768178204ad6f37a720fd",
+        "kind": 30078,
+        "pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+        "sig": "a7e8455036a937e30d33666a899233286e3110999ed6505bd6a0607b0d6ad8775ebb97ff7a00a65084db399f323e1618b7a005708afd05fa5feb1681ad8894ad",
+        "tags": [
+          [
+            "d",
+            "invinoveritas-proof-exec_e2e9576092ba98ec73ea"
+          ],
+          [
+            "t",
+            "invinoveritas"
+          ],
+          [
+            "t",
+            "proof"
+          ],
+          [
+            "action_id",
+            "exec_e2e9576092ba98ec73ea"
+          ],
+          [
+            "tool",
+            "execute"
+          ],
+          [
+            "output_hash",
+            "61acf617908c08227be34f5a5b5f2593098f1cb114cca52bcd3f64350982c6b1"
+          ]
+        ]
+      },
+      "signature_type": "nostr_event"
+    },
+    "signature_type": "nostr_event",
+    "verify": "SHA-256 the sorted `proof` JSON (sorted keys, compact separators, ensure_ascii=False) and compare to commitment_hash (if reveal_state is content_bound) or proof_hash to confirm integrity -- this is exactly what's served here, no projection needed. `signature` is separate, for verifying authenticity independently of content-binding."
+  },
+  "db6660de": {
+    "agent_id": null,
+    "attestation_url": "https://api.babyblueviper.com/attestations/proof_db6660de051970dfe615",
+    "commitment_hash": "sha256:320e8805a6c9b23e1ec077bad40fce39a12a89b218c73dab3d214117b6993e76",
+    "created_at": 1785502887,
+    "ledger_position": 13,
+    "proof": {
+      "action_id": "exec_82a95e9154e2bf6a809b",
+      "artifact_id": "",
+      "audit_created_at": 1785502886,
+      "bitcoin_only": true,
+      "conformance_suite": "https://github.com/babyblueviper1/preaction-governance-conformance",
+      "duration_ms": 318,
+      "event": {
+        "content": "{\"action_id\":\"exec_82a95e9154e2bf6a809b\",\"artifact_id\":\"\",\"audit_created_at\":1785502886,\"bitcoin_only\":true,\"conformance_suite\":\"https://github.com/babyblueviper1/preaction-governance-conformance\",\"duration_ms\":318,\"independent_nodes\":[\"https://invinoveritas-castra.babyblueviper.workers.dev/verify\",\"https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run\"],\"input_hash\":\"23873687fdb6d681449cd81551412536ef2a61117929d6ea8b529a8b7ddd4ac5\",\"key_id\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"kind\":\"execute\",\"output_hash\":\"70812031d43bd8b02bd31fdef7541dc3a4e117c51bd049ce209072275468e5ee\",\"payment\":\"Lightning/Bearer sats\",\"platform\":\"invinoveritas\",\"price_sats\":700,\"proved_at\":1785502887,\"schema\":\"invinoveritas.proof.v1\",\"status\":\"success\",\"target_hash\":\"11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1\",\"verifier_keys\":\"https://api.babyblueviper.com/.well-known/verifier-keys.json\",\"verifier_pubkey\":\"6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"verify_how\":\"Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \\u21d2 invinoveritas issued this, untampered. No trust required.\",\"verify_offline\":\"npm i invinoveritas-verify  \\u00b7  pip install invinoveritas-verify  \\u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.\",\"verify_url\":\"https://api.babyblueviper.com/verify-proof\",\"version\":\"1.12.1\"}",
+        "created_at": 1785502887,
+        "id": "9fa23336edd89bb30958594faaac02429756e1bea4fd8ebc018bdc06ba259357",
+        "kind": 30078,
+        "pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+        "sig": "b6aeadaa86f6a55d1634537affc8cea3bcd242464d148dfaba7245b271d4c667440a043845eeba9ab6b4ea4acd50fef39ce13ee96b8dbdf70c0b3eb0b9be5176",
+        "tags": [
+          [
+            "d",
+            "invinoveritas-proof-exec_82a95e9154e2bf6a809b"
+          ],
+          [
+            "t",
+            "invinoveritas"
+          ],
+          [
+            "t",
+            "proof"
+          ],
+          [
+            "action_id",
+            "exec_82a95e9154e2bf6a809b"
+          ],
+          [
+            "tool",
+            "execute"
+          ],
+          [
+            "output_hash",
+            "70812031d43bd8b02bd31fdef7541dc3a4e117c51bd049ce209072275468e5ee"
+          ]
+        ]
+      },
+      "independent_nodes": [
+        "https://invinoveritas-castra.babyblueviper.workers.dev/verify",
+        "https://babyblueviper1--2aba75da693711f185891607ee4eb77e.web.val.run"
+      ],
+      "input_hash": "23873687fdb6d681449cd81551412536ef2a61117929d6ea8b529a8b7ddd4ac5",
+      "key_id": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "kind": "execute",
+      "output_hash": "70812031d43bd8b02bd31fdef7541dc3a4e117c51bd049ce209072275468e5ee",
+      "payment": "Lightning/Bearer sats",
+      "platform": "invinoveritas",
+      "price_sats": 700,
+      "proved_at": 1785502887,
+      "schema": "invinoveritas.proof.v1",
+      "signature_type": "nostr_event",
+      "status": "success",
+      "target_hash": "11a4a60b518bf24989d481468076e5d5982884626aed9faeb35b8576fcd223e1",
+      "verifier_keys": "https://api.babyblueviper.com/.well-known/verifier-keys.json",
+      "verifier_pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+      "verify_how": "Easiest: install the offline verifier above and recompute locally. Or POST this proof's signed `event` to verify_url (or an independent_node), OR run NIP-01 yourself: recompute the Nostr event id = sha256([0,pubkey,created_at,kind,tags,content]), verify the schnorr signature against verifier_pubkey. valid \u21d2 invinoveritas issued this, untampered. No trust required.",
+      "verify_offline": "npm i invinoveritas-verify  \u00b7  pip install invinoveritas-verify  \u2014 recompute this proof on your own machine against verifier_pubkey; you never have to call us.",
+      "verify_url": "https://api.babyblueviper.com/verify-proof",
+      "version": "1.12.1"
+    },
+    "proof_hash": "e6c50c9da7fc142d9614cc906963a1c977f2f031664b35ea14c549b4af8ce7ff",
+    "proof_id": "proof_db6660de051970dfe615",
+    "reveal_state": "content_bound",
+    "signature_type": "nostr_event",
+    "verify": "SHA-256 the sorted proof_payload JSON and compare to proof_hash to confirm integrity."
+  }
+}
