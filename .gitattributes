@@ -1,0 +1,3 @@
+# LF-only: conformance vectors + reference checkers are hashed & pinned by SHA-256, so their canonical
+# git-blob bytes must be identical across every contributor OS/checkout. Normalize all text to LF.
+* text=auto eol=lf
