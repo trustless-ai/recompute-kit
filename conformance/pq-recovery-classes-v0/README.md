@@ -6,7 +6,7 @@ party can tell, **from the anchored trail alone**, which kind of authority trans
 claims. Companion to `pq-key-binding-v0` (the binding + cutoff enforcer); this is the recovery layer above it.
 
 Blind-diff artifact for the design agreed 2026-07-31 with **babyblueviper1** (Fede) and **pipavlo82** (Pavlo);
-`recovery_check.py` derives every verdict from the predicate alone. Run: `python3 recovery_check.py vectors.json` → **11/11**.
+`recovery_check.py` derives every verdict from the predicate alone. Run: `python3 recovery_check.py vectors.json` → **20/20**.
 
 ## The three classes
 

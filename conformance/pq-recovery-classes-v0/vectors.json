@@ -504,6 +504,47 @@
       }
     },
     {
+      "case_id": "bind_after_terminal_owner_VALID_seed_rotation_does_NOT_lift__reject",
+      "mode": "bind_gate",
+      "expected_verdict": "bind_reject",
+      "prior_statements": [
+        {
+          "class": "agent_terminal",
+          "subtype": "terminal_owner",
+          "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+          "agent_id": "8",
+          "auth": {
+            "path": "siwe_owner",
+            "identity": "0xabc0000000000000000000000000000000000abc"
+          },
+          "anchor_time": 1800
+        },
+        {
+          "class": "seed_epoch_rotation",
+          "seed_epoch": 1,
+          "scope": "fleet",
+          "auth": {
+            "path": "deployer_tx",
+            "identity": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14",
+            "anchor_tx_from": "0xff9a176577fb42b6bc9c19fd05a241e8fcd0ca14"
+          },
+          "anchor_time": 1850,
+          "new_keys": [
+            {
+              "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+              "agent_id": "8",
+              "pq_pubkey": "kd:36910cf255faaaa2d62326c365a82f805ebc021149a5821cd81a509f82094c97"
+            }
+          ]
+        }
+      ],
+      "bind": {
+        "registry": "0x8b5af3a59f81c7e16617e8eb824bc6ffb792a2c3",
+        "agent_id": "8",
+        "anchor_time": 1900
+      }
+    },
+    {
       "case_id": "bind_BETWEEN_kill_and_lift__reject (lift is forward-acting, not retroactive)",
       "mode": "bind_gate",
       "expected_verdict": "bind_reject",
