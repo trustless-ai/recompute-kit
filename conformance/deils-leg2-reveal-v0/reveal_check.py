@@ -1,31 +1,47 @@
 #!/usr/bin/env python3
 """Independent DEILS leg-2 reveal-binding checker (ours). Derives every verdict from the rule itself —
-commitment_hash = "sha256:" + sha256(JCS(committed_content)); reveal recomputes over revealed_content and
-binds iff equal; null reveal = content_withheld. Does NOT read Fede's check_deils_leg2.py — the point is a
-BLIND diff of two independent implementations over the same vectors."""
+commitment_hash = "sha256:" + sha256(JCS(parsed(content))); the input to JCS is ALWAYS the parsed
+(language-native) value, NEVER the served wire encoding (Pavlo/Fede, 2026-07-31, closing the byte-domain
+ambiguity Merlini's \\uXXXX-escaping catch surfaced). A reveal binds iff the recompute matches; a null
+reveal is content_withheld; an unequal recompute is content_commitment_mismatch (terminal, fail-closed).
+
+Two-sided on the wire-trap: for a case carrying `wire_representation_ascii_escaped`, we ALSO assert that
+byte-hashing the served (\\uXXXX-escaped) wire string does NOT match the commitment — a conforming checker
+must re-parse+re-canonicalize, never hash the wire bytes as-received.
+
+Does NOT read invinoveritas's check_deils_leg2.py — the point is a BLIND diff of two implementations.
+"""
 import json, hashlib, sys
 
-def jcs(v):  # RFC 8785 JCS: recursive sorted keys, compact, raw UTF-8
+def jcs(v):  # RFC 8785 JCS: recursive sorted keys, compact, raw UTF-8 (ensure_ascii=False)
     return json.dumps(v, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
-def commit(content):
-    return "sha256:" + hashlib.sha256(jcs(content).encode("utf-8")).hexdigest()
+def commit(parsed_content):
+    return "sha256:" + hashlib.sha256(jcs(parsed_content).encode("utf-8")).hexdigest()
 
-def verdict(case):
-    committed_hash = commit(case["committed_content"])
+def check(case):
+    committed_hash = commit(case["committed_content"])          # rule: jcs(parsed(content))
     rc = case.get("revealed_content", None)
-    if rc is None:
-        return "content_withheld", committed_hash, None
-    recomputed = commit(rc)
-    return ("content_bound" if recomputed == committed_hash else "content_commitment_mismatch"), committed_hash, recomputed
+    state = "content_withheld" if rc is None else (
+        "content_bound" if commit(rc) == committed_hash else "content_commitment_mismatch")
+    ok = state == case["expected_state"]
+    notes = []
+    # two-sided wire trap: hashing the served escaped bytes must NOT equal the commitment
+    if "wire_representation_ascii_escaped" in case:
+        wire = case["wire_representation_ascii_escaped"]
+        wire_byte_hash = "sha256:" + hashlib.sha256(wire.encode("utf-8")).hexdigest()
+        wire_mismatches = wire_byte_hash != committed_hash
+        want = case.get("wire_byte_hash_must_not_match_commitment", True)
+        ok = ok and (wire_mismatches == want)
+        notes.append(f"wire-byte-hash≠commitment={wire_mismatches} (want {want})")
+    return ok, state, notes
 
-fx = json.load(open(sys.argv[1]))
+fx = json.load(open(sys.argv[1] if len(sys.argv) > 1 else "vectors.json"))
 fails = 0
 for c in fx["cases"]:
-    got, ch, rh = verdict(c)
-    exp = c["expected_state"]
-    ok = got == exp
+    ok, state, notes = check(c)
     fails += not ok
-    print(f"{'OK ' if ok else 'BAD'} {c['case_id']:<26} → {got:<28} (expected {exp})")
+    extra = ("  · " + " · ".join(notes)) if notes else ""
+    print(f"{'OK ' if ok else 'BAD'} {c['case_id']:<32} → {state}{extra}")
 print(f"\n{len(fx['cases'])-fails}/{len(fx['cases'])} cases reproduced blind" + ("" if not fails else "  ← MISMATCH"))
 sys.exit(1 if fails else 0)
