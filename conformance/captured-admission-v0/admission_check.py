@@ -47,19 +47,25 @@ def _chain_head(seq_id, entries):
 def _binding_ok(case):
     return case["admission"]["captured_object_hash"] == case["capture"]["object_hash"]
 def _asof(case):
-    return case.get("as_of", case.get("eval_at"))
+    return case.get("as_of")  # as_of is REQUIRED (obligation/authority); no silent eval_at fallback
 
 
 # -- mode=obligation -----------------------------------------------------------------------------------
 def obligation(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
+    as_of = _asof(case)
+    if as_of is None:
+        return "as_of_required", ["as_of_is_a_required_first_class_input"]
     adm = case["admission"]
+    if as_of < adm["admitted_at"]:                    # snapshot predates the admission -> not visible yet
+        return "admission_not_yet_visible", [f"as_of={as_of}<admitted_at={adm['admitted_at']}",
+                                             "future_record_ignored_on_earlier_snapshot"]
     if adm.get("outcome", "accepted") == "rejected_at_admission":
         return "not_admitted:rejected_at_admission", ["admission_rejected", "no_obligation_created",
                                                       "references_request_capture_only"]
     idx = adm["admission_index"]; deadline = adm["response_deadline"]
-    permitted = set(adm["profile"]["permitted_dispositions"]); as_of = _asof(case)
+    permitted = set(adm["profile"]["permitted_dispositions"])
     # a disposition COMPLETES iff valid AND visible at as_of (future events ignored on an earlier snapshot)
     valid = [d for d in case.get("dispositions", [])
              if d["references_index"] == idx and d["kind"] in permitted
@@ -83,9 +89,17 @@ def authority(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
     adm = case["admission"]; epoch = adm["epoch_id"]; activated = adm["activated_at"]; as_of = _asof(case)
+    if as_of is None:
+        return "as_of_required", ["as_of_is_a_required_first_class_input"]
     if adm.get("expiry") is not None and adm["expiry"] <= activated:
         return "invalid_admission", ["expiry_at_or_before_activation"]
-    et = [t for t in case.get("transitions", []) if t["references_epoch"] == epoch]
+    if as_of < activated:                             # snapshot predates the epoch -> not active yet
+        return "epoch_not_yet_active", [f"as_of={as_of}<activated_at={activated}",
+                                        "future_record_ignored_on_earlier_snapshot"]
+    # VISIBILITY FIRST: a transition after as_of must never affect this snapshot (Pavlo). All validation,
+    # conflict resolution, and boundary selection run ONLY over the visible set.
+    et = [t for t in case.get("transitions", [])
+          if t["references_epoch"] == epoch and t["at"] <= as_of]
     for t in et:
         if t["kind"] not in RECOGNIZED_TRANSITIONS:
             return "invalid_transition", [f"unrecognized_transition_kind={t['kind']}"]

@@ -35,9 +35,15 @@ an issuer's self-declaration (no self-declared `independent: true`).
 
 ## Explicit `as_of`; two stored dimensions; derived predicates
 
-`as_of` is a **required** first-class input. Every verdict is a pure function of `(record, as_of)`, and the
+`as_of` is a **required** first-class input — a missing `as_of` yields a canonical structural result
+(`as_of_required`), never a silent fallback. Every verdict is a pure function of `(record, as_of)`, and the
 evaluator **ignores every event whose own commit/anchor time is later than `as_of`** (`disposition.at`,
-`claim.anchor_time`, `transition.at` ≤ `as_of`) — a future record never affects an earlier snapshot.
+`claim.anchor_time`, `transition.at` ≤ `as_of`) — a future record never affects an earlier snapshot. This is
+enforced **structurally, before any validation**: authority derives `visible_transitions = {t : t.at ≤
+as_of}` first and runs *all* kind/rollback/successor/conflict checks and boundary selection **only** over
+that set, so a future transition can never change an earlier snapshot's verdict. A snapshot taken before the
+record exists returns `admission_not_yet_visible` (`as_of < admitted_at`) or `epoch_not_yet_active`
+(`as_of < activated_at`).
 
 - `lifecycle_state` — authority: `active` / `expired` / `revoked` / `superseded`. A timing condition.
 - `disposition` — a profile's permitted **semantic** completion. A validity judgment.
@@ -56,8 +62,8 @@ at which an accepted obligation with no valid disposition recomputes to `livenes
 
 | mode | recomputes | verdicts |
 |---|---|---|
-| `obligation` | one admitted index at `as_of` (semantic AND liveness) | `not_admitted:<why>` · `resolved:<disp>\|met` · `resolved:<disp>\|late` · `pending\|open` · `unresolved\|liveness_failure` · `conflict` · `invalid_admission` |
-| `authority` | one claim vs the epoch in force at its own anchor time | `attributed` · `out_of_authority` · `claim_not_yet_visible` · `invalid_admission` · `invalid_transition` · `transition_conflict` · `rollback_conflict` |
+| `obligation` | one admitted index at `as_of` (semantic AND liveness) | `as_of_required` · `admission_not_yet_visible` · `not_admitted:<why>` · `resolved:<disp>\|met` · `resolved:<disp>\|late` · `pending\|open` · `unresolved\|liveness_failure` · `conflict` · `invalid_admission` |
+| `authority` | one claim vs the epoch in force at its own anchor time | `as_of_required` · `epoch_not_yet_active` · `attributed` · `out_of_authority` · `claim_not_yet_visible` · `invalid_admission` · `invalid_transition` · `transition_conflict` · `rollback_conflict` |
 | `disposition` | one disposition's validity in its declared class | `disposition:<kind>` · `rejected:<kind>` · `unrecognized_disposition_kind` |
 | `enumerate` | completeness/continuity of an anchored ordered sequence | `complete` · `gap:<i>` · `duplicate:<i>` · `conflicting_index:<i>` · `out_of_order` · `commitment_mismatch` · `invalid_sequence` |
 | `capture` | capture-evidence provenance + exact binding into admission | `capture_admitted` · `capture_binding_mismatch` · `invalid_capture_signature` · `anchor_does_not_open` · `capture_anchored_after_admission` · `processor_signed_capture` · `capturer_not_incentive_aligned` · `unsupported_anchor_class` · `invalid_capture_timing` |
