@@ -62,32 +62,21 @@ writing) — the admission leg turns "accepted and then silence" from a populati
 discrepancy into a **per-request, falsifiable predicate**. That is the actual motivating case for
 building this at all, not a hypothetical.
 
-## `response_deadline` — proposed derivation, by request class (updated 2026-08-02)
+## `response_deadline` — proposed derivation, not live
 
-`response_deadline = accepted_at + Δ(policy_version, request_class)`, computed by the
-**profile-owned pre-validator** `deadline_derivation.py` (separate from `admission_check.py`,
-runs BEFORE a record reaches the shared core, per Merlini/Pavlo's fix, 2026-08-02) —
+`response_deadline = accepted_at + POLICY_SLA_SECONDS[policy_version]`,
+`POLICY_SLA_SECONDS["invinoveritas.review.v5"] = 60`.
 
-    python3 deadline_derivation.py deadline_vectors.json   →  6/6
+Deterministically derived per Pavlo's fix (2026-08-02: "not an arbitrary published number"), so the
+deadline is itself recomputable from the admission record alone, not a side-channel value.
+Grep-verified before writing this doc: no timeout/SLA constant for `/review` exists in `core/models.py`
+or `app.py` today — 60s is a **new, proposed** number (generous relative to typical sub-10s
+LLM-backed review latency), open to revision once a real value is committed to production.
 
-`request_class` is **not** a new invented dimension — it buckets our real, live `artifact_type`
-(`core/models.py`, 11-valued `Literal`) using the exact same irreversible/reversible split already
-live in production (`services/proof_signing.py`'s `IRREVERSIBLE_ARTIFACT_TYPES`): `long` =
-`{onchain_action, trade, sanctions_screening}`, `short` = the other 8 real values. `Δ`: short=60s
-(the original flat proposal), long=180s — longer because irreversible-class review can trigger the
-`reversibility_gate`'s extra confidence-floor check (`routes/inference.py`), real additional
-processing, not an arbitrary bigger number.
-
-A `deadline_policy_commitment` — `sha256({policy_version, request_class, delta_seconds})` — is
-bound into the record alongside `response_deadline` itself, so a downstream table edit can't
-silently reinterpret an old admission: the 6th vector
-(`review_deadline_later_policy_table_reinterprets_older_admission`) proves this concretely — an
-admission correctly bound under a prior SLA table is rejected at the **commitment** check when
-evaluated against the current one, not just at the raw-number comparison, which is the honest,
-stronger guarantee (a validator checking only the number could be fooled by a coincidental match;
-checking the commitment can't be). Grep-verified before writing this doc: no timeout/SLA constant
-for `/review` exists in `core/models.py` or `app.py` today — both `Δ` values above are new,
-proposed numbers, open to revision once real values are committed to production.
+**`request_class`-based deadline variation moved to a separate follow-up PR** (Pavlo, 2026-08-02:
+keep this PR as the frozen, auditable review-profile baseline; the deadline-by-request-class
+pre-validator is real, additional scope and belongs in its own PR, not stacked on top of this one).
+The flat formula above is this PR's actual, current baseline — not a placeholder.
 
 ## Idempotency at the admission layer — two distinct failure shapes (fixed 2026-08-02, Pavlo's blind-diff)
 
