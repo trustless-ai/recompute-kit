@@ -12,7 +12,7 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "README.md",
-    "sha256": "61bd0a219d7a55104b4a0febe5c0679588b97b5849faaaae72aa4e81a2e44bfb"
+    "sha256": "47ffdcfc8860fa96659103cb1180c569bcdceb664b26dcc826bbb1ab8da98b9b"
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",

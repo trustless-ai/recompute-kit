@@ -1,0 +1,86 @@
+{
+  "profile": "invinoveritas.review.v5 deadline-derivation pre-validator",
+  "note": "PROPOSED SHAPE ONLY -- no production /review endpoint change made. Exercises deadline_derivation.py directly: `python3 deadline_derivation.py deadline_vectors.json`. Does NOT touch ../captured-admission-v0/admission_check.py -- this is the profile-owned pre-validator that runs BEFORE a record reaches the shared obligation checker, per Merlini/Pavlo's fix (2026-08-02).",
+  "request_class_derivation": "request_class buckets our real, live artifact_type (core/models.py, 11-valued Literal) using the SAME irreversible/reversible split already live in production (services/proof_signing.py IRREVERSIBLE_ARTIFACT_TYPES) -- not a new invented axis. long = {onchain_action, trade, sanctions_screening}; short = the other 8 real artifact_type values.",
+  "policy_sla_table": "invinoveritas.review.v5: short=60s, long=180s. long is longer because irreversible-class review can trigger the reversibility_gate's extra confidence-floor check (routes/inference.py) -- real additional processing, not an arbitrary bigger number.",
+  "cases": [
+    {
+      "case_id": "review_deadline_short_class_derives_correctly",
+      "expected_verdict": "deadline_derivation_valid",
+      "_annotation": "positive vector 1/2 (Pavlo's ask): a reversible artifact_type (code_diff) buckets to request_class=short, \u0394=60s, and the supplied response_deadline + deadline_policy_commitment both match what's deterministically recomputed from {policy_version, request_class, accepted_at} alone.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 1000,
+        "response_deadline": 1060,
+        "deadline_policy_commitment": "dpc:895ce6be3c9841b1"
+      }
+    },
+    {
+      "case_id": "review_deadline_long_class_derives_correctly",
+      "expected_verdict": "deadline_derivation_valid",
+      "_annotation": "positive vector 2/2: an irreversible artifact_type (trade) buckets to request_class=long, \u0394=180s.",
+      "record": {
+        "artifact_type": "trade",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "long",
+        "accepted_at": 2000,
+        "response_deadline": 2180,
+        "deadline_policy_commitment": "dpc:a8a122168635cac0"
+      }
+    },
+    {
+      "case_id": "review_deadline_supplied_differs_from_derived",
+      "expected_verdict": "deadline_not_derived",
+      "_annotation": "negative 1/4 (Pavlo): supplied deadline differs from the derived deadline. The commitment itself is correct (isolates this failure from the commitment-mismatch case below) but the record claims response_deadline=3999 instead of the correctly-derived 3060.",
+      "record": {
+        "artifact_type": "patch",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 3000,
+        "response_deadline": 3999,
+        "deadline_policy_commitment": "dpc:895ce6be3c9841b1"
+      }
+    },
+    {
+      "case_id": "review_deadline_unknown_request_class",
+      "expected_verdict": "unknown_request_class",
+      "_annotation": "negative 2/4 (Pavlo): request_class isn't one of the two buckets the SLA table actually defines.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "medium",
+        "accepted_at": 4000,
+        "response_deadline": 4090,
+        "deadline_policy_commitment": "dpc:whatever0000000"
+      }
+    },
+    {
+      "case_id": "review_deadline_request_class_changed_after_binding",
+      "expected_verdict": "request_class_mismatch",
+      "_annotation": "negative 3/4 (Pavlo): the artifact_type (trade, an irreversible-class artifact that structurally buckets to 'long') doesn't match the request_class the record actually declares ('short') -- exactly the 'request_class changed after capture/admission binding' case Pavlo named. Catches an attempt to claim the cheaper short-class SLA for a long-class artifact.",
+      "record": {
+        "artifact_type": "trade",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 5000,
+        "response_deadline": 5060,
+        "deadline_policy_commitment": "dpc:895ce6be3c9841b1"
+      }
+    },
+    {
+      "case_id": "review_deadline_later_policy_table_reinterprets_older_admission",
+      "expected_verdict": "deadline_policy_commitment_mismatch",
+      "_annotation": "negative 4/4 (Pavlo): 'later policy table used to reinterpret an older admission.' This record was correctly bound under an OLDER SLA table (short=45s, not the current 60s) -- accepted_at=6000, response_deadline=6045, commitment computed under the prior table. Evaluating it against the CURRENT live table (_use_prev_table omitted -> defaults to POLICY_SLA_TABLE) correctly rejects it at the COMMITMENT check, not just the raw number -- the deadline_policy_commitment hash is the actual cryptographic evidence of which table was pinned at accepted_at, so a reinterpretation attempt is caught even before comparing the numeric deadline. A validator that only checked the raw response_deadline number could be fooled by a coincidental match; checking the commitment can't be. This is exactly why deadline_policy_commitment is bound into the record at all, not just response_deadline itself.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 6000,
+        "response_deadline": 6045,
+        "deadline_policy_commitment": "dpc:5cc785c57c41f0d7"
+      }
+    }
+  ]
+}

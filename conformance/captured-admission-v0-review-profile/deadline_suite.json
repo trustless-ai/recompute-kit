@@ -1,0 +1,18 @@
+{
+  "profile": "invinoveritas.review.v5 deadline-derivation pre-validator",
+  "vectors": {
+    "path": "deadline_vectors.json",
+    "sha256": "147f48bae2818cb2cb1ecad50211d510816631ce665a7a75b3e6353927c63204"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 deadline_derivation.py deadline_vectors.json",
+    "note": "profile-owned pre-validator, separate from ../captured-admission-v0/admission_check.py -- runs BEFORE a record reaches the shared obligation checker, per Merlini/Pavlo's fix (2026-08-02). Does not modify the core."
+  },
+  "laneHint": "recomputable",
+  "checker": {
+    "path": "deadline_derivation.py",
+    "sha256": "e5ab557d469a0e06a387a29a24f8a155cd346c91997a0ff258436e5c848203d1"
+  },
+  "status": "proposed shape, not production -- no /review endpoint change made"
+}
