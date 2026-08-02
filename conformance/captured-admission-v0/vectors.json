@@ -125,6 +125,17 @@
     {"case_id": "CAP_unsupported_anchor_class", "mode": "capture", "expected_verdict": "unsupported_anchor_class",
      "capture": {"capture_id": "cap1", "captured_object_hash": "0xobjA", "capturer_identity": "0xrequester", "captured_at": 100, "signature": "sig:89d69e5b0164d721", "anchor_ref": "ref:cap1", "anchor_class": "processor_log", "anchor_time": 150, "anchor_commitment": "cm:b771e805bbada914", "capture_policy_id": "pol1"},
      "admission": {"capture_id": "cap1", "captured_object_hash": "0xobjA", "accepted_at": 200},
-     "profile": {"acceptable_capturer_identities": ["0xrequester"], "acceptable_anchor_classes": ["onchain", "nostr"], "processor_identity": "0xprocessor", "requires_requester_capture": true}}
+     "profile": {"acceptable_capturer_identities": ["0xrequester"], "acceptable_anchor_classes": ["onchain", "nostr"], "processor_identity": "0xprocessor", "requires_requester_capture": true}},
+
+    {"case_id": "IDEMPOTENCY_first_admission_admitted_ok", "mode": "idempotency", "expected_verdict": "admitted_ok", "profile_id": "review.v5",
+     "records": [{"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 0}]},
+    {"case_id": "IDEMPOTENCY_retry_same_capture_is_replay", "mode": "idempotency", "expected_verdict": "idempotent_replay", "profile_id": "review.v5",
+     "records": [{"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 0}, {"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 0}]},
+    {"case_id": "IDEMPOTENCY_capture_id_opens_to_different_content", "mode": "idempotency", "expected_verdict": "capture_id_conflict:cid1", "profile_id": "review.v5",
+     "records": [{"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 0}, {"capture_id": "cid1", "canonical_capture_ref": "ccap_B", "admission_id": "aid:f3fd6313782bbc55", "admission_index": 1}]},
+    {"case_id": "IDEMPOTENCY_two_indices_same_admission_id_violation", "mode": "idempotency", "expected_verdict": "idempotency_violation:aid:b7d1dfefb722ab06", "profile_id": "review.v5",
+     "records": [{"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 0}, {"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:b7d1dfefb722ab06", "admission_index": 1}]},
+    {"case_id": "IDEMPOTENCY_admission_id_not_derived_from_capture", "mode": "idempotency", "expected_verdict": "admission_id_not_derived", "profile_id": "review.v5",
+     "records": [{"capture_id": "cid1", "canonical_capture_ref": "ccap_A", "admission_id": "aid:arbitrary_requester_label", "admission_index": 0}]}
   ]
 }

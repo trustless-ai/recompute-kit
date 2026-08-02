@@ -190,10 +190,40 @@ def capture(case):
     return "capture_admitted", ["binding+signature+anchor_open+timing (core)", "role+anchor_class (policy)"]
 
 
+# -- mode=idempotency ----------------------------------------------------------------------------------
+# Idempotency is keyed by the capture, but admission_index must NOT be content-derived -- that would
+# conflate request identity with the monotonic enumerable position (Pavlo). Two separate identities:
+#   admission_id    = H(profile_id || canonical_capture_ref)   -- deterministic REQUEST identity
+#   admission_index = a sequence position assigned once on first acceptance  -- monotonic ORDER identity
+# with an immutable admission_id -> admission_index mapping. A retry carrying the same exact canonical
+# capture returns the existing receipt+index (no-op); it never mints a second admission.
+def idempotency(case):
+    pid = case["profile_id"]; recs = case["records"]
+    for r in recs:  # admission_id must be DERIVED, not an arbitrary requester label
+        if r["admission_id"] != "aid:" + _h(f"{pid}|{r['canonical_capture_ref']}"):
+            return "admission_id_not_derived", [f"capture_id={r['capture_id']}",
+                                                "admission_id != H(profile_id||canonical_capture_ref)"]
+    cap_to_ref = {}  # a capture_id opening to two different canonical contents is a conflict
+    for r in recs:
+        cid = r["capture_id"]
+        if cid in cap_to_ref and cap_to_ref[cid] != r["canonical_capture_ref"]:
+            return f"capture_id_conflict:{cid}", ["same_capture_id_different_canonical_content"]
+        cap_to_ref[cid] = r["canonical_capture_ref"]
+    aid_to_idx = {}  # the admission_id -> admission_index mapping must be immutable
+    for r in recs:
+        aid = r["admission_id"]
+        if aid in aid_to_idx and aid_to_idx[aid] != r["admission_index"]:
+            return f"idempotency_violation:{aid}", ["same_admission_id_two_indices"]
+        aid_to_idx[aid] = r["admission_index"]
+    if len(recs) > len({r["admission_id"] for r in recs}):
+        return "idempotent_replay", ["retry_returns_existing_receipt_and_index", "no_second_admission"]
+    return "admitted_ok", ["one_receipt_one_index_per_request_identity"]
+
+
 def check(case):
     m = case.get("mode")
     fn = {"obligation": obligation, "authority": authority, "disposition": disposition,
-          "enumerate": enumerate_seq, "capture": capture}[m]
+          "enumerate": enumerate_seq, "capture": capture, "idempotency": idempotency}[m]
     v, notes = fn(case)
     return v == case["expected_verdict"], v, notes
 

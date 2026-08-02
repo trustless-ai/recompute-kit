@@ -61,6 +61,7 @@ at which an accepted obligation with no valid disposition recomputes to `livenes
 | `disposition` | one disposition's validity in its declared class | `disposition:<kind>` · `rejected:<kind>` · `unrecognized_disposition_kind` |
 | `enumerate` | completeness/continuity of an anchored ordered sequence | `complete` · `gap:<i>` · `duplicate:<i>` · `conflicting_index:<i>` · `out_of_order` · `commitment_mismatch` · `invalid_sequence` |
 | `capture` | capture-evidence provenance + exact binding into admission | `capture_admitted` · `capture_binding_mismatch` · `invalid_capture_signature` · `anchor_does_not_open` · `capture_anchored_after_admission` · `processor_signed_capture` · `capturer_not_incentive_aligned` · `unsupported_anchor_class` |
+| `idempotency` | admission is idempotent on the capture; index stays monotonic | `admitted_ok` · `idempotent_replay` · `capture_id_conflict:<id>` · `idempotency_violation:<admission_id>` · `admission_id_not_derived` |
 
 ## The five control families (Pavlo's blind-diff, PR #5)
 
@@ -84,6 +85,21 @@ at which an accepted obligation with no valid disposition recomputes to `livenes
 5. **authority transitions** — `expiry > activated_at`; terminal `transition.at ≥ activated_at`; unrecognized
    kind → `invalid_transition`; a future transition is ignored at an earlier `as_of`; a terminal cannot roll
    back to active (`rollback_conflict`); competing terminals → `transition_conflict`.
+
+## Idempotency — request identity vs sequence identity kept separate
+
+Admission is idempotent on the capture, but `admission_index` is **not** content-derived — that would
+conflate request identity with the monotonic enumerable position (Pavlo). Two identities:
+
+- `admission_id = H(profile_id ‖ canonical_capture_ref)` — deterministic **request** identity;
+- `admission_index` — a sequence position assigned **once** on first acceptance — monotonic **order** identity;
+- the `admission_id → admission_index` mapping is **immutable**.
+
+A retry carrying the same exact canonical capture returns the existing receipt + index (`idempotent_replay`),
+never a second admission. A `capture_id` opening to different canonical content is `capture_id_conflict`; two
+indices for one `admission_id` is `idempotency_violation`; a `capture_id` accepted as an arbitrary
+requester-chosen label (not derived from the authenticated capture) is `admission_id_not_derived`. This
+*prevents* the double-submit that `obligation` mode's `conflict` only *detects*.
 
 ## Relationship to the shipped work
 
