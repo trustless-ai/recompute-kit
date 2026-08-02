@@ -2,52 +2,52 @@
 """captured-admission.v0 — the shared lifecycle primitive under review verdicts, contribution
 settlement, and TEE attestation epochs: "captured admission with bounded authority or obligation".
 
-Greenlit 2026-08-02 with pipavlo82 (Pavlo) + babyblueviper1 (Fede) + Jimmy Shi. Three domain lifecycles
-(review dispositions, settlement milestones, enclave key-epochs) share ONE structural spine; this file
-pins the shared CORE — capture->admission binding, admission kind, enumerable index/epoch, temporal bound,
-append-only transitions, anchor-time resolution, non-retroactivity, derived absence/conflict — as
-recomputable vectors. Domain PROFILES own their own terminal vocabularies on top; this file is
-profile-agnostic core only (a profile is passed in per case as its permitted-disposition set).
+Greenlit 2026-08-02 with pipavlo82 (Pavlo), babyblueviper1 (Fede), Jimmy Shi; then shaped by Pavlo's
+blind-diff on PR #5 (the five control families + the core-vs-profile split pinned below).
 
 Pavlo's guard, encoded literally: a record keeps TWO stored dimensions in SEPARATE namespaces --
   lifecycle_state  (authority: active / expired / revoked / superseded)  -- a timing/authority condition
   disposition      (a profile's permitted completion over an admitted obligation) -- a validity judgment
 -- and absence + conflict are DERIVED predicates recomputed from the enumerable sequence, never stored.
-That separation is the whole point: a timing or authority condition must never collapse into a validity
-judgment. `missing` is therefore not a state anyone writes -- it is recomputed as
-(admitted AND window elapsed AND no valid completing disposition).
+`missing` is not a state anyone writes; it is recomputed. Semantic resolution and liveness are two separate
+recomputable facts: a LATE disposition resolves without erasing the missed deadline.
+
+as_of is a REQUIRED first-class input: every verdict is a pure function of (record, as_of), and the
+evaluator IGNORES every event whose own commit/anchor time is later than as_of -- a future record never
+affects an earlier snapshot (disposition.at <= as_of; claim.anchor_time; transition.at <= as_of).
+
+CORE proves identity, timing, commitment, exact binding, ordering, continuity. PROFILE/POLICY owns the
+vocabularies, which capturer roles are incentive-aligned, and which external anchor classes count as
+independent -- those resolve from profile-pinned evidence (capture_policy_id), never issuer declarations.
 
 Modes:
-  obligation   -- resolve one admitted obligation index at eval_at (semantic AND liveness, never collapsed):
-                  not_admitted:<why> | resolved:<disp>|met | resolved:<disp>|late | pending|open
-                  | unresolved|liveness_failure | conflict | invalid_admission
-  authority    -- attribute one claim against the epoch in force at the CLAIM'S OWN anchor time:
-                  attributed | out_of_authority | invalid_admission | invalid_transition
-                  | conflict_transition   (later expiry/revoke acts forward only)
-
-`as_of` (alias: `eval_at`) is the explicit evaluation time -- every verdict is a pure function of
-(record, as_of). The same record recomputes to different verdicts at different as_of, consistently.
-  disposition  -- one disposition's own validity, class PRESERVED (never relabeled to a neighbour):
-                  disposition:<kind> | rejected:<kind>
+  obligation   -- resolve one admitted index at as_of (semantic AND liveness, never collapsed)
+  authority    -- attribute one claim against the epoch in force at the CLAIM'S OWN anchor time
+  disposition  -- one disposition's validity in its declared class (unrecognized kind != rejected:<echo>)
+  enumerate    -- sequence-level completeness/continuity of the admitted/published set
+  capture      -- capture-evidence provenance + exact binding into admission
 """
-import json, sys
+import hashlib, json, sys
+
+RECOGNIZED_TRANSITIONS = {"revoked", "superseded", "reactivated"}
+TERMINAL_TRANSITIONS = {"revoked", "superseded"}
 
 
+def _h(s): return hashlib.sha256(s.encode()).hexdigest()[:16]
+def _sig(idty, obj, at): return "sig:" + _h(f"{idty}|{obj}|{at}")
+def _capcommit(c): return "cm:" + _h(f"{c['capture_id']}|{c['captured_object_hash']}|{c['capturer_identity']}|{c['captured_at']}|{c['signature']}")
+def _chain_head(seq_id, entries):
+    prev = "GEN:" + str(seq_id)
+    for e in entries:
+        prev = _h(f"{e['index']}|{e['commitment']}|{prev}")
+    return "head:" + prev
 def _binding_ok(case):
-    # (core-1) exact capture->admission binding: the admitted object hash equals the captured object hash.
     return case["admission"]["captured_object_hash"] == case["capture"]["object_hash"]
+def _asof(case):
+    return case.get("as_of", case.get("eval_at"))
 
 
 # -- mode=obligation -----------------------------------------------------------------------------------
-# Admission is a GATE (Pavlo): only an ACCEPTED admission creates an obligation to dispose. A rejected
-# admission emits a rejection receipt referencing the request_capture but creates NO obligation -- so
-# rejected_at_admission is an admission OUTCOME, not a disposition over an obligation.
-#
-# For an accepted obligation the verdict carries TWO independent facts, never collapsed:
-#   semantic := resolved:<disp> | pending | unresolved      (was a valid completing disposition committed?)
-#   liveness := met | late | liveness_failure | open         (was a valid disposition committed by the deadline?)
-# A LATE disposition resolves the obligation WITHOUT erasing the missed deadline: "resolved:<d>|late" keeps
-# both facts. `liveness_failure` is a fixed historical fact; a later verdict cannot rewrite it to on-time.
 def obligation(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
@@ -56,53 +56,55 @@ def obligation(case):
         return "not_admitted:rejected_at_admission", ["admission_rejected", "no_obligation_created",
                                                       "references_request_capture_only"]
     idx = adm["admission_index"]; deadline = adm["response_deadline"]
-    permitted = set(adm["profile"]["permitted_dispositions"]); eval_at = case.get("as_of", case.get("eval_at"))
-    # a disposition COMPLETES iff valid: references THIS index, kind permitted, at>=admitted, own predicate holds
+    permitted = set(adm["profile"]["permitted_dispositions"]); as_of = _asof(case)
+    # a disposition COMPLETES iff valid AND visible at as_of (future events ignored on an earlier snapshot)
     valid = [d for d in case.get("dispositions", [])
              if d["references_index"] == idx and d["kind"] in permitted
-             and d["at"] >= adm["admitted_at"] and d.get("binds", True)]
-    if len(valid) >= 2:                                   # (core-8) DERIVED conflict, never silent overwrite
+             and d["at"] >= adm["admitted_at"] and d["at"] <= as_of and d.get("binds", True)]
+    if len(valid) >= 2:
         return "conflict", [f"valid_completing_dispositions={len(valid)}", "no_silent_overwrite"]
-    if len(valid) == 1:                                   # semantic AND liveness, kept separate
+    if len(valid) == 1:
         d = valid[0]; met = d["at"] <= deadline
         return (f"resolved:{d['kind']}|{'met' if met else 'late'}",
                 [f"disposition={d['kind']}",
                  "deadline_met" if met else "deadline_breached_late_resolution_not_erased",
                  "semantic_and_liveness_separate"])
-    # no valid disposition -- keep the timing condition strictly separate from any validity judgment
-    if eval_at >= deadline:                               # (core-8) DERIVED absence = liveness, NEVER 'rejected'
-        return "unresolved|liveness_failure", [f"eval_at={eval_at}>=deadline={deadline}",
+    if as_of >= deadline:
+        return "unresolved|liveness_failure", [f"as_of={as_of}>=deadline={deadline}",
                                                "no_valid_disposition_by_deadline", "timing_not_validity"]
-    return "pending|open", [f"eval_at={eval_at}<deadline={deadline}", "within_window"]
+    return "pending|open", [f"as_of={as_of}<deadline={deadline}", "within_window"]
 
 
 # -- mode=authority ------------------------------------------------------------------------------------
 def authority(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
-    adm = case["admission"]; epoch = adm["epoch_id"]; activated = adm["activated_at"]
-    as_of = case.get("as_of", case.get("eval_at"))
-    epoch_terms = [t for t in case.get("transitions", [])
-                   if t["references_epoch"] == epoch and t["kind"] in ("revoked", "superseded")]
-    # append-only / ordering: a terminal transition anchored before activation is malformed
-    if any(t["at"] < activated for t in epoch_terms):
+    adm = case["admission"]; epoch = adm["epoch_id"]; activated = adm["activated_at"]; as_of = _asof(case)
+    if adm.get("expiry") is not None and adm["expiry"] <= activated:
+        return "invalid_admission", ["expiry_at_or_before_activation"]
+    et = [t for t in case.get("transitions", []) if t["references_epoch"] == epoch]
+    for t in et:
+        if t["kind"] not in RECOGNIZED_TRANSITIONS:
+            return "invalid_transition", [f"unrecognized_transition_kind={t['kind']}"]
+    if any(t["kind"] in TERMINAL_TRANSITIONS and t["at"] < activated for t in et):
         return "invalid_transition", ["terminal_transition_before_activation", "append_only_violation"]
-    # conflicting authority end: >1 DISTINCT terminal transition is an ambiguous lifecycle end
-    distinct = {(t["kind"], t["at"]) for t in epoch_terms}
-    if len(distinct) >= 2:
-        return "conflict_transition", [f"distinct_terminal_transitions={len(distinct)}", "ambiguous_authority_end"]
-    # the authority window ends at the EARLIEST of expiry / revoke / supersede (a lifecycle transition)
+    terms = [t for t in et if t["kind"] in TERMINAL_TRANSITIONS]
+    reacts = [t for t in et if t["kind"] == "reactivated"]
+    if terms and any(r["at"] > min(t["at"] for t in terms) for r in reacts):
+        return "rollback_conflict", ["reactivation_after_terminal", "no_rollback_to_active"]
+    if len({(t["kind"], t["at"]) for t in terms}) >= 2:
+        return "transition_conflict", [f"distinct_terminal_transitions={len({(t['kind'], t['at']) for t in terms})}",
+                                       "ambiguous_authority_end"]
+    # effective boundary from expiry (always in force) + VISIBLE terminal only (future terminal ignored)
     ends = []
     if adm.get("expiry") is not None:
         ends.append(("expired", adm["expiry"]))
-    ends += [(t["kind"], t["at"]) for t in epoch_terms]
+    ends += [(t["kind"], t["at"]) for t in terms if t["at"] <= as_of]
     end_kind, end_at = min(ends, key=lambda e: e[1]) if ends else (None, None)
-    # (core-9) lifecycle_state is a SEPARATE dimension -- reported, but NOT used to judge a prior claim
     life = "active" if end_at is None or as_of < end_at else end_kind
     c = case["claim"]
     if c["references_epoch"] != epoch:
         return "out_of_authority", [f"lifecycle_state_now={life}", "claim_references_other_epoch"]
-    # (core-6)(core-7) resolve against the epoch in force at the CLAIM'S OWN anchor time -- forward-only
     in_window = c["anchor_time"] >= activated and (end_at is None or c["anchor_time"] < end_at)
     if in_window:
         return "attributed", [f"lifecycle_state_now={life}", f"claim_anchor={c['anchor_time']}",
@@ -112,13 +114,14 @@ def authority(case):
 
 
 # -- mode=disposition ----------------------------------------------------------------------------------
-# One disposition's own validity, in its DECLARED class. A predicate miss rejects AS THAT KIND -- never
-# relabeled to a neighbouring kind (that cross-class relabel is the failure this guards).
+# Class preservation applies ONLY AFTER structural admission into a KNOWN declared class. A kind outside
+# the profile's declared vocabulary is `unrecognized_disposition_kind` -- NOT rejected:<input-string>,
+# which would let arbitrary input extend the canonical output vocabulary.
 def disposition(case):
     d = case["disposition"]; permitted = set(case["profile"]["permitted_dispositions"]); k = d["kind"]
-    reasons = []
     if k not in permitted:
-        reasons.append("kind_not_permitted")
+        return "unrecognized_disposition_kind", ["kind_not_in_profile_vocabulary", "no_input_controlled_output"]
+    reasons = []
     if not d.get("references_ok", True):
         reasons.append("does_not_reference_its_admission")
     if not d.get("binds", True):
@@ -128,9 +131,63 @@ def disposition(case):
     return f"disposition:{k}", ["valid_in_declared_class"]
 
 
+# -- mode=enumerate ------------------------------------------------------------------------------------
+# Completeness + continuity of the admitted/published set from an independently anchored ordered sequence.
+# Scope: this proves the set is complete and continuous -- NOT that every eligible object was admitted
+# (that is the separate capture/non-suppression predicate). A Merkle root alone is not enumerable; here the
+# authenticated structure is an append-only hash chain with an independently anchored HEAD.
+def enumerate_seq(case):
+    s = case["sequence"]; first = s["first_index"]; mx = s["max_committed_index"]; entries = s["entries"]
+    if mx < first or not entries:
+        return "invalid_sequence", [f"first={first}", f"max={mx}", f"n={len(entries)}"]
+    given = [e["index"] for e in entries]
+    if given != sorted(given):
+        return "out_of_order", [f"given_order={given}"]
+    seen = {}
+    for e in entries:
+        i = e["index"]
+        if i in seen:
+            if seen[i] != e["commitment"]:
+                return f"conflicting_index:{i}", ["two_commitments_same_index"]
+            return f"duplicate:{i}", ["same_index_same_commitment_repeated"]
+        seen[i] = e["commitment"]
+    for i in range(first, mx + 1):
+        if i not in seen:
+            return f"gap:{i}", [f"missing_index_in_[{first},{mx}]"]
+    uniq = [e for e in entries]
+    if _chain_head(s["sequence_id"], uniq) != s["anchored_head"]:
+        return "commitment_mismatch", ["recomputed_head_ne_anchored_head"]
+    return "complete", [f"contiguous_[{first},{mx}]", "chain_head_matches_anchor"]
+
+
+# -- mode=capture --------------------------------------------------------------------------------------
+# CORE proves: exact binding, signature, anchor-opens-to-record, timing. POLICY (profile-pinned) proves:
+# capturer role is the expected incentive-aligned party, and the anchor class is acceptably independent.
+# "independent" is never a self-declared boolean.
+def capture(case):
+    cap = case["capture"]; adm = case["admission"]; pol = case["profile"]
+    if adm["capture_id"] != cap["capture_id"] or adm["captured_object_hash"] != cap["captured_object_hash"]:
+        return "capture_binding_mismatch", ["admission_does_not_bind_this_capture"]
+    if cap["signature"] != _sig(cap["capturer_identity"], cap["captured_object_hash"], cap["captured_at"]):
+        return "invalid_capture_signature", ["signature_does_not_verify_for_capturer_identity"]
+    if cap["anchor_commitment"] != _capcommit(cap):
+        return "anchor_does_not_open", ["anchor_commitment_does_not_open_to_capture_record"]
+    if cap["anchor_time"] > adm["accepted_at"]:
+        return "capture_anchored_after_admission", [f"anchor_time={cap['anchor_time']}>accepted_at={adm['accepted_at']}"]
+    if cap["capturer_identity"] == pol.get("processor_identity") and pol.get("requires_requester_capture"):
+        return "processor_signed_capture", ["profile_requires_requester_or_contributor_capture"]
+    if cap["capturer_identity"] not in pol["acceptable_capturer_identities"]:
+        return "capturer_not_incentive_aligned", ["identity_not_an_acceptable_capturer_role"]
+    if cap["anchor_class"] not in pol["acceptable_anchor_classes"]:
+        return "unsupported_anchor_class", [f"anchor_class={cap['anchor_class']}_not_in_policy"]
+    return "capture_admitted", ["binding+signature+anchor_open+timing (core)", "role+anchor_class (policy)"]
+
+
 def check(case):
     m = case.get("mode")
-    v, notes = {"obligation": obligation, "authority": authority, "disposition": disposition}[m](case)
+    fn = {"obligation": obligation, "authority": authority, "disposition": disposition,
+          "enumerate": enumerate_seq, "capture": capture}[m]
+    v, notes = fn(case)
     return v == case["expected_verdict"], v, notes
 
 
@@ -140,6 +197,6 @@ if __name__ == "__main__":
     for c in fx["cases"]:
         ok, v, notes = check(c)
         fails += not ok
-        print(f"{'OK ' if ok else 'BAD'} {c['case_id']:<48} -> {v:<28} (want {c['expected_verdict']})  · {' · '.join(notes)}")
+        print(f"{'OK ' if ok else 'BAD'} {c['case_id']:<50} -> {v:<30} (want {c['expected_verdict']})  · {' · '.join(notes)}")
     print(f"\n{len(fx['cases']) - fails}/{len(fx['cases'])} cases reproduced" + ("" if not fails else "  <- MISMATCH"))
     sys.exit(1 if fails else 0)
