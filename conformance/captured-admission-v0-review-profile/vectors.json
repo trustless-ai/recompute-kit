@@ -1,5 +1,5 @@
 {
-  "profile": "invinoveritas.review.v5 (over captured-admission.v0, mode=obligation)",
+  "profile": "invinoveritas.review.v5 (over captured-admission.v0, mode=obligation + mode=idempotency)",
   "note": "PROPOSED SHAPE ONLY -- no production /review endpoint change has been made. These vectors show what the review-domain profile's records WOULD look like once the admission leg (request_capture_ref/admission_index/accepted_at/response_deadline + the admission-as-gate/two-dimensional-obligation shape from PR #5 commit 3508e49) is actually implemented. Disposition side (verdict_published/failed_with_reason) already matches our live decision_ref preimage (verdict/artifact_hash/policy_version/source_class/vantage_limitation) today -- admission side does not exist in production yet.",
   "response_deadline_derivation": "PROPOSED: response_deadline = admitted_at + POLICY_SLA_SECONDS[policy_version], POLICY_SLA_SECONDS['invinoveritas.review.v5'] = 60. Grep-verified 2026-08-02: no timeout/SLA constant for /review exists in core/models.py or app.py today -- this is a genuinely new number, not a documented-but-unwired one. 60s is generous relative to typical sub-10s LLM-backed review latency; open to revision once a real production value is committed.",
   "reachable_subset": {
@@ -127,7 +127,7 @@
       "case_id": "review_double_disposition_conflict_retry_race",
       "mode": "obligation",
       "expected_verdict": "conflict",
-      "_annotation": "real design consideration, not yet solved: /review has no idempotency key visible at the admission layer today. A client-side retry after a slow/ambiguous response could plausibly cause two independent verdict-commits against the same admission_index. This profile surfaces that as conflict rather than a silent overwrite -- but building the actual idempotency-key mechanism to PREVENT it is separate, real, un-scoped work, flagged honestly here rather than assumed solved by naming the terminal.",
+      "_annotation": "obligation-mode conflict case: two dispositions racing to complete the SAME admission_index. Correctly resolves to conflict, not a silent overwrite. CORRECTED 2026-08-02 (Pavlo's blind-diff, PR #6 review): this case alone does NOT model a client retry without an idempotency key -- that failure shape is two SEPARATE ADMISSIONS (different admission_index) for the same underlying request, which requires mode=idempotency, not mode=obligation. See the two idempotency-mode cases below for that failure shape specifically.",
       "capture": {"object_hash": "sha256:0f0f0f0f1a1a1a1a2b2b2b2b3c3c3c3c4d4d4d4d5e5e5e5e6f6f6f6f70707070"},
       "admission": {
         "outcome": "accepted",
@@ -159,6 +159,42 @@
       },
       "dispositions": [],
       "as_of": 6001
+    },
+    {
+      "case_id": "review_idempotency_retry_without_key_creates_duplicate_admission",
+      "mode": "idempotency",
+      "expected_verdict": "idempotency_violation:aid:9d852f5fc37c8b94",
+      "_annotation": "the ACTUAL retry-without-idempotency-key failure shape Pavlo named (PR #6 review, 2026-08-02): /review has no idempotency key at the admission layer today, so a client-side retry after a slow/ambiguous HTTP response can cause the SAME request_capture to be admitted TWICE, as two separate admissions with different admission_index values -- not two dispositions on one admission (that's the obligation-mode case above, a different failure). admission_id is derived (H(profile_id||canonical_capture_ref)), never a caller-chosen label, so this is mechanically detectable: both records derive the identical admission_id from the same canonical_capture_ref, but were assigned different admission_index (0 then 1) -- exactly the retry race. Detected, not prevented: actual prevention needs an admission-construction path enforcing lookup-or-create(admission_id), which is separate, real, un-scoped work.",
+      "profile_id": "invinoveritas.review.v5",
+      "records": [
+        {
+          "capture_id": "cid_retry_demo",
+          "canonical_capture_ref": "sha256:5a5a5a5a6b6b6b6b7c7c7c7c8d8d8d8d9e9e9e9e0f0f0f0f1a1a1a1a2b2b2b2b",
+          "admission_id": "aid:9d852f5fc37c8b94",
+          "admission_index": 10048
+        },
+        {
+          "capture_id": "cid_retry_demo",
+          "canonical_capture_ref": "sha256:5a5a5a5a6b6b6b6b7c7c7c7c8d8d8d8d9e9e9e9e0f0f0f0f1a1a1a1a2b2b2b2b",
+          "admission_id": "aid:9d852f5fc37c8b94",
+          "admission_index": 10049
+        }
+      ]
+    },
+    {
+      "case_id": "review_idempotency_single_admission_ok",
+      "mode": "idempotency",
+      "expected_verdict": "admitted_ok",
+      "_annotation": "baseline/before-state for the case above: a single, correctly-formed admission (no retry) -- one receipt, one index, admission_id genuinely derived from the capture. Shows the violation case above isn't just an artifact of malformed input.",
+      "profile_id": "invinoveritas.review.v5",
+      "records": [
+        {
+          "capture_id": "cid_normal",
+          "canonical_capture_ref": "sha256:3c3c3c3c4d4d4d4d5e5e5e5e6f6f6f6f70707070818181819292929203030303",
+          "admission_id": "aid:4402626f8748af80",
+          "admission_index": 10050
+        }
+      ]
     }
   ]
 }

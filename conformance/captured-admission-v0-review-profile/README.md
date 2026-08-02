@@ -8,7 +8,8 @@ unmodified (`suite.json` pins its sha256), which is the point of a profile-agnos
 review domain only supplies data (`profile.permitted_dispositions`) and interpretation
 (this README), never a forked evaluator.
 
-    python3 ../captured-admission-v0/admission_check.py vectors.json   →  8/8
+    python3 ../captured-admission-v0/admission_check.py vectors.json   →  10/10
+    (8 mode=obligation + 2 mode=idempotency, same unmodified core checker for both)
 
 ## Status: proposed shape, not production
 
@@ -88,10 +89,22 @@ checking the commitment can't be). Grep-verified before writing this doc: no tim
 for `/review` exists in `core/models.py` or `app.py` today — both `Δ` values above are new,
 proposed numbers, open to revision once real values are committed to production.
 
-## Open, still-unresolved (not glossed over)
+## Idempotency at the admission layer — two distinct failure shapes (fixed 2026-08-02, Pavlo's blind-diff)
 
-- **Idempotency at the admission layer.** `/review` has no idempotency key today. A client-side
-  retry after a slow/ambiguous response could plausibly cause two independent verdict-commits
-  against the same `admission_index` — modeled here as `conflict` (see
-  `review_double_disposition_conflict_retry_race`), which is the CORRECT terminal once it happens,
-  but doesn't by itself prevent it. Preventing it is separate, real, un-scoped work.
+`/review` has no idempotency key at the admission layer today. Two genuinely different failure
+shapes follow from that, and they need two different modes to test correctly — an earlier version
+of this profile only modeled one of them:
+
+- **`mode=obligation` — double disposition on ONE admission** (`review_double_disposition_conflict_retry_race`):
+  two verdict-commits racing to complete the *same* `admission_index`. Correctly resolves to
+  `conflict`, not a silent overwrite.
+- **`mode=idempotency` — duplicate ADMISSION for the same capture** (`review_idempotency_retry_without_key_creates_duplicate_admission`):
+  a client-side retry after a slow/ambiguous response causes the *same request_capture* to be
+  admitted twice, as two *separate* admissions with different `admission_index` values. This is
+  the failure shape Pavlo's review actually named — mechanically detectable because `admission_id`
+  is derived (`H(profile_id||canonical_capture_ref)`), never a caller-chosen label: both records
+  derive the identical `admission_id` but were assigned different indices, resolving to
+  `idempotency_violation`.
+
+Both are detected, not prevented — a real `lookup-or-create(admission_id)` construction path on
+the admission side is separate, real, un-scoped work.

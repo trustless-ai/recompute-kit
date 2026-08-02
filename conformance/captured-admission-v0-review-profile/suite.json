@@ -2,7 +2,7 @@
   "profile": "invinoveritas.review.v5 (over captured_admission.v0)",
   "vectors": {
     "path": "vectors.json",
-    "sha256": "1c2b87dfd4034ae9dfdee49a3b34fbfcc851446732e5fdbb17ecdf9f012407c8"
+    "sha256": "6d4a38b8b89055beff6bfd2b172efae272352cffa18939ce652358c399c23b36"
   },
   "adapter": {
     "kind": "stdio",
@@ -12,7 +12,7 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "README.md",
-    "sha256": "47ffdcfc8860fa96659103cb1180c569bcdceb664b26dcc826bbb1ab8da98b9b"
+    "sha256": "80c9e3eb1bc723faeded03fbbd1b38a8481d2a1509ef6182d95556b09537c839"
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",
