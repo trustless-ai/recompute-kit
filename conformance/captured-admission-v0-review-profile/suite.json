@@ -2,7 +2,7 @@
   "profile": "invinoveritas.review.v5 (over captured_admission.v0)",
   "vectors": {
     "path": "vectors.json",
-    "sha256": "1b2efd4c381cb838c56d10fa67b5dd22582a6b9986413798a8646cd213c06df5"
+    "sha256": "1c2b87dfd4034ae9dfdee49a3b34fbfcc851446732e5fdbb17ecdf9f012407c8"
   },
   "adapter": {
     "kind": "stdio",
@@ -16,8 +16,8 @@
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",
-    "sha256": "d33dcf12a5eb5503f97cd621bfcbefde15b0072c5318f1a6ced896d00e95480e",
-    "note": "same file, same hash as the core suite's own pin -- must stay in sync if the core checker changes"
+    "sha256": "7a2369ae889419318629a33e16a9f683939cfcf787478d4e38284ef9ec23f471",
+    "note": "same file, same hash as the core suite's own pin (commit a724afc) -- must stay in sync if the core checker changes"
   },
   "status": "proposed shape, not production -- no /review endpoint change made"
 }

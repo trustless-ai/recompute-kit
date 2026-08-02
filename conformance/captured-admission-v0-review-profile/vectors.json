@@ -42,12 +42,14 @@
       "case_id": "review_rejected_at_admission_malformed_artifact_type",
       "mode": "obligation",
       "expected_verdict": "not_admitted:rejected_at_admission",
-      "_annotation": "real today: an invalid artifact_type currently 422s with no persisted record at all. Under this profile it becomes a gate outcome (per Pavlo's fix, 2026-08-02 group thread) -- a rejection receipt referencing the request_capture, but no obligation is ever created. Matches the core's own generic P1 case shape.",
+      "_annotation": "real today: an invalid artifact_type currently 422s with no persisted record at all. Under this profile it becomes a gate outcome (per Pavlo's fix, 2026-08-02 group thread) -- a rejection receipt referencing the request_capture, but no obligation is ever created. Matches the core's own generic P1 case shape. admitted_at + as_of added on rebase to a724afc: as_of is now a strictly-required first-class input even for a gate outcome (Pavlo's fix), and the gate decision itself is a real event at a real time even though it creates no obligation.",
       "capture": {"object_hash": "sha256:aa11bb22cc33dd44ee55ff66007788990011223344556677889900aabbccdd"},
       "admission": {
         "outcome": "rejected_at_admission",
-        "captured_object_hash": "sha256:aa11bb22cc33dd44ee55ff66007788990011223344556677889900aabbccdd"
-      }
+        "captured_object_hash": "sha256:aa11bb22cc33dd44ee55ff66007788990011223344556677889900aabbccdd",
+        "admitted_at": 500
+      },
+      "as_of": 900
     },
     {
       "case_id": "review_resolved_failed_with_reason_llm_call_errored",
