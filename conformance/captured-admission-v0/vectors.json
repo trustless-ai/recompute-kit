@@ -1,96 +1,96 @@
 {
-  "description": "captured-admission.v0 conformance vectors. The shared lifecycle CORE under review verdicts, contribution settlement, and TEE attestation epochs. Every verdict is recomputed by admission_check.py from the record alone. Two stored dimensions (lifecycle_state, disposition) live in separate namespaces; absence (liveness_failure) and conflict are DERIVED, never stored. Profile shown = a review-style permitted-disposition set; the core is profile-agnostic. Negative controls NC1-NC4 exercise the separations rather than assert them.",
-  "profiles_note": "permitted_dispositions here is an illustrative review profile: verdict_published | rejected_at_admission | cancelled | expired | failed_with_reason. Settlement and TEE-epoch profiles supply their own vocabularies over the same core.",
+  "description": "captured-admission.v0 conformance vectors. The shared lifecycle CORE under review verdicts, contribution settlement, and TEE attestation epochs. Every verdict is recomputed by admission_check.py from the record alone. Two stored dimensions (lifecycle_state, disposition) live in separate namespaces; absence (liveness_failure) and conflict are DERIVED, never stored. Admission is a GATE: only an accepted admission creates an obligation (Pavlo). For an accepted obligation, SEMANTIC resolution and LIVENESS (deadline met/missed) are separate recomputable facts and are never collapsed -- a late disposition resolves without erasing the breach. Negative controls NC1-NC5 exercise the separations rather than assert them.",
+  "profiles_note": "permitted_dispositions is the review-obligation completion set: verdict_published | cancelled (only if a real withdrawal path exists) | failed_with_reason. rejected_at_admission is NOT here -- it is an admission OUTCOME that creates no obligation. Settlement and TEE-epoch profiles supply their own vocabularies over the same core; a synchronous profile marks unreachable states (e.g. cancelled) unreachable-by-construction rather than building dead paths.",
   "cases": [
     {
-      "case_id": "obligation_resolved_verdict",
+      "case_id": "obligation_resolved_verdict_on_time",
       "mode": "obligation",
-      "expected_verdict": "resolved:verdict_published",
+      "expected_verdict": "resolved:verdict_published|met",
       "capture": {"object_hash": "0xart01"},
-      "admission": {"admission_index": 7, "captured_object_hash": "0xart01", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
+      "admission": {"outcome": "accepted", "admission_index": 7, "captured_object_hash": "0xart01", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
       "dispositions": [{"references_index": 7, "kind": "verdict_published", "at": 1500, "binds": true}],
       "eval_at": 1600
     },
     {
-      "case_id": "obligation_resolved_by_rejection_not_liveness",
+      "case_id": "P1_admission_rejected_creates_no_obligation",
       "mode": "obligation",
-      "expected_verdict": "resolved:rejected_at_admission",
+      "expected_verdict": "not_admitted:rejected_at_admission",
       "capture": {"object_hash": "0xart02"},
-      "admission": {"admission_index": 8, "captured_object_hash": "0xart02", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 8, "kind": "rejected_at_admission", "at": 1200, "binds": true}],
+      "admission": {"outcome": "rejected_at_admission", "admission_index": 8, "captured_object_hash": "0xart02", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [],
       "eval_at": 3000
     },
     {
       "case_id": "obligation_pending_within_window",
       "mode": "obligation",
-      "expected_verdict": "pending",
+      "expected_verdict": "pending|open",
       "capture": {"object_hash": "0xart03"},
-      "admission": {"admission_index": 9, "captured_object_hash": "0xart03", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
+      "admission": {"outcome": "accepted", "admission_index": 9, "captured_object_hash": "0xart03", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
       "dispositions": [],
       "eval_at": 1400
     },
     {
       "case_id": "NC1_obligation_overdue_is_liveness_not_rejected",
       "mode": "obligation",
-      "expected_verdict": "liveness_failure",
+      "expected_verdict": "unresolved|liveness_failure",
       "capture": {"object_hash": "0xart04"},
-      "admission": {"admission_index": 10, "captured_object_hash": "0xart04", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
+      "admission": {"outcome": "accepted", "admission_index": 10, "captured_object_hash": "0xart04", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
       "dispositions": [],
       "eval_at": 2500
     },
     {
       "case_id": "NC1b_overdue_only_invalid_disposition_still_liveness",
       "mode": "obligation",
-      "expected_verdict": "liveness_failure",
+      "expected_verdict": "unresolved|liveness_failure",
       "capture": {"object_hash": "0xart05"},
-      "admission": {"admission_index": 11, "captured_object_hash": "0xart05", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
+      "admission": {"outcome": "accepted", "admission_index": 11, "captured_object_hash": "0xart05", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
       "dispositions": [{"references_index": 11, "kind": "verdict_published", "at": 1500, "binds": false}],
+      "eval_at": 2500
+    },
+    {
+      "case_id": "NC5_late_resolution_preserves_deadline_breach",
+      "mode": "obligation",
+      "expected_verdict": "resolved:verdict_published|late",
+      "capture": {"object_hash": "0xart06"},
+      "admission": {"outcome": "accepted", "admission_index": 12, "captured_object_hash": "0xart06", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 12, "kind": "verdict_published", "at": 2400, "binds": true}],
       "eval_at": 2500
     },
     {
       "case_id": "NC4_obligation_double_disposition_is_conflict",
       "mode": "obligation",
       "expected_verdict": "conflict",
-      "capture": {"object_hash": "0xart06"},
-      "admission": {"admission_index": 12, "captured_object_hash": "0xart06", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 12, "kind": "verdict_published", "at": 1500, "binds": true}, {"references_index": 12, "kind": "cancelled", "at": 1600, "binds": true}],
+      "capture": {"object_hash": "0xart07"},
+      "admission": {"outcome": "accepted", "admission_index": 13, "captured_object_hash": "0xart07", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 13, "kind": "verdict_published", "at": 1500, "binds": true}, {"references_index": 13, "kind": "failed_with_reason", "at": 1600, "binds": true}],
       "eval_at": 1700
     },
     {
       "case_id": "obligation_invalid_capture_admission_binding",
       "mode": "obligation",
       "expected_verdict": "invalid_admission",
-      "capture": {"object_hash": "0xart07"},
-      "admission": {"admission_index": 13, "captured_object_hash": "0xDECOY", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 13, "kind": "verdict_published", "at": 1500, "binds": true}],
+      "capture": {"object_hash": "0xart08"},
+      "admission": {"outcome": "accepted", "admission_index": 14, "captured_object_hash": "0xDECOY", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 14, "kind": "verdict_published", "at": 1500, "binds": true}],
       "eval_at": 1600
     },
     {
       "case_id": "obligation_disposition_before_admission_ignored",
       "mode": "obligation",
-      "expected_verdict": "liveness_failure",
-      "capture": {"object_hash": "0xart08"},
-      "admission": {"admission_index": 14, "captured_object_hash": "0xart08", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 14, "kind": "verdict_published", "at": 900, "binds": true}],
-      "eval_at": 2500
-    },
-    {
-      "case_id": "obligation_disposition_references_other_index_ignored",
-      "mode": "obligation",
-      "expected_verdict": "liveness_failure",
+      "expected_verdict": "unresolved|liveness_failure",
       "capture": {"object_hash": "0xart09"},
-      "admission": {"admission_index": 15, "captured_object_hash": "0xart09", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 99, "kind": "verdict_published", "at": 1500, "binds": true}],
+      "admission": {"outcome": "accepted", "admission_index": 15, "captured_object_hash": "0xart09", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 15, "kind": "verdict_published", "at": 900, "binds": true}],
       "eval_at": 2500
     },
     {
-      "case_id": "obligation_resolved_expired_disposition_is_a_completion",
+      "case_id": "obligation_resolved_failed_with_reason_distinct_from_reject",
       "mode": "obligation",
-      "expected_verdict": "resolved:expired",
+      "expected_verdict": "resolved:failed_with_reason|met",
       "capture": {"object_hash": "0xart10"},
-      "admission": {"admission_index": 16, "captured_object_hash": "0xart10", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]}},
-      "dispositions": [{"references_index": 16, "kind": "expired", "at": 2100, "binds": true}],
-      "eval_at": 2200
+      "admission": {"outcome": "accepted", "admission_index": 16, "captured_object_hash": "0xart10", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 16, "kind": "failed_with_reason", "at": 1300, "binds": true}],
+      "eval_at": 1400
     },
     {
       "case_id": "authority_attributed_in_window",
@@ -176,21 +176,21 @@
       "case_id": "NC3_disposition_predicate_miss_rejects_in_class",
       "mode": "disposition",
       "expected_verdict": "rejected:verdict_published",
-      "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]},
+      "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]},
       "disposition": {"kind": "verdict_published", "references_ok": true, "binds": false}
     },
     {
       "case_id": "NC3b_disposition_not_permitted_rejects_in_class",
       "mode": "disposition",
       "expected_verdict": "rejected:promoted_to_crown",
-      "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]},
+      "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]},
       "disposition": {"kind": "promoted_to_crown", "references_ok": true, "binds": true}
     },
     {
       "case_id": "disposition_valid_in_declared_class",
       "mode": "disposition",
       "expected_verdict": "disposition:verdict_published",
-      "profile": {"permitted_dispositions": ["verdict_published", "rejected_at_admission", "cancelled", "expired", "failed_with_reason"]},
+      "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]},
       "disposition": {"kind": "verdict_published", "references_ok": true, "binds": true}
     }
   ]

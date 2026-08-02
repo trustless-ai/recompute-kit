@@ -2,7 +2,7 @@
   "profile": "captured_admission.v0",
   "vectors": {
     "path": "vectors.json",
-    "sha256": "4a7474e1350f52a471b54af2438359ae8a8a87f76013415eac00e376dab7904c"
+    "sha256": "e5dc2ee651986369251eccc47e5a53fdea97f3d9c2d50b473f9a9d7423fa5895"
   },
   "adapter": {
     "kind": "stdio",
@@ -11,10 +11,10 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "README.md",
-    "sha256": "5453546124ef1dd9408bddc54d4331b5e8a70748a53ebffb9cf81aca263a8977"
+    "sha256": "1b1bf78bdfcd60ea37cd7626d51aa4ecb6b0fbee8df79f92e515644d6bad1f6e"
   },
   "checker": {
     "path": "admission_check.py",
-    "sha256": "398d03172439df231ecc45fb53ebebdc14259e9afcd7cb16c386470a6e63205a"
+    "sha256": "76488c515ef189a16d96fed0ee1928c749fa8db2573fd7932376a0acc4e4d973"
   }
 }

@@ -18,8 +18,9 @@ judgment. `missing` is therefore not a state anyone writes -- it is recomputed a
 (admitted AND window elapsed AND no valid completing disposition).
 
 Modes:
-  obligation   -- resolve one admitted obligation index at eval_at:
-                  resolved:<disp> | pending | liveness_failure | conflict | invalid_admission
+  obligation   -- resolve one admitted obligation index at eval_at (semantic AND liveness, never collapsed):
+                  not_admitted:<why> | resolved:<disp>|met | resolved:<disp>|late | pending|open
+                  | unresolved|liveness_failure | conflict | invalid_admission
   authority    -- attribute one claim against the epoch in force at the CLAIM'S OWN anchor time:
                   attributed | out_of_authority | invalid_admission   (later expiry/revoke acts forward only)
   disposition  -- one disposition's own validity, class PRESERVED (never relabeled to a neighbour):
@@ -34,28 +35,41 @@ def _binding_ok(case):
 
 
 # -- mode=obligation -----------------------------------------------------------------------------------
+# Admission is a GATE (Pavlo): only an ACCEPTED admission creates an obligation to dispose. A rejected
+# admission emits a rejection receipt referencing the request_capture but creates NO obligation -- so
+# rejected_at_admission is an admission OUTCOME, not a disposition over an obligation.
+#
+# For an accepted obligation the verdict carries TWO independent facts, never collapsed:
+#   semantic := resolved:<disp> | pending | unresolved      (was a valid completing disposition committed?)
+#   liveness := met | late | liveness_failure | open         (was a valid disposition committed by the deadline?)
+# A LATE disposition resolves the obligation WITHOUT erasing the missed deadline: "resolved:<d>|late" keeps
+# both facts. `liveness_failure` is a fixed historical fact; a later verdict cannot rewrite it to on-time.
 def obligation(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
-    adm = case["admission"]; idx = adm["admission_index"]; deadline = adm["response_deadline"]
+    adm = case["admission"]
+    if adm.get("outcome", "accepted") == "rejected_at_admission":
+        return "not_admitted:rejected_at_admission", ["admission_rejected", "no_obligation_created",
+                                                      "references_request_capture_only"]
+    idx = adm["admission_index"]; deadline = adm["response_deadline"]
     permitted = set(adm["profile"]["permitted_dispositions"]); eval_at = case["eval_at"]
     # a disposition COMPLETES iff valid: references THIS index, kind permitted, at>=admitted, own predicate holds
-    valid = []
-    for d in case.get("dispositions", []):
-        if d["references_index"] != idx:
-            continue
-        if d["kind"] in permitted and d["at"] >= adm["admitted_at"] and d.get("binds", True):
-            valid.append(d)
-    n = len(valid)
-    if n >= 2:                                            # (core-8) DERIVED conflict, never silent overwrite
-        return "conflict", [f"valid_completing_dispositions={n}", "no_silent_overwrite"]
-    if n == 1:                                            # semantic disposition dimension
-        return f"resolved:{valid[0]['kind']}", [f"disposition={valid[0]['kind']}", "obligation_satisfied"]
-    # n == 0 -- keep the timing condition strictly separate from any validity judgment
+    valid = [d for d in case.get("dispositions", [])
+             if d["references_index"] == idx and d["kind"] in permitted
+             and d["at"] >= adm["admitted_at"] and d.get("binds", True)]
+    if len(valid) >= 2:                                   # (core-8) DERIVED conflict, never silent overwrite
+        return "conflict", [f"valid_completing_dispositions={len(valid)}", "no_silent_overwrite"]
+    if len(valid) == 1:                                   # semantic AND liveness, kept separate
+        d = valid[0]; met = d["at"] <= deadline
+        return (f"resolved:{d['kind']}|{'met' if met else 'late'}",
+                [f"disposition={d['kind']}",
+                 "deadline_met" if met else "deadline_breached_late_resolution_not_erased",
+                 "semantic_and_liveness_separate"])
+    # no valid disposition -- keep the timing condition strictly separate from any validity judgment
     if eval_at >= deadline:                               # (core-8) DERIVED absence = liveness, NEVER 'rejected'
-        return "liveness_failure", [f"eval_at={eval_at}>=deadline={deadline}",
-                                    "no_valid_completing_disposition", "timing_not_validity"]
-    return "pending", [f"eval_at={eval_at}<deadline={deadline}", "within_window"]
+        return "unresolved|liveness_failure", [f"eval_at={eval_at}>=deadline={deadline}",
+                                               "no_valid_disposition_by_deadline", "timing_not_validity"]
+    return "pending|open", [f"eval_at={eval_at}<deadline={deadline}", "within_window"]
 
 
 # -- mode=authority ------------------------------------------------------------------------------------
