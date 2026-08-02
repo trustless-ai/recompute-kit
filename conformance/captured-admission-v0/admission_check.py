@@ -22,7 +22,11 @@ Modes:
                   not_admitted:<why> | resolved:<disp>|met | resolved:<disp>|late | pending|open
                   | unresolved|liveness_failure | conflict | invalid_admission
   authority    -- attribute one claim against the epoch in force at the CLAIM'S OWN anchor time:
-                  attributed | out_of_authority | invalid_admission   (later expiry/revoke acts forward only)
+                  attributed | out_of_authority | invalid_admission | invalid_transition
+                  | conflict_transition   (later expiry/revoke acts forward only)
+
+`as_of` (alias: `eval_at`) is the explicit evaluation time -- every verdict is a pure function of
+(record, as_of). The same record recomputes to different verdicts at different as_of, consistently.
   disposition  -- one disposition's own validity, class PRESERVED (never relabeled to a neighbour):
                   disposition:<kind> | rejected:<kind>
 """
@@ -52,7 +56,7 @@ def obligation(case):
         return "not_admitted:rejected_at_admission", ["admission_rejected", "no_obligation_created",
                                                       "references_request_capture_only"]
     idx = adm["admission_index"]; deadline = adm["response_deadline"]
-    permitted = set(adm["profile"]["permitted_dispositions"]); eval_at = case["eval_at"]
+    permitted = set(adm["profile"]["permitted_dispositions"]); eval_at = case.get("as_of", case.get("eval_at"))
     # a disposition COMPLETES iff valid: references THIS index, kind permitted, at>=admitted, own predicate holds
     valid = [d for d in case.get("dispositions", [])
              if d["references_index"] == idx and d["kind"] in permitted
@@ -77,16 +81,24 @@ def authority(case):
     if not _binding_ok(case):
         return "invalid_admission", ["capture_admission_hash_mismatch"]
     adm = case["admission"]; epoch = adm["epoch_id"]; activated = adm["activated_at"]
+    as_of = case.get("as_of", case.get("eval_at"))
+    epoch_terms = [t for t in case.get("transitions", [])
+                   if t["references_epoch"] == epoch and t["kind"] in ("revoked", "superseded")]
+    # append-only / ordering: a terminal transition anchored before activation is malformed
+    if any(t["at"] < activated for t in epoch_terms):
+        return "invalid_transition", ["terminal_transition_before_activation", "append_only_violation"]
+    # conflicting authority end: >1 DISTINCT terminal transition is an ambiguous lifecycle end
+    distinct = {(t["kind"], t["at"]) for t in epoch_terms}
+    if len(distinct) >= 2:
+        return "conflict_transition", [f"distinct_terminal_transitions={len(distinct)}", "ambiguous_authority_end"]
     # the authority window ends at the EARLIEST of expiry / revoke / supersede (a lifecycle transition)
     ends = []
     if adm.get("expiry") is not None:
         ends.append(("expired", adm["expiry"]))
-    for t in case.get("transitions", []):
-        if t["references_epoch"] == epoch and t["kind"] in ("revoked", "superseded"):
-            ends.append((t["kind"], t["at"]))
+    ends += [(t["kind"], t["at"]) for t in epoch_terms]
     end_kind, end_at = min(ends, key=lambda e: e[1]) if ends else (None, None)
     # (core-9) lifecycle_state is a SEPARATE dimension -- reported, but NOT used to judge a prior claim
-    life = "active" if end_at is None or case["eval_at"] < end_at else end_kind
+    life = "active" if end_at is None or as_of < end_at else end_kind
     c = case["claim"]
     if c["references_epoch"] != epoch:
         return "out_of_authority", [f"lifecycle_state_now={life}", "claim_references_other_epoch"]

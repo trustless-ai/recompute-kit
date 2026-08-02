@@ -61,7 +61,7 @@ path (accept-commit → crash/drop → `liveness_failure` after the bound → an
 | mode | recomputes | verdicts |
 |---|---|---|
 | `obligation` | resolve one admitted index at `eval_at` (semantic AND liveness) | `not_admitted:<why>` · `resolved:<disp>\|met` · `resolved:<disp>\|late` · `pending\|open` · `unresolved\|liveness_failure` · `conflict` · `invalid_admission` |
-| `authority` | attribute one claim against the epoch in force at **its own anchor time** | `attributed` · `out_of_authority` · `invalid_admission` |
+| `authority` | attribute one claim against the epoch in force at **its own anchor time** | `attributed` · `out_of_authority` · `invalid_admission` · `invalid_transition` · `conflict_transition` |
 | `disposition` | one disposition's validity **in its declared class** | `disposition:<kind>` · `rejected:<kind>` |
 
 ## Transport-agnostic — sync is a zero-width window; profiles declare reachable states
@@ -98,6 +98,24 @@ disposition into a per-request falsifiable gap, instead of "never asked."
 - **NC4** — a second disposition on a resolved index recomputes as `conflict`, not a silent overwrite.
 - **NC5** — a **late** disposition recomputes to `resolved:<disp>|late`: semantically resolved **and** the
   deadline breach preserved, both facts, never collapsed into a clean `resolved`.
+
+## Coverage status (post blind-diff, PR #5)
+
+`N/N` reproduced is *cases pass*, not *space covered*. Added after Pavlo's blind-diff of `1308ffc`:
+
+- **explicit `as_of` gates** — `as_of` is a first-class input; the *same* record recomputes
+  `pending|open` → `unresolved|liveness_failure` → `resolved:<disp>|late` across `as_of`, so every verdict
+  is a pure function of `(record, as_of)`, never an implicit "now."
+- **open vocabulary** — a **settlement** profile (`{partial_settlement, final_settlement, dispute_hold, …}`)
+  resolves over the same core, and a foreign kind (a review term) rejects in-class — the core hardcodes no
+  vocabulary.
+- **authority-transition negatives** — a terminal transition **before activation** is `invalid_transition`
+  (append-only violation); two distinct terminal transitions are `conflict_transition`; a transition for
+  another epoch is epoch-scoped and does not end this one.
+
+**Still open, deferred to their design shape (not yet represented):** sequence-level **enumerability**
+(complete-set recompute, monotonic index, gap-visible-not-served) and **capture-evidence provenance**
+(capture controlled by the incentive-aligned party, independently committed). These are tracked on PR #5.
 
 ## Relationship to the shipped work
 

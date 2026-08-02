@@ -1,5 +1,5 @@
 {
-  "description": "captured-admission.v0 conformance vectors. The shared lifecycle CORE under review verdicts, contribution settlement, and TEE attestation epochs. Every verdict is recomputed by admission_check.py from the record alone. Two stored dimensions (lifecycle_state, disposition) live in separate namespaces; absence (liveness_failure) and conflict are DERIVED, never stored. Admission is a GATE: only an accepted admission creates an obligation (Pavlo). For an accepted obligation, SEMANTIC resolution and LIVENESS (deadline met/missed) are separate recomputable facts and are never collapsed -- a late disposition resolves without erasing the breach. Negative controls NC1-NC5 exercise the separations rather than assert them.",
+  "description": "captured-admission.v0 conformance vectors. The shared lifecycle CORE under review verdicts, contribution settlement, and TEE attestation epochs. Every verdict is recomputed by admission_check.py from the record alone. Two stored dimensions (lifecycle_state, disposition) live in separate namespaces; absence (liveness_failure) and conflict are DERIVED, never stored. Admission is a GATE: only an accepted admission creates an obligation (Pavlo). For an accepted obligation, SEMANTIC resolution and LIVENESS (deadline met/missed) are separate recomputable facts and are never collapsed -- a late disposition resolves without erasing the breach. Negative controls NC1-NC5 exercise the separations rather than assert them. Post-blind-diff coverage added (Pavlo, PR #5): explicit as_of gates (same record recomputes across as_of), open vocabulary (a settlement profile resolves over the same core; a foreign kind rejects in-class), and authority-transition negatives (before-activation invalid, conflicting terminals, epoch-scoped foreign transitions). STILL OPEN pending Pavlo's shape: enumerability (sequence-level gap detection) and capture-evidence provenance controls.",
   "profiles_note": "permitted_dispositions is the review-obligation completion set: verdict_published | cancelled (only if a real withdrawal path exists) | failed_with_reason. rejected_at_admission is NOT here -- it is an admission OUTCOME that creates no obligation. Settlement and TEE-epoch profiles supply their own vocabularies over the same core; a synchronous profile marks unreachable states (e.g. cancelled) unreachable-by-construction rather than building dead paths.",
   "cases": [
     {
@@ -192,6 +192,91 @@
       "expected_verdict": "disposition:verdict_published",
       "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]},
       "disposition": {"kind": "verdict_published", "references_ok": true, "binds": true}
+    },
+
+    {
+      "case_id": "ASOF_gate_same_record_pre_deadline_pending",
+      "mode": "obligation",
+      "expected_verdict": "pending|open",
+      "capture": {"object_hash": "0xasof"},
+      "admission": {"outcome": "accepted", "admission_index": 20, "captured_object_hash": "0xasof", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [],
+      "as_of": 1500
+    },
+    {
+      "case_id": "ASOF_gate_same_record_post_deadline_liveness",
+      "mode": "obligation",
+      "expected_verdict": "unresolved|liveness_failure",
+      "capture": {"object_hash": "0xasof"},
+      "admission": {"outcome": "accepted", "admission_index": 20, "captured_object_hash": "0xasof", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [],
+      "as_of": 2500
+    },
+    {
+      "case_id": "ASOF_gate_same_record_after_late_disposition",
+      "mode": "obligation",
+      "expected_verdict": "resolved:verdict_published|late",
+      "capture": {"object_hash": "0xasof"},
+      "admission": {"outcome": "accepted", "admission_index": 20, "captured_object_hash": "0xasof", "admitted_at": 1000, "response_deadline": 2000, "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 20, "kind": "verdict_published", "at": 2400, "binds": true}],
+      "as_of": 2500
+    },
+
+    {
+      "case_id": "OPENVOCAB_settlement_partial_resolves",
+      "mode": "obligation",
+      "expected_verdict": "resolved:partial_settlement|met",
+      "capture": {"object_hash": "0xset1"},
+      "admission": {"outcome": "accepted", "admission_index": 30, "captured_object_hash": "0xset1", "admitted_at": 1000, "response_deadline": 5000, "profile": {"permitted_dispositions": ["partial_settlement", "final_settlement", "dispute_hold", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 30, "kind": "partial_settlement", "at": 1300, "binds": true}],
+      "as_of": 1400
+    },
+    {
+      "case_id": "OPENVOCAB_settlement_dispute_hold_resolves",
+      "mode": "obligation",
+      "expected_verdict": "resolved:dispute_hold|met",
+      "capture": {"object_hash": "0xset2"},
+      "admission": {"outcome": "accepted", "admission_index": 31, "captured_object_hash": "0xset2", "admitted_at": 1000, "response_deadline": 5000, "profile": {"permitted_dispositions": ["partial_settlement", "final_settlement", "dispute_hold", "cancelled", "failed_with_reason"]}},
+      "dispositions": [{"references_index": 31, "kind": "dispute_hold", "at": 1500, "binds": true}],
+      "as_of": 1600
+    },
+    {
+      "case_id": "OPENVOCAB_review_term_foreign_to_settlement_rejects",
+      "mode": "disposition",
+      "expected_verdict": "rejected:verdict_published",
+      "profile": {"permitted_dispositions": ["partial_settlement", "final_settlement", "dispute_hold", "cancelled", "failed_with_reason"]},
+      "disposition": {"kind": "verdict_published", "references_ok": true, "binds": true}
+    },
+
+    {
+      "case_id": "AUTHTRANS_terminal_before_activation_invalid",
+      "mode": "authority",
+      "expected_verdict": "invalid_transition",
+      "capture": {"object_hash": "0xkey20"},
+      "admission": {"epoch_id": "ep_20", "captured_object_hash": "0xkey20", "activated_at": 5000, "expiry": 9000},
+      "transitions": [{"references_epoch": "ep_20", "kind": "revoked", "at": 4000}],
+      "claim": {"references_epoch": "ep_20", "anchor_time": 6000},
+      "as_of": 6000
+    },
+    {
+      "case_id": "AUTHTRANS_conflicting_terminals_ambiguous_end",
+      "mode": "authority",
+      "expected_verdict": "conflict_transition",
+      "capture": {"object_hash": "0xkey21"},
+      "admission": {"epoch_id": "ep_21", "captured_object_hash": "0xkey21", "activated_at": 5000, "expiry": null},
+      "transitions": [{"references_epoch": "ep_21", "kind": "revoked", "at": 7000}, {"references_epoch": "ep_21", "kind": "superseded", "at": 6000}],
+      "claim": {"references_epoch": "ep_21", "anchor_time": 5500},
+      "as_of": 8000
+    },
+    {
+      "case_id": "AUTHTRANS_foreign_transition_is_epoch_scoped",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {"object_hash": "0xkey22"},
+      "admission": {"epoch_id": "ep_22", "captured_object_hash": "0xkey22", "activated_at": 5000, "expiry": null},
+      "transitions": [{"references_epoch": "ep_OTHER", "kind": "revoked", "at": 6000}],
+      "claim": {"references_epoch": "ep_22", "anchor_time": 6500},
+      "as_of": 12000
     }
   ]
 }
