@@ -1,0 +1,162 @@
+{
+  "profile": "invinoveritas.review.v5 (over captured-admission.v0, mode=obligation)",
+  "note": "PROPOSED SHAPE ONLY -- no production /review endpoint change has been made. These vectors show what the review-domain profile's records WOULD look like once the admission leg (request_capture_ref/admission_index/accepted_at/response_deadline + the admission-as-gate/two-dimensional-obligation shape from PR #5 commit 3508e49) is actually implemented. Disposition side (verdict_published/failed_with_reason) already matches our live decision_ref preimage (verdict/artifact_hash/policy_version/source_class/vantage_limitation) today -- admission side does not exist in production yet.",
+  "response_deadline_derivation": "PROPOSED: response_deadline = admitted_at + POLICY_SLA_SECONDS[policy_version], POLICY_SLA_SECONDS['invinoveritas.review.v5'] = 60. Grep-verified 2026-08-02: no timeout/SLA constant for /review exists in core/models.py or app.py today -- this is a genuinely new number, not a documented-but-unwired one. 60s is generous relative to typical sub-10s LLM-backed review latency; open to revision once a real production value is committed.",
+  "reachable_subset": {
+    "reachable": [
+      "resolved:verdict_published|met", "resolved:verdict_published|late",
+      "resolved:failed_with_reason|met", "resolved:failed_with_reason|late",
+      "not_admitted:rejected_at_admission",
+      "unresolved|liveness_failure",
+      "conflict",
+      "invalid_admission",
+      "pending|open (theoretically, between accept-commit and verdict-commit within one HTTP call; unobservable today -- no GET /review/{admission_index} query endpoint exists to catch it mid-flight)"
+    ],
+    "unreachable_by_construction": [
+      "cancelled -- no requester-withdrawal path exists on /review today; would need a real async mode or a pre-verdict cancel endpoint, neither built"
+    ],
+    "why_liveness_failure_is_reachable_at_all": "Per Merlini's second fork (2026-08-02, trustless-ai group): even though the HTTP transport stays synchronous, an admission_receipt would be committed at the commitment layer BEFORE the verdict-commit, microseconds apart within the same call. A crash/dropped-connection/quiet-decline between those two commits (e.g. the LLM call itself throwing) is exactly the failure our own /ledger raw-tape-vs-published gap (219 vs 214, completeness block) already discloses statistically -- this profile makes it a per-request falsifiable predicate instead."
+  },
+  "cases": [
+    {
+      "case_id": "review_resolved_verdict_published_on_time",
+      "mode": "obligation",
+      "expected_verdict": "resolved:verdict_published|met",
+      "_annotation": "the normal path: a real /review call, artifact admitted, verdict lands well inside the SLA. verdict_published as a disposition KIND covers all 3 of our real verdict values (approve/approve_with_concerns/reject) -- the obligation is 'did we produce a verdict', not which one; the semantic verdict value lives inside the disposition payload, outside this core's concern.",
+      "capture": {"object_hash": "sha256:7c9e2f1a8b3d4e5f6071829304a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10042,
+        "captured_object_hash": "sha256:7c9e2f1a8b3d4e5f6071829304a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6",
+        "admitted_at": 1000,
+        "response_deadline": 1060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [
+        {"references_index": 10042, "kind": "verdict_published", "at": 1004, "binds": true,
+         "_verdict_value_note": "e.g. approve_with_concerns -- not read by the core, informational only"}
+      ],
+      "as_of": 1010
+    },
+    {
+      "case_id": "review_rejected_at_admission_malformed_artifact_type",
+      "mode": "obligation",
+      "expected_verdict": "not_admitted:rejected_at_admission",
+      "_annotation": "real today: an invalid artifact_type currently 422s with no persisted record at all. Under this profile it becomes a gate outcome (per Pavlo's fix, 2026-08-02 group thread) -- a rejection receipt referencing the request_capture, but no obligation is ever created. Matches the core's own generic P1 case shape.",
+      "capture": {"object_hash": "sha256:aa11bb22cc33dd44ee55ff66007788990011223344556677889900aabbccdd"},
+      "admission": {
+        "outcome": "rejected_at_admission",
+        "captured_object_hash": "sha256:aa11bb22cc33dd44ee55ff66007788990011223344556677889900aabbccdd"
+      }
+    },
+    {
+      "case_id": "review_resolved_failed_with_reason_llm_call_errored",
+      "mode": "obligation",
+      "expected_verdict": "resolved:failed_with_reason|met",
+      "_annotation": "real gap today: a genuine processing failure (LLM call errors, provider timeout) either 500s unrecorded or silently retries -- indistinguishable from a reject verdict, which means 'reviewed and found unsound', not 'couldn't review'. failed_with_reason is the honest terminal for this.",
+      "capture": {"object_hash": "sha256:11223344556677889900aabbccddeeff00112233445566778899aabbccddee"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10043,
+        "captured_object_hash": "sha256:11223344556677889900aabbccddeeff00112233445566778899aabbccddee",
+        "admitted_at": 2000,
+        "response_deadline": 2060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [
+        {"references_index": 10043, "kind": "failed_with_reason", "at": 2008, "binds": true}
+      ],
+      "as_of": 2015
+    },
+    {
+      "case_id": "review_liveness_failure_crash_between_accept_and_verdict_commit_pass1",
+      "mode": "obligation",
+      "expected_verdict": "unresolved|liveness_failure",
+      "_annotation": "THE motivating case: accept-commit lands, then the process crashes/drops before verdict-commit (as_of evaluated past the deadline, no disposition yet exists). This is the per-request predicate that replaces our /ledger's statistical raw-tape-count check -- 'accepted and then silently produced nothing' now resolves to a provable liveness_failure instead of indistinguishable-from-never-asked.",
+      "capture": {"object_hash": "sha256:deadbeef00112233445566778899aabbccddeeff0011223344556677889900"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10044,
+        "captured_object_hash": "sha256:deadbeef00112233445566778899aabbccddeeff0011223344556677889900",
+        "admitted_at": 3000,
+        "response_deadline": 3060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [],
+      "as_of": 3070
+    },
+    {
+      "case_id": "review_liveness_failure_crash_pass2_before_late_verdict_exists",
+      "mode": "obligation",
+      "expected_verdict": "unresolved|liveness_failure",
+      "_annotation": "ASOF pair, part 1/2 (Pavlo's explicit-as_of gate, applied to this profile). Same admission_index as the pair below, evaluated BEFORE a late verdict is committed -- an honest auditor querying right after the deadline sees liveness_failure.",
+      "capture": {"object_hash": "sha256:cafef00d11223344556677889900aabbccddeeff001122334455667788990a"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10045,
+        "captured_object_hash": "sha256:cafef00d11223344556677889900aabbccddeeff001122334455667788990a",
+        "admitted_at": 4000,
+        "response_deadline": 4060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [],
+      "as_of": 4070
+    },
+    {
+      "case_id": "review_late_resolution_preserves_earlier_deadline_breach",
+      "mode": "obligation",
+      "expected_verdict": "resolved:verdict_published|late",
+      "_annotation": "ASOF pair, part 2/2. SAME admission (10045) as the case above, but evaluated AFTER a retried verdict eventually lands, well past the deadline. The two facts are independently recomputable and neither erases the other -- 'unresolved|liveness_failure' was true at as_of=4070 and stays true there forever; 'resolved:verdict_published|late' is what a later observer sees. Exactly Merlini's NC5 discipline (2026-08-02: 'a late verdict is resolved:verdict_published|late -- resolved AND the breach preserved, both recomputable'), applied to a real /review retry scenario.",
+      "capture": {"object_hash": "sha256:cafef00d11223344556677889900aabbccddeeff001122334455667788990a"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10045,
+        "captured_object_hash": "sha256:cafef00d11223344556677889900aabbccddeeff001122334455667788990a",
+        "admitted_at": 4000,
+        "response_deadline": 4060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [
+        {"references_index": 10045, "kind": "verdict_published", "at": 4200, "binds": true}
+      ],
+      "as_of": 4300
+    },
+    {
+      "case_id": "review_double_disposition_conflict_retry_race",
+      "mode": "obligation",
+      "expected_verdict": "conflict",
+      "_annotation": "real design consideration, not yet solved: /review has no idempotency key visible at the admission layer today. A client-side retry after a slow/ambiguous response could plausibly cause two independent verdict-commits against the same admission_index. This profile surfaces that as conflict rather than a silent overwrite -- but building the actual idempotency-key mechanism to PREVENT it is separate, real, un-scoped work, flagged honestly here rather than assumed solved by naming the terminal.",
+      "capture": {"object_hash": "sha256:0f0f0f0f1a1a1a1a2b2b2b2b3c3c3c3c4d4d4d4d5e5e5e5e6f6f6f6f70707070"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10046,
+        "captured_object_hash": "sha256:0f0f0f0f1a1a1a1a2b2b2b2b3c3c3c3c4d4d4d4d5e5e5e5e6f6f6f6f70707070",
+        "admitted_at": 5000,
+        "response_deadline": 5060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [
+        {"references_index": 10046, "kind": "verdict_published", "at": 5010, "binds": true},
+        {"references_index": 10046, "kind": "verdict_published", "at": 5011, "binds": true}
+      ],
+      "as_of": 5020
+    },
+    {
+      "case_id": "review_invalid_admission_tampered_artifact",
+      "mode": "obligation",
+      "expected_verdict": "invalid_admission",
+      "_annotation": "defensive case: the admission's captured_object_hash doesn't match the capture's own object_hash -- e.g. the artifact was mutated between capture and admission. Core-level binding check, no review-specific logic needed.",
+      "capture": {"object_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111"},
+      "admission": {
+        "outcome": "accepted",
+        "admission_index": 10047,
+        "captured_object_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222",
+        "admitted_at": 6000,
+        "response_deadline": 6060,
+        "profile": {"permitted_dispositions": ["verdict_published", "failed_with_reason"]}
+      },
+      "dispositions": [],
+      "as_of": 6001
+    }
+  ]
+}

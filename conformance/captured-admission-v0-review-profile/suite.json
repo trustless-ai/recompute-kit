@@ -1,0 +1,23 @@
+{
+  "profile": "invinoveritas.review.v5 (over captured_admission.v0)",
+  "vectors": {
+    "path": "vectors.json",
+    "sha256": "1b2efd4c381cb838c56d10fa67b5dd22582a6b9986413798a8646cd213c06df5"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 ../captured-admission-v0/admission_check.py vectors.json",
+    "note": "reuses the core checker unmodified -- no forked evaluator, profile supplies data + interpretation only"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "README.md",
+    "sha256": "61bd0a219d7a55104b4a0febe5c0679588b97b5849faaaae72aa4e81a2e44bfb"
+  },
+  "checker": {
+    "path": "../captured-admission-v0/admission_check.py",
+    "sha256": "d33dcf12a5eb5503f97cd621bfcbefde15b0072c5318f1a6ced896d00e95480e",
+    "note": "same file, same hash as the core suite's own pin -- must stay in sync if the core checker changes"
+  },
+  "status": "proposed shape, not production -- no /review endpoint change made"
+}
