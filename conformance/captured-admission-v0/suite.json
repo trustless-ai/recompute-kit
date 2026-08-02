@@ -1,0 +1,20 @@
+{
+  "profile": "captured_admission.v0",
+  "vectors": {
+    "path": "vectors.json",
+    "sha256": "c0842d6ba8dc70ee24093bcaa2f477da78ebf978f6ad3a854403e528739e4b27"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 admission_check.py vectors.json"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "README.md",
+    "sha256": "4cc8349e14f88aaa0e75f9020f7b91a2a68b0dd3c04b33fdf07e6ff71c7f1656"
+  },
+  "checker": {
+    "path": "admission_check.py",
+    "sha256": "7a2369ae889419318629a33e16a9f683939cfcf787478d4e38284ef9ec23f471"
+  }
+}
