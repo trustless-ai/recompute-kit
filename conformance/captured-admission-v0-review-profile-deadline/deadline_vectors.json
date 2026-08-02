@@ -1,0 +1,117 @@
+{
+  "profile": "invinoveritas.review.v5 deadline-derivation pre-validator (follow-up to review-profile-v0 / PR #6)",
+  "note": "PROPOSED SHAPE ONLY -- no production /review endpoint change made. Exercises deadline_derivation.py directly: `python3 deadline_derivation.py deadline_vectors.json`. Does NOT touch ../captured-admission-v0/admission_check.py, and is deliberately a SEPARATE PR from the frozen review-profile-v0 baseline (PR #6), per Pavlo's fix (2026-08-02): this is real, additional scope that shouldn't sit stacked on top of an auditable frozen baseline.",
+  "request_class_derivation": "request_class buckets our real, live artifact_type (core/models.py, 11-valued Literal) using the SAME irreversible/reversible split already live in production (services/proof_signing.py IRREVERSIBLE_ARTIFACT_TYPES) -- not a new invented axis. long = {onchain_action, trade, sanctions_screening}; short = the other 8 real artifact_type values.",
+  "policy_sla_table": "ONE immutable, append-only table keyed by policy_version (see deadline_derivation.py's module docstring, v0.2 fix #3). invinoveritas.review.v5 (current): short=60s, long=180s. invinoveritas.review.v4 (illustrative prior version): short=45s, long=120s -- v4 never had a real SLA table in production; used here only to demonstrate the non-retroactivity mechanism honestly.",
+  "v0.2_corrections_from_pavlos_second_review": [
+    "full-width sha256 (was 64-bit-truncated -- never call a truncated hash unfoolable)",
+    "unknown_policy_version is now distinct from unknown_request_class",
+    "one immutable table keyed by policy_version, not two tables a caller picks between -- a record always resolves against ITS OWN declared policy_version's entry, which never changes once real records reference it"
+  ],
+  "cases": [
+    {
+      "case_id": "review_deadline_short_class_derives_correctly",
+      "expected_verdict": "deadline_derivation_valid",
+      "_annotation": "positive vector 1/2: a reversible artifact_type (code_diff) buckets to request_class=short under the CURRENT policy version, Δ=60s.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 1000,
+        "response_deadline": 1060,
+        "deadline_policy_commitment": "dpc:sha256:895ce6be3c9841b102f13b3b5e74f19cac07f535fefd6802570321e9bc1a483e"
+      }
+    },
+    {
+      "case_id": "review_deadline_long_class_derives_correctly",
+      "expected_verdict": "deadline_derivation_valid",
+      "_annotation": "positive vector 2/2: an irreversible artifact_type (trade) buckets to request_class=long, Δ=180s.",
+      "record": {
+        "artifact_type": "trade",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "long",
+        "accepted_at": 2000,
+        "response_deadline": 2180,
+        "deadline_policy_commitment": "dpc:sha256:a8a122168635cac09abff27f9f3489eed1cd9c2f4eddb49c394ab26053c6e861"
+      }
+    },
+    {
+      "case_id": "review_deadline_supplied_differs_from_derived",
+      "expected_verdict": "deadline_not_derived",
+      "_annotation": "negative: supplied deadline differs from the derived deadline. The commitment itself is correct (isolates this failure from the commitment-mismatch case) but the record claims response_deadline=3999 instead of the correctly-derived 3060.",
+      "record": {
+        "artifact_type": "patch",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 3000,
+        "response_deadline": 3999,
+        "deadline_policy_commitment": "dpc:sha256:895ce6be3c9841b102f13b3b5e74f19cac07f535fefd6802570321e9bc1a483e"
+      }
+    },
+    {
+      "case_id": "review_deadline_unknown_request_class",
+      "expected_verdict": "unknown_request_class",
+      "_annotation": "negative: request_class isn't defined for this (real) policy_version -- distinct from unknown_policy_version below (v0.2 fix #2).",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "medium",
+        "accepted_at": 4000,
+        "response_deadline": 4090,
+        "deadline_policy_commitment": "dpc:sha256:0000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "case_id": "review_deadline_unknown_policy_version",
+      "expected_verdict": "unknown_policy_version",
+      "_annotation": "negative, NEW in v0.2 (Pavlo's fix #2): the policy_version itself was never defined in the SLA table -- a typo, or a version that doesn't exist yet. Structurally different from an unrecognized request_class within a real policy: a third-party auditor needs to know whether the POLICY identity is bogus or just the bucket within a real policy.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v99",
+        "request_class": "short",
+        "accepted_at": 4500,
+        "response_deadline": 4560,
+        "deadline_policy_commitment": "dpc:sha256:0000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "case_id": "review_deadline_request_class_changed_after_binding",
+      "expected_verdict": "request_class_mismatch",
+      "_annotation": "negative: the artifact_type (trade, structurally 'long') doesn't match the request_class the record actually declares ('short') -- catches an attempt to claim the cheaper short-class SLA for a long-class artifact.",
+      "record": {
+        "artifact_type": "trade",
+        "policy_version": "invinoveritas.review.v5",
+        "request_class": "short",
+        "accepted_at": 5000,
+        "response_deadline": 5060,
+        "deadline_policy_commitment": "dpc:sha256:895ce6be3c9841b102f13b3b5e74f19cac07f535fefd6802570321e9bc1a483e"
+      }
+    },
+    {
+      "case_id": "review_deadline_old_admission_valid_under_its_own_pinned_policy",
+      "expected_verdict": "deadline_derivation_valid",
+      "_annotation": "POSITIVE non-retroactivity vector, NEW in v0.2 (Pavlo's fix #3, the actual gap in v0.1): an admission genuinely bound under the PRIOR policy_version (invinoveritas.review.v4, Δ=45s for short) resolves correctly when evaluated against that version's own immutable table entry -- proving an old record isn't just detected-as-stale, it still VALIDATES against the exact historical policy it was bound to. This is the vector v0.1 was missing entirely.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v4",
+        "request_class": "short",
+        "accepted_at": 6000,
+        "response_deadline": 6045,
+        "deadline_policy_commitment": "dpc:sha256:4602bc8cd611d26d85fb3a19067c042e78900407765218e3ea638ebb9730ab73"
+      }
+    },
+    {
+      "case_id": "review_deadline_reinterpretation_attempt_caught_at_commitment",
+      "expected_verdict": "deadline_policy_commitment_mismatch",
+      "_annotation": "negative: the SAME old admission as the case above (still correctly DECLARING policy_version=v4), but someone supplied response_deadline/deadline_policy_commitment computed under v5's numbers instead of v4's -- a reinterpretation attempt, caught at the commitment check (full-width sha256 now, not the 64-bit-truncated one from v0.1) rather than the raw number, which is the honest, stronger guarantee.",
+      "record": {
+        "artifact_type": "code_diff",
+        "policy_version": "invinoveritas.review.v4",
+        "request_class": "short",
+        "accepted_at": 6000,
+        "response_deadline": 6060,
+        "deadline_policy_commitment": "dpc:sha256:895ce6be3c9841b102f13b3b5e74f19cac07f535fefd6802570321e9bc1a483e"
+      }
+    }
+  ]
+}

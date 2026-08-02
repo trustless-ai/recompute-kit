@@ -1,0 +1,22 @@
+{
+  "profile": "invinoveritas.review.v5 deadline-derivation pre-validator (v0.2, follow-up to review-profile-v0)",
+  "vectors": {
+    "path": "deadline_vectors.json",
+    "sha256": "94eb720d96ff2b6dcda1669401a5af92f461a4c3ecc46efa463053bfadf218a6"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 deadline_derivation.py deadline_vectors.json",
+    "note": "separate PR from review-profile-v0 (#6) per Pavlo's fix -- does not modify admission_check.py or anything in ../captured-admission-v0-review-profile/"
+  },
+  "laneHint": "recomputable",
+  "checker": {
+    "path": "deadline_derivation.py",
+    "sha256": "36c0ff1431010ebabebbf8589f808aa29b177784df5c3bf21cd027177548072c"
+  },
+  "spec": {
+    "path": "README.md",
+    "sha256": "012482fe6fdd8e0a18bc3fcdcafddc121d775f0d44ea067a934603b803d853d3"
+  },
+  "status": "proposed shape, not production -- no /review endpoint change made"
+}
