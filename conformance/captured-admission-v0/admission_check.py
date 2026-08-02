@@ -35,7 +35,10 @@ TERMINAL_TRANSITIONS = {"revoked", "superseded"}
 
 def _h(s): return hashlib.sha256(s.encode()).hexdigest()[:16]
 def _sig(idty, obj, at): return "sig:" + _h(f"{idty}|{obj}|{at}")
-def _capcommit(c): return "cm:" + _h(f"{c['capture_id']}|{c['captured_object_hash']}|{c['capturer_identity']}|{c['captured_at']}|{c['signature']}")
+def _capcommit(c):  # binds the COMPLETE declared capture record (every field except the commitment itself)
+    fields = ["capture_id", "captured_object_hash", "capturer_identity", "captured_at", "signature",
+              "anchor_ref", "anchor_class", "anchor_time", "capture_policy_id"]
+    return "cm:" + _h("|".join(str(c[k]) for k in fields))
 def _chain_head(seq_id, entries):
     prev = "GEN:" + str(seq_id)
     for e in entries:
@@ -178,7 +181,9 @@ def capture(case):
     if cap["signature"] != _sig(cap["capturer_identity"], cap["captured_object_hash"], cap["captured_at"]):
         return "invalid_capture_signature", ["signature_does_not_verify_for_capturer_identity"]
     if cap["anchor_commitment"] != _capcommit(cap):
-        return "anchor_does_not_open", ["anchor_commitment_does_not_open_to_capture_record"]
+        return "anchor_does_not_open", ["anchor_commitment_does_not_open_to_complete_capture_record"]
+    if cap["captured_at"] > cap["anchor_time"]:        # enforce captured_at <= anchor_time <= accepted_at
+        return "invalid_capture_timing", [f"captured_at={cap['captured_at']}>anchor_time={cap['anchor_time']}"]
     if cap["anchor_time"] > adm["accepted_at"]:
         return "capture_anchored_after_admission", [f"anchor_time={cap['anchor_time']}>accepted_at={adm['accepted_at']}"]
     if cap["capturer_identity"] == pol.get("processor_identity") and pol.get("requires_requester_capture"):

@@ -60,7 +60,7 @@ at which an accepted obligation with no valid disposition recomputes to `livenes
 | `authority` | one claim vs the epoch in force at its own anchor time | `attributed` · `out_of_authority` · `claim_not_yet_visible` · `invalid_admission` · `invalid_transition` · `transition_conflict` · `rollback_conflict` |
 | `disposition` | one disposition's validity in its declared class | `disposition:<kind>` · `rejected:<kind>` · `unrecognized_disposition_kind` |
 | `enumerate` | completeness/continuity of an anchored ordered sequence | `complete` · `gap:<i>` · `duplicate:<i>` · `conflicting_index:<i>` · `out_of_order` · `commitment_mismatch` · `invalid_sequence` |
-| `capture` | capture-evidence provenance + exact binding into admission | `capture_admitted` · `capture_binding_mismatch` · `invalid_capture_signature` · `anchor_does_not_open` · `capture_anchored_after_admission` · `processor_signed_capture` · `capturer_not_incentive_aligned` · `unsupported_anchor_class` |
+| `capture` | capture-evidence provenance + exact binding into admission | `capture_admitted` · `capture_binding_mismatch` · `invalid_capture_signature` · `anchor_does_not_open` · `capture_anchored_after_admission` · `processor_signed_capture` · `capturer_not_incentive_aligned` · `unsupported_anchor_class` · `invalid_capture_timing` |
 | `idempotency` | admission is idempotent on the capture; index stays monotonic | `admitted_ok` · `idempotent_replay` · `capture_id_conflict:<id>` · `idempotency_violation:<admission_id>` · `admission_id_not_derived` |
 
 ## The five control families (Pavlo's blind-diff, PR #5)
@@ -98,8 +98,32 @@ conflate request identity with the monotonic enumerable position (Pavlo). Two id
 A retry carrying the same exact canonical capture returns the existing receipt + index (`idempotent_replay`),
 never a second admission. A `capture_id` opening to different canonical content is `capture_id_conflict`; two
 indices for one `admission_id` is `idempotency_violation`; a `capture_id` accepted as an arbitrary
-requester-chosen label (not derived from the authenticated capture) is `admission_id_not_derived`. This
-*prevents* the double-submit that `obligation` mode's `conflict` only *detects*.
+requester-chosen label (not derived from the authenticated capture) is `admission_id_not_derived`.
+
+This makes a duplicate admission **mechanically detectable** and pins the required idempotent construction —
+`lookup-or-create(admission_id)`: return the existing receipt on retry, assign an index once. Actual
+*prevention* lives in that admission-construction path, not in the checker: the vectors detect the violation
+and pin the construction, they do not enforce atomicity at write time.
+
+## Evidence boundary — what the checker is, and isn't
+
+This checker is a **recomputable vector oracle**, not a live cryptographic verifier. Scope stated explicitly
+so no claim is stronger than what it proves:
+
+- **Non-cryptographic stand-ins.** `_h` is sha256 **truncated to 64 bits**; `_sig`, `_capcommit`,
+  `_chain_head`, and `admission_id` are deterministic **non-cryptographic** functions, chosen so vectors are
+  byte-reproducible cold. Production and the profiles MUST use real signature verification and full-width
+  commitments — these are oracles, not security primitives.
+- **Supplied anchor evidence.** `enumerate`'s `anchored_head` and `capture`'s `anchor_commitment` are
+  **supplied test-oracle values**. The checker verifies *internal* consistency (head matches the recomputed
+  chain; commitment opens to the complete record) but does **not resolve a live external anchor**. "The
+  anchor existed independently of the processor" is a profile/production resolution, out of scope here.
+- **Enforced now:** the capture commitment binds the **complete** declared capture record, and
+  `captured_at ≤ anchor_time ≤ accepted_at` is checked.
+
+So this commit is **feature-frozen** with the evidence claims narrowed to exactly what the oracle proves —
+"core-complete" meaning the invariant surface is complete and honestly scoped, not that the checker performs
+cryptographic verification.
 
 ## Relationship to the shipped work
 
