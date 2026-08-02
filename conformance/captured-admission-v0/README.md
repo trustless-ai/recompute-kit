@@ -57,7 +57,7 @@ at which an accepted obligation with no valid disposition recomputes to `livenes
 | mode | recomputes | verdicts |
 |---|---|---|
 | `obligation` | one admitted index at `as_of` (semantic AND liveness) | `not_admitted:<why>` · `resolved:<disp>\|met` · `resolved:<disp>\|late` · `pending\|open` · `unresolved\|liveness_failure` · `conflict` · `invalid_admission` |
-| `authority` | one claim vs the epoch in force at its own anchor time | `attributed` · `out_of_authority` · `invalid_admission` · `invalid_transition` · `transition_conflict` · `rollback_conflict` |
+| `authority` | one claim vs the epoch in force at its own anchor time | `attributed` · `out_of_authority` · `claim_not_yet_visible` · `invalid_admission` · `invalid_transition` · `transition_conflict` · `rollback_conflict` |
 | `disposition` | one disposition's validity in its declared class | `disposition:<kind>` · `rejected:<kind>` · `unrecognized_disposition_kind` |
 | `enumerate` | completeness/continuity of an anchored ordered sequence | `complete` · `gap:<i>` · `duplicate:<i>` · `conflicting_index:<i>` · `out_of_order` · `commitment_mismatch` · `invalid_sequence` |
 | `capture` | capture-evidence provenance + exact binding into admission | `capture_admitted` · `capture_binding_mismatch` · `invalid_capture_signature` · `anchor_does_not_open` · `capture_anchored_after_admission` · `processor_signed_capture` · `capturer_not_incentive_aligned` · `unsupported_anchor_class` |

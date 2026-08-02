@@ -65,6 +65,10 @@
      "capture": {"object_hash": "0xkey25"}, "admission": {"epoch_id": "ep_25", "captured_object_hash": "0xkey25", "activated_at": 5000, "expiry": null}, "transitions": [{"references_epoch": "ep_25", "kind": "revoked", "at": 7000}, {"references_epoch": "ep_25", "kind": "reactivated", "at": 8000}], "claim": {"references_epoch": "ep_25", "anchor_time": 5500}, "as_of": 12000},
     {"case_id": "AUTH_unrecognized_transition_kind_invalid", "mode": "authority", "expected_verdict": "invalid_transition",
      "capture": {"object_hash": "0xkey26"}, "admission": {"epoch_id": "ep_26", "captured_object_hash": "0xkey26", "activated_at": 5000, "expiry": null}, "transitions": [{"references_epoch": "ep_26", "kind": "paused", "at": 6000}], "claim": {"references_epoch": "ep_26", "anchor_time": 5500}, "as_of": 12000},
+    {"case_id": "AUTH_future_claim_not_visible_at_earlier_asof", "mode": "authority", "expected_verdict": "claim_not_yet_visible",
+     "capture": {"object_hash": "0xkey27"}, "admission": {"epoch_id": "ep_27", "captured_object_hash": "0xkey27", "activated_at": 5000, "expiry": null}, "transitions": [], "claim": {"references_epoch": "ep_27", "anchor_time": 8000}, "as_of": 6000},
+    {"case_id": "AUTH_supersede_without_bound_successor_invalid", "mode": "authority", "expected_verdict": "invalid_transition",
+     "capture": {"object_hash": "0xkey28"}, "admission": {"epoch_id": "ep_28", "captured_object_hash": "0xkey28", "activated_at": 5000, "expiry": null}, "profile": {"requires_supersede_successor": true}, "transitions": [{"references_epoch": "ep_28", "kind": "superseded", "at": 8000}], "claim": {"references_epoch": "ep_28", "anchor_time": 5500}, "as_of": 12000},
 
     {"case_id": "NC3_disposition_recognized_kind_predicate_miss_rejects_in_class", "mode": "disposition", "expected_verdict": "rejected:verdict_published",
      "profile": {"permitted_dispositions": ["verdict_published", "cancelled", "failed_with_reason"]}, "disposition": {"kind": "verdict_published", "references_ok": true, "binds": false}},

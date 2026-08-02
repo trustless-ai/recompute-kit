@@ -88,6 +88,10 @@ def authority(case):
             return "invalid_transition", [f"unrecognized_transition_kind={t['kind']}"]
     if any(t["kind"] in TERMINAL_TRANSITIONS and t["at"] < activated for t in et):
         return "invalid_transition", ["terminal_transition_before_activation", "append_only_violation"]
+    # profile-owned: a supersede must name a bound successor epoch when the policy requires it
+    if case.get("profile", {}).get("requires_supersede_successor") and \
+            any(t["kind"] == "superseded" and not t.get("successor_epoch") for t in et):
+        return "invalid_transition", ["supersede_without_bound_successor"]
     terms = [t for t in et if t["kind"] in TERMINAL_TRANSITIONS]
     reacts = [t for t in et if t["kind"] == "reactivated"]
     if terms and any(r["at"] > min(t["at"] for t in terms) for r in reacts):
@@ -103,6 +107,9 @@ def authority(case):
     end_kind, end_at = min(ends, key=lambda e: e[1]) if ends else (None, None)
     life = "active" if end_at is None or as_of < end_at else end_kind
     c = case["claim"]
+    if c["anchor_time"] > as_of:                              # a future claim is invisible on an earlier snapshot
+        return "claim_not_yet_visible", [f"claim_anchor={c['anchor_time']}>as_of={as_of}",
+                                         "future_record_ignored_on_earlier_snapshot"]
     if c["references_epoch"] != epoch:
         return "out_of_authority", [f"lifecycle_state_now={life}", "claim_references_other_epoch"]
     in_window = c["anchor_time"] >= activated and (end_at is None or c["anchor_time"] < end_at)
