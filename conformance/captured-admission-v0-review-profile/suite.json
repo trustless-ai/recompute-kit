@@ -12,12 +12,12 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "README.md",
-    "sha256": "482e1537d82b981c4c50d63e0db7b7fa7278b403c6ea56988c9b9875155d6de5"
+    "sha256": "aa44f2aa4eaeff0833aa092804a2e368b17b2b0faaa329b9f977bb3d5cf96443"
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",
     "sha256": "7a2369ae889419318629a33e16a9f683939cfcf787478d4e38284ef9ec23f471",
-    "note": "same file, same hash as the core suite's own pin (commit a724afc) -- must stay in sync if the core checker changes"
+    "note": "same file, same hash as the core suite's own pin (main, PR #5 merged as 5288b93) -- must stay in sync if the core checker changes"
   },
   "status": "proposed shape, not production -- no /review endpoint change made"
 }

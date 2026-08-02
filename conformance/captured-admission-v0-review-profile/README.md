@@ -62,16 +62,23 @@ writing) — the admission leg turns "accepted and then silence" from a populati
 discrepancy into a **per-request, falsifiable predicate**. That is the actual motivating case for
 building this at all, not a hypothetical.
 
-## `response_deadline` — proposed derivation, not live
+## `response_deadline` — proposed value, a TRUSTED profile input in this PR (not recomputed here)
 
-`response_deadline = accepted_at + POLICY_SLA_SECONDS[policy_version]`,
-`POLICY_SLA_SECONDS["invinoveritas.review.v5"] = 60`.
+Every vector below supplies `response_deadline = accepted_at + 60` for `invinoveritas.review.v5`.
+Relabeled 2026-08-02 (Pavlo's mechanical correction): within **this** PR, `response_deadline` is a
+trusted, asserted profile input, not a deterministic/recomputable property — nothing in this
+directory independently re-derives it from a policy table. The actual recomputation lives one PR
+up: **PR #7** (`review-profile-deadline-v0`) adds `deadline_derivation.py`, a profile-owned
+pre-validator that checks a supplied `response_deadline`/`deadline_policy_commitment` against
+`Δ(policy_version, request_class)` *before* a record reaches the shared obligation checker here.
+This PR's vectors are consistent with what #7 would derive (60s, `invinoveritas.review.v5`,
+`request_class=short`) but that consistency isn't mechanically enforced by anything in this
+directory — #7 is what actually enforces it.
 
-Deterministically derived per Pavlo's fix (2026-08-02: "not an arbitrary published number"), so the
-deadline is itself recomputable from the admission record alone, not a side-channel value.
-Grep-verified before writing this doc: no timeout/SLA constant for `/review` exists in `core/models.py`
-or `app.py` today — 60s is a **new, proposed** number (generous relative to typical sub-10s
-LLM-backed review latency), open to revision once a real value is committed to production.
+Grep-verified before writing this doc: no timeout/SLA constant for `/review` exists in
+`core/models.py` or `app.py` today — 60s is a **new, proposed** number (generous relative to
+typical sub-10s LLM-backed review latency), open to revision once a real value is committed to
+production.
 
 **`request_class`-based deadline variation moved to a separate follow-up PR** (Pavlo, 2026-08-02:
 keep this PR as the frozen, auditable review-profile baseline; the deadline-by-request-class
