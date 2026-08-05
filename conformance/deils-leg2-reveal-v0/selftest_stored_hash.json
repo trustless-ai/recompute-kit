@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "case_id": "fede-bug-repro-buggy",
+      "stored_commitment_hash": "sha256:6426e17456178768f7bb3c6370a2a0e783204452500e17ed467aa526fbdad342",
+      "revealed_content": {
+        "finding": "leg-2 reveal binds",
+        "severity": "info",
+        "ts": "2026-07-31"
+      },
+      "expected_state": "content_commitment_mismatch"
+    },
+    {
+      "case_id": "fede-bug-repro-fixed",
+      "stored_commitment_hash": "sha256:d723ff97fe82c441fcc3d8d0e8a6de2d600586f92ed94b7423c350949f41338b",
+      "revealed_content": {
+        "finding": "leg-2 reveal binds",
+        "severity": "info",
+        "ts": "2026-07-31"
+      },
+      "expected_state": "content_bound"
+    }
+  ]
+}

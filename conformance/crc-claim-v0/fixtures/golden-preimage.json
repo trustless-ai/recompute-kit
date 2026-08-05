@@ -1,0 +1,12 @@
+{
+  "schema": "crc.claim.v0",
+  "profile_id": "invinoveritas.review",
+  "policy_version": "invinoveritas.review.v7",
+  "artifact_hash": "5bca0bf044c8e1c8e16a01bf3ee44b12c305ce6a50dd9789ff73cbd13482b9b9",
+  "artifact_type": "review_verdict",
+  "claim_body": "reject",
+  "source_class": "agent_reported",
+  "verifier_profile": "attestation/invinoveritas",
+  "as_of": "2026-08-04T00:11:24Z",
+  "claimant": 54848
+}

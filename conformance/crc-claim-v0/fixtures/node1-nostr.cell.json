@@ -1,0 +1,32 @@
+{
+  "event": {
+    "content": "{\"as_of\":\"2026-08-04T00:11:24Z\",\"boundary\":\"ERC-8274 attestation/invinoveritas -- schnorr sig over decision_ref verified against published pubkey 6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7\",\"claim_id\":\"sha256:df1a6bfe3063186f8a8327b75a5bfddae12d3518f2cc16f8fddbc6c311de9512\",\"evidence\":{\"claim_preimage\":{\"artifact_hash\":\"5bca0bf044c8e1c8e16a01bf3ee44b12c305ce6a50dd9789ff73cbd13482b9b9\",\"artifact_type\":\"review_verdict\",\"as_of\":\"2026-08-04T00:11:24Z\",\"claim_body\":\"reject\",\"claimant\":54848,\"policy_version\":\"invinoveritas.review.v7\",\"profile_id\":\"invinoveritas.review\",\"schema\":\"crc.claim.v0\",\"source_class\":\"agent_reported\",\"verifier_profile\":\"attestation/invinoveritas\"},\"cross_check\":\"node 2 (Vertice gateway attestor 0x85Fa13511D170FBe173761b63D7f8DD4A6f6Bf1A) v1 Cell carries the identical claim_id and the identical /ledger#236 input content_hash -- two GREEN v1 Cells on distinct lanes/implementations with byte-equal claim_id closes the v1 edge per CELL-v1.md section 5.\",\"independence\":{\"dependency_lock\":null,\"execution_witness\":null,\"implementation\":{\"commit\":\"71d41ee1f943b1344cac3ec82163b2cb679e561e\",\"impl_hash\":\"sha256:bbe975d02904f2ab0d1b4a02ebd0bea5abebec9a14f0a9039d1e5b2fbababbb1\",\"path\":\"scripts/crc_claim_id.py\",\"repo\":\"https://github.com/babyblueviper1/invinoveritas\"},\"inputs\":[{\"content_hash\":\"sha256:6cb8dc90bfa9709b1885310427eee6703c9273b2240b53d94316a2ba90cc586c\",\"retrieved_at\":\"2026-08-05T18:41:07Z\",\"url\":\"https://api.babyblueviper.com/ledger/236\"},{\"content_hash\":\"sha256:bbe975d02904f2ab0d1b4a02ebd0bea5abebec9a14f0a9039d1e5b2fbababbb1\",\"retrieved_at\":\"2026-08-05T18:41:30Z\",\"url\":\"https://raw.githubusercontent.com/babyblueviper1/invinoveritas/71d41ee1f943b1344cac3ec82163b2cb679e561e/scripts/crc_claim_id.py\"}],\"runtime_image\":null},\"lane\":\"node1\",\"note\":\"Node 1's first crc.cell.v1 Cell -- re-derived claim_id independently via our own stdlib-only implementation (scripts/crc_claim_id.py, written fresh from CLAIM.md, not copied from the reference repo's script), against the same /ledger#236 source node 2 used. Our input content_hash for /ledger#236 (sha256:6cb8dc90bfa9709b1885310427eee6703c9273b2240b53d94316a2ba90cc586c) matches node 2's published value exactly -- same input, independently confirmed unchanged, different implementation (ours vs reference/claim_id.py@a82f8f1). dependency_lock and runtime_image are honestly null: this recompute ran as a plain stdlib Python script, not inside a pinned container the way the gateway node does -- no lockfile or image digest exists to cite. execution_witness is also null for the same reason (no formal run-transcript mechanism on this side yet).\",\"recipe\":\"scripts/crc_claim_id.py @ babyblueviper1/invinoveritas@71d41ee1f943b1344cac3ec82163b2cb679e561e (crc.cell.v1 gate); claim_id = sha256:+hex(sha256(JCS(ClaimPreimage)))\",\"source_ledger_entry\":\"https://api.babyblueviper.com/ledger/236\"},\"recomputed_at\":\"2026-08-05T18:41:30Z\",\"result\":\"GREEN\",\"schema\":\"crc.cell.v1\",\"verifier\":54848}",
+    "created_at": 1785955316,
+    "id": "8530c1440615b6bc89cd9afb548af2e3bc4954b47d451ee048fbb956265bd583",
+    "kind": 30078,
+    "pubkey": "6786e18a864893a900bd9858e650f67ccc3513f248fed374b591e2ff6922fbb7",
+    "sig": "20930a030dbab46fba59ec26b9f6a31961d90a024da1c8b6ac22086d54abdbe373707e549c13a37990e7bf12e6061d26fc33beb199f199d9eccf3547ab9c3d7f",
+    "tags": [
+      [
+        "d",
+        "invinoveritas-proof-proof-1785955316-ca506f8d"
+      ],
+      [
+        "t",
+        "invinoveritas"
+      ],
+      [
+        "t",
+        "proof"
+      ],
+      [
+        "schema",
+        "crc.cell.v1"
+      ]
+    ]
+  },
+  "source_relays": [
+    "nos.lol"
+  ],
+  "verify": "NIP-01: id = sha256(JSON([0,pubkey,created_at,kind,tags,content])); BIP-340 schnorr verify(sig, id, pubkey) vs published verifier pubkey; then parse content as the crc.cell.v1 proof_payload — gate the claim_preimage, re-derive claim_id, check as_of == claim_preimage.as_of and boundary inside the signed content."
+}

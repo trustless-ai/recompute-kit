@@ -142,7 +142,25 @@ recompute-step recipes (start: the two steps we built end-to-end)
                      8275 §"Composition with 8294" seam 4 ("a single verifier checks both").
                      Needs node + ethers (npm i ethers) → else UNVERIFIABLE.
 
-  — 7 flow steps + value-fidelity + contest-verify + cap-conservation + Layer-3 standing + seam-4 envelope —
+  CROSS-REFERENCE — crc (cross-reference-console, the live 2×1→N recompute matrix)
+    crc/claim-id     <preimage.json|-> [expected_claim_id]
+                     claim_id = sha256:·sha256(JCS(ClaimPreimage)) AFTER the pre-hash gate
+                     (exact field set, duplicate-member rejection on raw text, hash grammar,
+                     claimant uint256 range, strict as_of). Gate rejection = determinate
+                     verdict (exit 1), never a claim_id. Both #236 lanes reproduce it.
+    crc/lift-v0      <ledger_entry.json|url|-> [expected_claim_id]
+                     invinoveritas verdict_proof.v1 → ClaimPreimage → gate → claim_id;
+                     as_of = the verdict's own verified_at. Lifting /ledger #236 derives
+                     the hand-minted sha256:df1a6bfe… byte-for-byte — one rule, no
+                     grandfathering.
+    crc/cell-verify  <cell.json|-> nostr <pubkey_hex> | eip712 <0x_address>
+                     one signed crc.cell.v1 Cell under its envelope vs the REGISTERED key:
+                     nostr = NIP-01 id + BIP-340 schnorr (pure stdlib, bin/bip340.py);
+                     eip712 = evidence_hash keccak + QUADRUPLE equality (recovered ==
+                     signer == verifier == registered address; needs eth-account → else
+                     UNVERIFIABLE). Plus gate, claim_id, as_of binding, boundary-signed.
+
+  — 7 flow steps + value-fidelity + contest-verify + cap-conservation + Layer-3 standing + seam-4 envelope + crc matrix —
 EOF
     ;;
 
@@ -715,6 +733,188 @@ if not exp:
 ok = rv == exp
 print("✓ RECOMPUTED — ruleset_version matches" if ok else "✗ MISMATCH — recomputed ≠ expected")
 sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  crc/claim-id)
+    # crc.claim.v0 (trustless-ai/cross-reference-console@a82f8f1 CLAIM.md):
+    #   claim_id = "sha256:" + hex(sha256(JCS(ClaimPreimage)))
+    # — but ONLY after the pre-hash conformance gate: exact field set, duplicate-member
+    # rejection ON THE RAW TEXT, types, artifact_hash ^[0-9a-f]{64}$, claimant uint256
+    # range, strict as_of. A rejected preimage never receives a claim_id (that rejection
+    # is a determinate verdict → exit 1, not an error). The discipline both #236 Cells
+    # (attestation lane + recompute lane) independently reproduced byte-for-byte.
+    f="${2:?need a ClaimPreimage .json file (or -)}"
+    exp="${3:-}"                                   # optional expected claim_id (sha256:…)
+    if [ "$f" = "-" ]; then t="$(mktemp)"; cat > "$t"; f="$t"; fi   # heredoc owns python's stdin
+    python3 - "$BIN" "$f" "$exp" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+from crc_claim import loads_strict, claim_id
+raw = open(sys.argv[2], encoding="utf-8").read()
+exp = sys.argv[3] if len(sys.argv) > 3 else ""
+print("→ crc/claim-id: claim_id = sha256:·sha256(JCS(ClaimPreimage)) after the pre-hash gate  [crc.claim.v0]")
+print("─" * 45)
+try:
+    cid = claim_id(loads_strict(raw))              # raw text in: duplicates surface here
+except ValueError as e:
+    print(f"✗ GATE REJECTED — {e}")
+    print("  (a nonconforming preimage never receives a claim_id — determinate verdict)")
+    sys.exit(1)
+print("claim_id (recomputed):", cid)
+if exp: print("claim_id (expected)  :", exp)
+if not exp:
+    print("… no expected claim_id to check against — recompute only")
+    sys.exit(2)
+ok = cid == exp
+print("✓ RECOMPUTED — claim_id matches" if ok else "✗ MISMATCH — recomputed claim_id ≠ expected")
+sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  crc/lift-v0)
+    # Deterministic ledger→claim lift (console WATCHER.md): an invinoveritas
+    # verdict_proof.v1 entry lifts to a crc.claim.v0 preimage with as_of = the verdict's
+    # own verified_at and claimant = the issuing verifier's ERC-8004 id — then the gate,
+    # then claim_id. PROVEN byte-compatible: lifting /ledger #236 derives the hand-minted
+    # sha256:df1a6bfe… exactly. Anyone re-running the lift derives the same claim_id.
+    src="${2:?need a /ledger entry (.json file, URL, or -)}"
+    exp="${3:-}"                                   # optional expected claim_id (sha256:…)
+    if [ "$src" = "-" ]; then t="$(mktemp)"; cat > "$t"; src="$t"; fi
+    python3 - "$BIN" "$src" "$exp" <<'PY'
+import sys, urllib.request
+sys.path.insert(0, sys.argv[1])
+from crc_claim import loads_strict, lift_v0, claim_id, jcs
+src, exp = sys.argv[2], (sys.argv[3] if len(sys.argv) > 3 else "")
+print("→ crc/lift-v0: verdict_proof.v1 → ClaimPreimage → gate → claim_id  [deterministic lift]")
+print("─" * 45)
+try:
+    if src.startswith(("http://", "https://")):
+        raw = urllib.request.urlopen(src, timeout=30).read().decode()
+    else:
+        raw = open(src, encoding="utf-8").read()
+except Exception as e:
+    print(f"… UNVERIFIABLE — could not fetch/read the entry ({e})")
+    sys.exit(2)
+try:
+    entry = loads_strict(raw)
+    lc = loads_strict(entry["proof_event"]["content"]) if "proof_event" in entry else entry
+    if lc.get("schema") != "invinoveritas.verdict_proof.v1":
+        print(f"✗ NOT LIFTABLE — content schema is {lc.get('schema')!r}, need invinoveritas.verdict_proof.v1")
+        sys.exit(1)
+    pre = lift_v0(lc)
+    cid = claim_id(pre)                            # gate runs inside
+except ValueError as e:
+    print(f"✗ GATE REJECTED — {e}")
+    sys.exit(1)
+print("lifted preimage (JCS):", jcs(pre))
+print("claim_id (recomputed):", cid)
+if exp: print("claim_id (expected)  :", exp)
+if not exp:
+    print("… no expected claim_id to check against — recompute only")
+    sys.exit(2)
+ok = cid == exp
+print("✓ RECOMPUTED — lift derives the expected claim_id" if ok else "✗ MISMATCH — lifted claim_id ≠ expected")
+sys.exit(0 if ok else 1)
+PY
+    ;;
+
+  crc/cell-verify)
+    # One signed Cell (crc.cell.v1, console CELL-v1.md), verified under its envelope
+    # against the REGISTERED key — never the key the cell itself asserts:
+    #   crc/cell-verify <cell.json|-> nostr  <registered_pubkey_hex>
+    #       NIP-01 event id + BIP-340 schnorr (pure stdlib, bin/bip340.py) + gate +
+    #       claim_id + as_of binding + boundary-inside-signed-content
+    #   crc/cell-verify <cell.json|-> eip712 <registered_address>
+    #       evidence_hash = keccak256(JCS(evidence)) + QUADRUPLE equality:
+    #       recovered == signature.signer == proof_payload.verifier == registered address
+    #       (needs eth-account + a keccak provider → else UNVERIFIABLE, never a pass)
+    f="${2:?need a cell .json file (or -)}"
+    env="${3:?need the envelope: nostr | eip712}"
+    key="${4:?need the REGISTERED key (pubkey hex for nostr, 0x address for eip712)}"
+    if [ "$f" = "-" ]; then t="$(mktemp)"; cat > "$t"; f="$t"; fi
+    python3 - "$BIN" "$f" "$env" "$key" <<'PY'
+import sys, json, hashlib
+sys.path.insert(0, sys.argv[1])
+from crc_claim import loads_strict, validate, claim_id, jcs
+f, env, key = sys.argv[2], sys.argv[3], sys.argv[4]
+raw = open(f, encoding="utf-8").read()
+print(f"→ crc/cell-verify: one crc.cell.v1 Cell under its {env} envelope vs the REGISTERED key")
+print("─" * 45)
+fails = []
+def chk(label, cond):
+    print(("✓ " if cond else "✗ ") + label)
+    if not cond: fails.append(label)
+try:
+    cell = loads_strict(raw)
+except ValueError as e:
+    print(f"✗ strict parse — {e}"); sys.exit(1)
+
+if env == "nostr":
+    ev = cell["event"] if "event" in cell else cell
+    try:
+        pp = loads_strict(ev["content"])
+    except ValueError as e:
+        print(f"✗ content strict-parse — {e}"); sys.exit(1)
+    pre = pp["evidence"]["claim_preimage"]
+    try:
+        validate(pre); chk("pre-hash gate on claim_preimage", True)
+    except ValueError as e:
+        chk(f"pre-hash gate on claim_preimage ({e})", False)
+    if not fails:
+        chk("claim_id recomputes", claim_id(pre) == pp["claim_id"])
+    chk("as_of binding (payload == preimage)", pp.get("as_of") == pre["as_of"])
+    chk("boundary inside signed content", isinstance(pp.get("boundary"), str) and pp["boundary"] != "")
+    ser = json.dumps([0, ev["pubkey"], ev["created_at"], ev["kind"], ev["tags"], ev["content"]],
+                     separators=(",", ":"), ensure_ascii=False)
+    chk("NIP-01 event id recomputes", hashlib.sha256(ser.encode()).hexdigest() == ev["id"])
+    import bip340
+    chk("signed by the REGISTERED pubkey", ev["pubkey"] == key)
+    chk("BIP-340 schnorr verifies", bip340.verify_hex(ev["id"], ev["pubkey"], ev["sig"]))
+elif env == "eip712":
+    try:
+        from eth_account.messages import encode_typed_data
+        from eth_account import Account
+    except ImportError:
+        print("… UNVERIFIABLE — eth-account not installed (pip install eth-account); never a pass")
+        sys.exit(2)
+    try:
+        from Crypto.Hash import keccak as _k
+        keccak256 = lambda b: (lambda h: (h.update(b), h.digest())[1])(_k.new(digest_bits=256))
+    except ImportError:
+        try:
+            from eth_hash.auto import keccak as keccak256
+        except ImportError:
+            print("… UNVERIFIABLE — no keccak provider (pip install pycryptodome)"); sys.exit(2)
+    pp, sg = cell["proof_payload"], cell["signature"]
+    pre = pp["evidence"]["claim_preimage"]
+    try:
+        validate(pre); chk("pre-hash gate on claim_preimage", True)
+    except ValueError as e:
+        chk(f"pre-hash gate on claim_preimage ({e})", False)
+    if not fails:
+        chk("claim_id recomputes", claim_id(pre) == pp["claim_id"])
+    chk("as_of binding (payload == preimage)", pp.get("as_of") == pre["as_of"])
+    chk("boundary inside payload", isinstance(pp.get("boundary"), str) and pp["boundary"] != "")
+    evh = "0x" + keccak256(jcs(pp["evidence"]).encode()).hex()
+    chk("evidence_hash = keccak256(JCS(evidence))", evh.lower() == sg["evidence_hash"].lower())
+    value = {fld["name"]: (sg["evidence_hash"] if fld["name"] == "evidence_hash" else pp[fld["name"]])
+             for fld in sg["types"]["Cell"]}
+    full = {"types": {"EIP712Domain": [{"name": "name", "type": "string"},
+                                       {"name": "version", "type": "string"},
+                                       {"name": "chainId", "type": "uint256"}], **sg["types"]},
+            "primaryType": "Cell", "domain": sg["domain"], "message": value}
+    rec = Account.recover_message(encode_typed_data(full_message=full), signature=sg["signature"])
+    chk("QUADRUPLE equality: recovered == signer == verifier == REGISTERED address",
+        rec.lower() == sg["signer"].lower() == str(pp["verifier"]).lower() == key.lower())
+else:
+    print(f"unknown envelope: {env} (nostr | eip712)"); sys.exit(64)
+
+if fails:
+    print(f"✗ CELL INVALID — {len(fails)} check(s) failed")
+    sys.exit(1)
+print("✓ CELL VERIFIED — result is earned under this envelope, not asserted")
+sys.exit(0)
 PY
     ;;
 

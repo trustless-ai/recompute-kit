@@ -109,6 +109,7 @@ the primitives. `recompute-step list` prints the catalog.
 | Layer-3 defense | `scope/bond-standing` |
 | settlement (ERC-8203 SettlementProofRef) | `8203/settlement-proof` |
 | composition — attestation envelope (ERC-8294 ↔ ERC-8275/WYRIWE) | `seam4/envelope-align` |
+| cross-reference matrix (crc — cross-reference-console) | `crc/claim-id` · `crc/lift-v0` · `crc/cell-verify` |
 
 ```bash
 bin/recompute-step list

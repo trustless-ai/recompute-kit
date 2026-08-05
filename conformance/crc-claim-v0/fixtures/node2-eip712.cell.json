@@ -1,0 +1,107 @@
+{
+  "proof_payload": {
+    "schema": "crc.cell.v1",
+    "claim_id": "sha256:df1a6bfe3063186f8a8327b75a5bfddae12d3518f2cc16f8fddbc6c311de9512",
+    "result": "GREEN",
+    "verifier": "0x85Fa13511D170FBe173761b63D7f8DD4A6f6Bf1A",
+    "boundary": "ERC-8274 recompute/cross-reference-console -- claim_id AND decision_ref independently re-derived from /ledger #236 source inside the gateway container; signature = EIP-712 v1 by the Vertice gateway attestor",
+    "as_of": "2026-08-04T00:11:24Z",
+    "recomputed_at": "2026-08-05T18:20:00Z",
+    "evidence": {
+      "claim_preimage": {
+        "schema": "crc.claim.v0",
+        "profile_id": "invinoveritas.review",
+        "policy_version": "invinoveritas.review.v7",
+        "artifact_hash": "5bca0bf044c8e1c8e16a01bf3ee44b12c305ce6a50dd9789ff73cbd13482b9b9",
+        "artifact_type": "review_verdict",
+        "claim_body": "reject",
+        "source_class": "agent_reported",
+        "verifier_profile": "attestation/invinoveritas",
+        "as_of": "2026-08-04T00:11:24Z",
+        "claimant": 54848
+      },
+      "lane": "recompute",
+      "recomputed": {
+        "claim_id": "sha256:df1a6bfe3063186f8a8327b75a5bfddae12d3518f2cc16f8fddbc6c311de9512",
+        "decision_ref": "sha256:5bca0bf044c8e1c8e16a01bf3ee44b12c305ce6a50dd9789ff73cbd13482b9b9",
+        "decision_ref_from": "proof_event.decision_ref_preimage_fields over /ledger #236 (absent fields = JSON null), sha256(JCS)"
+      },
+      "recipe": "reference/claim_id.py @ trustless-ai/cross-reference-console@a82f8f1 (crc.cell.v1 gate); claim_id = sha256:+hex(sha256(JCS(ClaimPreimage)))",
+      "independence": {
+        "implementation": {
+          "repo": "https://github.com/trustless-ai/cross-reference-console",
+          "commit": "a82f8f10b3ae870195e0fd12d92ab45125e19fd8",
+          "path": "reference/claim_id.py",
+          "impl_hash": "sha256:da82958a382356b4c4a326ecc1a83dacaa93767539f71436600b1e5053614ffc"
+        },
+        "dependency_lock": "sha256:ebfe3d49dc80e1bf9082000a8287258846fdda0e268282dcb49646abfb0b9edf",
+        "runtime_image": "sha256:8b1732b432ca1da9ab57a8d8087ab2916d64d724216b72638e9444690e130bb3",
+        "inputs": [
+          {
+            "url": "https://api.babyblueviper.com/ledger/236",
+            "content_hash": "sha256:6cb8dc90bfa9709b1885310427eee6703c9273b2240b53d94316a2ba90cc586c",
+            "retrieved_at": "2026-08-05T18:20:00Z"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/trustless-ai/cross-reference-console/a82f8f10b3ae870195e0fd12d92ab45125e19fd8/reference/claim_id.py",
+            "content_hash": "sha256:da82958a382356b4c4a326ecc1a83dacaa93767539f71436600b1e5053614ffc",
+            "retrieved_at": "2026-08-05T18:20:00Z"
+          }
+        ],
+        "execution_witness": "sha256:46f5a0025f556ed3969cfa217d1375849614b7d304e6b0fe2163a356ccdc9e92"
+      },
+      "note": "First crc.cell.v1 Cell. Node 2 re-derived claim_id AND decision_ref from the live /ledger #236 source inside the gateway container; independence is derivable from the refs above (implementation pinned by commit+hash, inputs content-hashed, run transcribed). Supersedes nothing: the v0 #236 Cell stands frozen as v0 history.",
+      "source_ledger_entry": "https://api.babyblueviper.com/ledger/236",
+      "cross_check": "node 1 (Fede /verify-proof, verifier 54848) v0 Cell event 5f6b6d7cd032445038939e7152251e5ea3eaa444500952bd3e2f8d15de05fbd3 carries the same claim_id; node-1 v1 Cell pending — until it lands the v1 edge abstains (AMBER semantics), it does not break."
+    }
+  },
+  "signature": {
+    "scheme": "eip712",
+    "domain": {
+      "name": "cross-reference-console",
+      "version": "1",
+      "chainId": 1
+    },
+    "primaryType": "Cell",
+    "types": {
+      "Cell": [
+        {
+          "name": "schema",
+          "type": "string"
+        },
+        {
+          "name": "claim_id",
+          "type": "string"
+        },
+        {
+          "name": "result",
+          "type": "string"
+        },
+        {
+          "name": "verifier",
+          "type": "address"
+        },
+        {
+          "name": "boundary",
+          "type": "string"
+        },
+        {
+          "name": "as_of",
+          "type": "string"
+        },
+        {
+          "name": "recomputed_at",
+          "type": "string"
+        },
+        {
+          "name": "evidence_hash",
+          "type": "bytes32"
+        }
+      ]
+    },
+    "evidence_hash": "0xcb2cf79bba23c80eafd41ef223571bac8b2af803ae4874c84163649b34dba88e",
+    "signer": "0x85Fa13511D170FBe173761b63D7f8DD4A6f6Bf1A",
+    "signature": "0xb91a41a572e1bc622c43009b03ff29aa6ad6f921deaaa06b6f3174412facdc6b05e778923fa5f23fb2cd4ce240e63dbaf4a30a9e140fcd67fc72a67cef00fb381c"
+  },
+  "verify": "gate the claim_preimage; recompute evidence_hash=keccak256(JCS(evidence)); recoverTypedData(domain,{Cell},{schema,claim_id,result,verifier,boundary,as_of,recomputed_at,evidence_hash},signature) must equal signature.signer AND proof_payload.verifier (triple equality, CELL-v1.md §2); re-run the evidence (claim_id + decision_ref from source_ledger_entry); re-derive independence from evidence.independence refs; check proof_payload.as_of == evidence.claim_preimage.as_of."
+}
