@@ -1,0 +1,180 @@
+{
+  "profile": "tee-inference.v0",
+  "spec": "tee-inference-v0.spec.md",
+  "description": "Independent recompute of a 0G TeeML signed-inference attestation, per evidence class (recomputed vs attested), without collapsing the checks.",
+  "converged_against": "gist TMerlini/19d532bcb627d3ea237c72003d550337 teeml-sample.json (0G Galileo provider 0xa48f, signer 0x83df); client verify path @0gfoundation/0g-compute-ts-sdk broker/response.js + broker/verifier.js; server construction 0gfoundation/0g-serving-broker api/inference/internal/ctrl/signing.go + api/common/tee/tls.go FormatRoutingProofText",
+  "preimage_construction": "centralized-provider routing proof (server-side): text = requestSha256:responseSha256:providerType:providerIdentity:tlsCertFingerprint, signed via accounts.TextHash (EIP-191). hash1=sha256(broker-forwarded upstream reqBody); hash2=sha256(respData)=sha256(JSON(completion)); field5=tlsCertFingerprint=SHA256(upstream leaf TLS cert) — a routing proof, constant, NOT a nonce.",
+  "primary_artifact": {
+    "provider": "0xa48f01287233509FD694a22Bf840225062E67836",
+    "signer": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF",
+    "model": "qwen/qwen2.5-omni-7b",
+    "chain": "0G Galileo (16602)",
+    "captured_at": "2026-07-27T20:18:29.303Z"
+  },
+  "vectors": [
+    {
+      "name": "check1_signer_recovery_match",
+      "check": "signature_recovery",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51:d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a:centralized:aliyun:cc7c08805b2b0c44f53faae5d917ac07367fd9112971ca2405b8fa2e4b0acd51",
+        "signature": "0x4272734e1bb5892faf8c333acd9395088100d9b42f37244cf43aad68187a80d509387f7c6fa2f340ec29dd5e9b66ae58a9b445822b86b4e4f803c8490722563c1c",
+        "claimed_signer": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF",
+        "scheme": "EIP-191 personal_sign (ethers.hashMessage) + recoverAddress"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recovered": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF"
+      }
+    },
+    {
+      "name": "check1_signer_recovery_tampered_preimage",
+      "check": "signature_recovery",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb50:d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a:centralized:aliyun:cc7c08805b2b0c44f53faae5d917ac07367fd9112971ca2405b8fa2e4b0acd51",
+        "signature": "0x4272734e1bb5892faf8c333acd9395088100d9b42f37244cf43aad68187a80d509387f7c6fa2f340ec29dd5e9b66ae58a9b445822b86b4e4f803c8490722563c1c",
+        "claimed_signer": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF",
+        "scheme": "EIP-191 personal_sign"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recovered": "0xbD0d9E0891e3D862d851f84c15B6F30113F7844D"
+      }
+    },
+    {
+      "name": "check1_signer_recovery_tampered_signature",
+      "check": "signature_recovery",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51:d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a:centralized:aliyun:cc7c08805b2b0c44f53faae5d917ac07367fd9112971ca2405b8fa2e4b0acd51",
+        "signature": "0x4272734e1bb5892faf8c333acd9395088100d9b42f37244cf43aad68187a80d509387f7c6fa2f340ec29dd5e9b66ae58a9b445822b86b4e4f803c8490722563c10",
+        "claimed_signer": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF",
+        "scheme": "EIP-191 personal_sign"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recovered": "0xINVALID"
+      }
+    },
+    {
+      "name": "check1_chatid_not_bound_antireplay",
+      "check": "anti_replay_binding",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51:d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a:centralized:aliyun:cc7c08805b2b0c44f53faae5d917ac07367fd9112971ca2405b8fa2e4b0acd51",
+        "chatID": "708ac5fc-5d58-493d-a901-fe2f13b54490",
+        "zg_res_key": "708ac5fc-5d58-493d-a901-fe2f13b54490"
+      },
+      "expected": {
+        "status": "unverifiable",
+        "evidence_basis": "recomputed",
+        "chatid_in_preimage": false
+      },
+      "note": "chatID/zg_res_key is absent from the signed preimage; and hash3 (field 5) = the upstream TLS cert fingerprint (0g-serving-broker FormatRoutingProofText: reqHash:respHash:providerType:providerIdentity:tlsCertFingerprint) — CONSTANT across independent inferences, a routing proof, NOT a per-call nonce. So neither chatID nor hash3 provides cryptographic replay binding — fail-closed unverifiable, never a silent pass"
+    },
+    {
+      "name": "check2_response_digest_match",
+      "check": "response_digest_binding",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "response_canonical_string": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"logprobs\":null,\"message\":{\"content\":\"Recompute\",\"role\":\"assistant\"}}],\"created\":1785183508,\"id\":\"chatcmpl-708ac5fc-5d58-493d-a901-fe2f13b54490\",\"model\":\"qwen2.5-omni-7b\",\"object\":\"chat.completion\",\"system_fingerprint\":null,\"usage\":{\"completion_tokens\":4,\"completion_tokens_details\":{\"text_tokens\":4},\"prompt_tokens\":17,\"prompt_tokens_details\":{\"text_tokens\":17},\"total_tokens\":21}}",
+        "hash_fn": "sha256",
+        "attested_response_hash": "d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a",
+        "canonicalization": "sha256(JSON.stringify(completion)) — broker scheme"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a"
+      }
+    },
+    {
+      "name": "check2_response_digest_tampered",
+      "check": "response_digest_binding",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "response_canonical_string": "{\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"logprobs\":null,\"message\":{\"content\":\"Recomputed\",\"role\":\"assistant\"}}],\"created\":1785183508,\"id\":\"chatcmpl-708ac5fc-5d58-493d-a901-fe2f13b54490\",\"model\":\"qwen2.5-omni-7b\",\"object\":\"chat.completion\",\"system_fingerprint\":null,\"usage\":{\"completion_tokens\":4,\"completion_tokens_details\":{\"text_tokens\":4},\"prompt_tokens\":17,\"prompt_tokens_details\":{\"text_tokens\":17},\"total_tokens\":21}}",
+        "hash_fn": "sha256",
+        "attested_response_hash": "d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a",
+        "canonicalization": "sha256(JSON.stringify(completion))"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "22b282bbaba1287e3e2c18380f230b1407af25695bfa543b63b4d7bd03ab19ac"
+      }
+    },
+    {
+      "name": "check2_wrong_canonicalization_false_mismatch",
+      "check": "response_digest_binding",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "response_canonical_string": "{\"content\":\"Recompute\",\"role\":\"assistant\"}",
+        "hash_fn": "sha256",
+        "attested_response_hash": "d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a",
+        "canonicalization": "sha256(RFC-8785 JCS({role,content})) — WRONG scheme; broker uses sha256(JSON(completion))"
+      },
+      "expected": {
+        "status": "rejected",
+        "evidence_basis": "recomputed",
+        "recomputed_hash": "a14a56480d7e078761b6a9cdd5da0ccf6985110e9f676a7b1fe478c8f042c024"
+      },
+      "note": "binding the TEE digest with RFC-8785 JCS yields a FALSE mismatch; the recipe MUST use the broker canonicalization sha256(JSON(completion))"
+    },
+    {
+      "name": "check_provider_binding_registry_signer",
+      "check": "provider_binding",
+      "evidence_basis": "recomputed",
+      "inputs": {
+        "preimage": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51:d2fe539f9eaec3aef9f01c8a19a6dd43816d74a1d5e189e418c906b1769fef4a:centralized:aliyun:cc7c08805b2b0c44f53faae5d917ac07367fd9112971ca2405b8fa2e4b0acd51",
+        "signature": "0x4272734e1bb5892faf8c333acd9395088100d9b42f37244cf43aad68187a80d509387f7c6fa2f340ec29dd5e9b66ae58a9b445822b86b4e4f803c8490722563c1c",
+        "registry_signer": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF",
+        "provider": "0xa48f01287233509FD694a22Bf840225062E67836",
+        "note_source": "registry_signer read from the on-chain 0G provider registry via listService()"
+      },
+      "expected": {
+        "status": "verified",
+        "evidence_basis": "recomputed",
+        "recovered": "0x83df4B8EbA7c0B3B740019b8c9a77ffF77D508cF"
+      },
+      "note": "binds the signature's recovered signer to the address the on-chain provider registry declares for provider 0xa48f"
+    },
+    {
+      "name": "check_request_binding_not_client_recomputable",
+      "check": "request_binding",
+      "evidence_basis": "broker-asserted",
+      "inputs": {
+        "client_request_hash": "bef2fb3b9781c4555778afafb5f352fa8342ef168613748e9ad2d30d2dfbf23f",
+        "broker_asserted_request_hash": "c8d4932769c4be14a5c4614ff1c31dee79aef1bd842d656fe1f39992d247fb51",
+        "construction": "hash1 = sha256(reqBody) where reqBody is the body the broker FORWARDS UPSTREAM (Alibaba DashScope) — bytes only the enclave sees (0gfoundation/0g-serving-broker signing.go signCentralizedRoutingProof / FormatRoutingProofText)"
+      },
+      "expected": {
+        "status": "unverifiable",
+        "evidence_basis": "broker-asserted",
+        "client_request_reproduces_hash1": false
+      },
+      "note": "the broker signature over hash1 is established, but the client cannot independently verify that the hidden forwarded upstream body is byte-equivalent to the request it submitted — so request binding is broker-asserted, NOT independently recomputable from the client vantage. No client canonicalization reproduces hash1."
+    },
+    {
+      "name": "check3b_enclave_quote_unavailable_relay",
+      "check": "enclave_quote_parse",
+      "evidence_basis": "attested",
+      "inputs": {
+        "provider": "0xa48f01287233509FD694a22Bf840225062E67836",
+        "provider_type": "centralized",
+        "provider_identity": "aliyun",
+        "attestation_report_response": "\"{\\\"error\\\":\\\"LLM attestation report is not available for this provider. This service forwards to an upstream API without local TEE attestation.\\\"}\""
+      },
+      "expected": {
+        "status": "unverifiable",
+        "evidence_basis": "attested",
+        "attestation_available": false
+      },
+      "note": "attestation report says the provider forwards to an upstream API (Alibaba DashScope) without local TEE attestation — no dstack quote to parse. Fail-closed amber, NEVER verified for a relay provider; upgrade to a real quote-parse when a genuine-enclave TeeML provider exists"
+    }
+  ]
+}

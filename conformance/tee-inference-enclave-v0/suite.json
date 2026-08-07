@@ -1,0 +1,16 @@
+{
+  "profile": "tee-inference-enclave.v0",
+  "vectors": {
+    "path": "tee-inference-enclave-v0.vectors.json",
+    "sha256": "b197809da7198f8854cc9d17036b46c7ad16466155bc0657c5197d204da82d2e"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "bun gate.ts --grade"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "tee-inference-enclave-v0.spec.md",
+    "sha256": "f912211313b633234a158421ae0a0b7e4b5787c6e42665cbbc2f080bc566d239"
+  }
+}
