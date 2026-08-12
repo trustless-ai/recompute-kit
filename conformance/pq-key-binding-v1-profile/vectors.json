@@ -1,0 +1,235 @@
+{
+  "profile": "pq_key_binding.v1 (over captured-admission.v0, mode=authority + mode=enumerate)",
+  "note": "Tests whether the v1 temporal design is a PROFILE over the frozen core rather than a new mechanism. No checker code here: run ../captured-admission-v0/admission_check.py UNMODIFIED. The claim under test is that the core already proves the state machine, and the profile's only job is to DERIVE the activation boundary from anchors instead of reading it from implementation state. activated_at is therefore always a derived value here, never a stored one -- that derivation is the profile's contribution and the reason this thread existed.",
+  "derivation_under_test": {
+    "baseline": "activated_at = 0 for key_epoch 0 -- the baseline key governs from creation; anchoring gives a binding a provable time, not a birthday",
+    "successor": "activated_at = anchor timestamp of the EARLIEST anchored batch containing the binding's leaf",
+    "never": "activated_at is never a producer-held timestamp; that was the defect"
+  },
+  "live_values": "epoch/anchor numbers are the real ones from agent 8 of registry 0x8b5af3a5...c3: epoch-0 leaf 856aecef..., epoch-1 leaf 81aec993..., anchor 1 at 1785436450, anchor 2 at 1786549450, rotation submitted 1786548015 (1435s before its anchor).",
+  "cases": [
+    {
+      "case_id": "PQ_baseline_governs_from_zero",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x856aecef"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_0",
+        "captured_object_hash": "0x856aecef",
+        "activated_at": 0,
+        "expiry": null
+      },
+      "transitions": [],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_0",
+        "anchor_time": 1780000000
+      },
+      "as_of": 1786600000,
+      "why": "R1. An artifact predating EVERY anchor still resolves to the baseline key. The live bug stamped this boundary with the epoch-0 ANCHOR time instead of 0, which would have stranded 26 of 26 companions the moment their agents rotated."
+    },
+    {
+      "case_id": "PQ_successor_in_pre_anchor_window_out_of_authority",
+      "mode": "authority",
+      "expected_verdict": "out_of_authority",
+      "capture": {
+        "object_hash": "0x81aec993"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_1",
+        "captured_object_hash": "0x81aec993",
+        "activated_at": 1786549450,
+        "expiry": null
+      },
+      "transitions": [],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_1",
+        "anchor_time": 1786548500
+      },
+      "as_of": 1786600000,
+      "why": "THE v0/v1 divergence, in the core's vocabulary. 1786548500 is after the rotation was submitted (1786548015) but before it was anchored (1786549450). An implementation reading the stored submission time would attribute this; deriving from the anchor does not, because the successor was not yet provable."
+    },
+    {
+      "case_id": "PQ_successor_after_anchor_attributed",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x81aec993"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_1",
+        "captured_object_hash": "0x81aec993",
+        "activated_at": 1786549450,
+        "expiry": null
+      },
+      "transitions": [],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_1",
+        "anchor_time": 1786600001
+      },
+      "as_of": 1786700000,
+      "why": "R2. Once anchored, the successor governs -- and the boundary is the anchor time, not the submission time."
+    },
+    {
+      "case_id": "PQ_unanchored_successor_not_yet_active",
+      "mode": "authority",
+      "expected_verdict": "epoch_not_yet_active",
+      "capture": {
+        "object_hash": "0x81aec993"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_1",
+        "captured_object_hash": "0x81aec993",
+        "activated_at": 1786549450,
+        "expiry": null
+      },
+      "transitions": [],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_1",
+        "anchor_time": 1786549500
+      },
+      "as_of": 1786549000,
+      "why": "PENDING. Evaluated before the binding's activation, this is not-yet-active rather than absent or invalid -- the core already names the state we spent a round inventing."
+    },
+    {
+      "case_id": "PQ_rotation_is_not_retroactive",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x856aecef"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_0",
+        "captured_object_hash": "0x856aecef",
+        "activated_at": 0,
+        "expiry": null
+      },
+      "transitions": [
+        {
+          "references_epoch": "agent8_key_epoch_0",
+          "kind": "superseded",
+          "at": 1786549450,
+          "successor_epoch": "agent8_key_epoch_1"
+        }
+      ],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_0",
+        "anchor_time": 1785500000
+      },
+      "as_of": 1786700000,
+      "why": "The companion bug, as a vector. An artifact anchored under epoch 0 stays attributed to epoch 0 after the agent rotates. Verifying it under the agent's CURRENT key -- what the gateway did until 2026-08-12 -- inverts this. The profile sets requires_supersede_successor, since our authorization binds predecessor_cc -> successor_cc.",
+      "profile": {
+        "requires_supersede_successor": true
+      }
+    },
+    {
+      "case_id": "PQ_ack_equivocation_same_seq_two_objects",
+      "mode": "enumerate",
+      "expected_verdict": "conflicting_index:1",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 2,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_A"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_B"
+          },
+          {
+            "index": 2,
+            "commitment": "acceptance_cc_2"
+          }
+        ],
+        "anchored_head": "head:ignored"
+      },
+      "why": "ACK_EQUIVOCATION. Two producer-signed acks claiming the same submission_seq with different acceptance_cc. The core already calls this conflicting_index."
+    },
+    {
+      "case_id": "PQ_skipped_epoch_is_a_sequence_gap",
+      "mode": "enumerate",
+      "expected_verdict": "gap:2",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 3,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_1"
+          },
+          {
+            "index": 3,
+            "commitment": "acceptance_cc_3"
+          }
+        ],
+        "anchored_head": "head:ignored"
+      },
+      "why": "Fede's skipped-epoch case. An agent rotating twice between batches leaves the middle epoch in no anchor; under an admission sequence that is a provable gap rather than a permanent silent loss."
+    },
+    {
+      "case_id": "PQ_admission_head_must_match_anchor",
+      "mode": "enumerate",
+      "expected_verdict": "commitment_mismatch",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 1,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_1"
+          }
+        ],
+        "anchored_head": "head:DOES_NOT_MATCH"
+      },
+      "why": "The anchored admission head must commit to the sequence actually presented. Otherwise 'nothing admitted was omitted' is checked against a set the producer chose."
+    },
+    {
+      "case_id": "PQ_rotation_without_bound_successor_invalid",
+      "mode": "authority",
+      "expected_verdict": "invalid_transition",
+      "profile": {
+        "requires_supersede_successor": true
+      },
+      "capture": {
+        "object_hash": "0x856aecef"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_0",
+        "captured_object_hash": "0x856aecef",
+        "activated_at": 0,
+        "expiry": null
+      },
+      "transitions": [
+        {
+          "references_epoch": "agent8_key_epoch_0",
+          "kind": "superseded",
+          "at": 1786549450
+        }
+      ],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_0",
+        "anchor_time": 1786600000
+      },
+      "as_of": 1786700000,
+      "why": "A rotation that names no bound successor is invalid under this profile. This is the core's own profile hook (requires_supersede_successor) doing the job our owner-signed predecessor_binding_cc -> successor_binding_cc was designed for -- the property existed as a switch we had not turned on."
+    }
+  ]
+}

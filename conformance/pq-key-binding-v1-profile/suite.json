@@ -1,0 +1,23 @@
+{
+  "profile": "pq_key_binding.v1",
+  "over": "captured_admission.v0",
+  "vectors": {
+    "path": "vectors.json",
+    "sha256": "a9ac6efc297d19b3144195961a3b06583f5ff47dc63ef83355582410e55aa170"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 ../captured-admission-v0/admission_check.py vectors.json"
+  },
+  "checker": {
+    "path": "../captured-admission-v0/admission_check.py",
+    "sha256": "7a2369ae889419318629a33e16a9f683939cfcf787478d4e38284ef9ec23f471",
+    "note": "frozen core, reused UNMODIFIED \u2014 no checker code in this directory"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "repo": "trustless-ai/pq-agent-binding",
+    "path": "spec/v1-temporal-authority.md",
+    "pr": 1
+  }
+}
