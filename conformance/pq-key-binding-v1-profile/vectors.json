@@ -230,6 +230,160 @@
       },
       "as_of": 1786700000,
       "why": "A rotation that names no bound successor is invalid under this profile. This is the core's own profile hook (requires_supersede_successor) doing the job our owner-signed predecessor_binding_cc -> successor_binding_cc was designed for -- the property existed as a switch we had not turned on."
+    },
+    {
+      "case_id": "FP_retransmitted_ack_is_duplicate_not_equivocation",
+      "mode": "enumerate",
+      "expected_verdict": "duplicate:1",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 2,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_1"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_1"
+          },
+          {
+            "index": 2,
+            "commitment": "acceptance_cc_2"
+          }
+        ],
+        "anchored_head": "head:ignored"
+      },
+      "why": "A retried submission re-presenting the SAME acceptance_cc at the same seq is a replay, not equivocation. Accusing a producer of contradicting itself because a client retried would be a false positive with a named party attached."
+    },
+    {
+      "case_id": "FP_out_of_order_delivery_is_not_equivocation",
+      "mode": "enumerate",
+      "expected_verdict": "out_of_order",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 2,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 2,
+            "commitment": "acceptance_cc_2"
+          },
+          {
+            "index": 1,
+            "commitment": "acceptance_cc_1"
+          }
+        ],
+        "anchored_head": "head:ignored"
+      },
+      "why": "Disorder is not contradiction. Entries arriving out of sequence say something about transport, not about the producer's honesty."
+    },
+    {
+      "case_id": "FP_gap_is_not_a_conflict",
+      "mode": "enumerate",
+      "expected_verdict": "gap:1",
+      "sequence": {
+        "sequence_id": "pq_admission_seq",
+        "first_index": 0,
+        "max_committed_index": 2,
+        "entries": [
+          {
+            "index": 0,
+            "commitment": "acceptance_cc_0"
+          },
+          {
+            "index": 2,
+            "commitment": "acceptance_cc_2"
+          }
+        ],
+        "anchored_head": "head:ignored"
+      },
+      "why": "Absence is not contradiction. A missing entry is a gap -- possibly an omission, possibly not yet closed -- but never evidence the producer said two things."
+    },
+    {
+      "case_id": "FP_claim_exactly_at_activation_is_attributed",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x81aec993"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_1",
+        "captured_object_hash": "0x81aec993",
+        "activated_at": 1786549450,
+        "expiry": null
+      },
+      "transitions": [],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_1",
+        "anchor_time": 1786549450
+      },
+      "as_of": 1786600000,
+      "why": "Boundary inclusivity. An artifact anchored in the SAME second the binding activates is governed by it. An exclusive comparison here would strip authority from a real artifact -- the classic off-by-one, and a false positive against a live agent."
+    },
+    {
+      "case_id": "FP_later_rotation_does_not_strip_earlier_authority",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x856aecef"
+      },
+      "admission": {
+        "epoch_id": "agent8_key_epoch_0",
+        "captured_object_hash": "0x856aecef",
+        "activated_at": 0,
+        "expiry": null
+      },
+      "transitions": [
+        {
+          "references_epoch": "agent8_key_epoch_0",
+          "kind": "superseded",
+          "at": 1786549450
+        }
+      ],
+      "claim": {
+        "references_epoch": "agent8_key_epoch_0",
+        "anchor_time": 1785500000
+      },
+      "as_of": 1786000000,
+      "why": "A rotation that has not happened yet at the evaluation point must not retroactively strip authority from an artifact already anchored under the earlier key. This is the companion bug's exact shape, and the one that would silently invalidate real work."
+    },
+    {
+      "case_id": "FP_another_agents_rotation_does_not_affect_this_one",
+      "mode": "authority",
+      "expected_verdict": "attributed",
+      "capture": {
+        "object_hash": "0x081c8984"
+      },
+      "admission": {
+        "epoch_id": "agent11_key_epoch_0",
+        "captured_object_hash": "0x081c8984",
+        "activated_at": 0,
+        "expiry": null
+      },
+      "transitions": [
+        {
+          "references_epoch": "agent8_key_epoch_0",
+          "kind": "superseded",
+          "at": 1786000000
+        }
+      ],
+      "claim": {
+        "references_epoch": "agent11_key_epoch_0",
+        "anchor_time": 1786500000
+      },
+      "as_of": 1786600000,
+      "why": "Epoch scoping, which matters in a FLEET. Agent 8 rotating must not touch agent 11's authority. In a system where one batch covers every agent, a transition leaking across subjects would mis-accuse bindings that never changed."
     }
-  ]
+  ],
+  "false_positive_note": "ADMISSION_CONFLICT and ACK_EQUIVOCATION are the only verdicts here that make a positive accusation about a named party. Detecting equivocation is one property; never CRYING equivocation when there is none is the other, and only the first was tested. These FP_ cases are the second. Expected verdicts were written from design intent BEFORE running -- any divergence is reported as a finding rather than tuned away."
 }

@@ -4,7 +4,7 @@
 frozen core, unmodified:
 
 ```bash
-python3 ../captured-admission-v0/admission_check.py vectors.json   →  9/9
+python3 ../captured-admission-v0/admission_check.py vectors.json   →  15/15
 ```
 
 Core checker `sha256 7a2369ae889419318629a33e16a9f683939cfcf787478d4e38284ef9ec23f471`
@@ -59,6 +59,38 @@ several rounds; the core had the property waiting as a switch nobody had turned 
 instead of `successor_epoch`, `supersede` instead of `superseded`. That crash is the
 reason this exercise was worth doing: a semantic mapping in a table would have read
 as agreement, and the checker refused it. Nothing here was proven until it ran.
+
+## False-positive cases (`FP_*`)
+
+`conflicting_index` and `out_of_authority` are the only verdicts here that make a
+**positive accusation about a named party**. Detecting equivocation is one property;
+never *crying* equivocation when there is none is the other, and only the first was
+tested.
+
+| case | must be | must NOT be |
+|---|---|---|
+| `FP_retransmitted_ack_is_duplicate_not_equivocation` | `duplicate:1` | `conflicting_index` — a client retry is not a producer contradiction |
+| `FP_out_of_order_delivery_is_not_equivocation` | `out_of_order` | `conflicting_index` — disorder is not contradiction |
+| `FP_gap_is_not_a_conflict` | `gap:1` | `conflicting_index` — absence is not contradiction |
+| `FP_claim_exactly_at_activation_is_attributed` | `attributed` | `out_of_authority` — the off-by-one that strips a real artifact |
+| `FP_later_rotation_does_not_strip_earlier_authority` | `attributed` | `out_of_authority` — the companion bug's exact shape |
+| `FP_another_agents_rotation_does_not_affect_this_one` | `attributed` | `out_of_authority` — epoch scoping, which matters in a fleet |
+
+Expected verdicts were written from design intent **before** running. All six matched
+on the first execution.
+
+### They were then checked for discrimination
+
+A case that passes is not necessarily a case that tests anything. Each `FP_` case was
+re-run with the verdict an **over-accusing** implementation would return, and all six
+produced `BAD` with exit 1 — so each genuinely rejects the false positive rather than
+passing vacuously.
+
+The first discrimination check reported the opposite. It grepped stdout for `"FAIL"`;
+the checker prints `"BAD"`. A detector looking for the wrong string reported six
+non-discriminating vectors that discriminate perfectly — the same defect this profile
+exists to remove, in the tool built to confirm its absence. Redone against the `BAD`
+marker and the exit code.
 
 ## What the profile still owns
 

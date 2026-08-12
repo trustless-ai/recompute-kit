@@ -3,7 +3,7 @@
   "over": "captured_admission.v0",
   "vectors": {
     "path": "vectors.json",
-    "sha256": "a9ac6efc297d19b3144195961a3b06583f5ff47dc63ef83355582410e55aa170"
+    "sha256": "74b0fbd7f271a0c7beaa9df323aa5a0404ec99f77591782f8d39ae53b7e3ade8"
   },
   "adapter": {
     "kind": "stdio",
