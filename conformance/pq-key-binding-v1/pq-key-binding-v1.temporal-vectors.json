@@ -1,0 +1,198 @@
+{
+  "profile": "pq_key_binding.v1",
+  "description": "Temporal authority: governs_from is DERIVED from anchors, never stored. v0 left the epoch-0 boundary T0 undefined, so implementations supplied it from local state \u2014 making it verdict-bearing without being commitment-bearing. These vectors pin the derivation and, crucially, pin that no stored value may reach a verdict. Values are taken from a live deployment (agent 8 of registry 0x8b5af3a5...c3) so they can be cross-checked against published leaves and on-chain anchor timestamps rather than trusted.",
+  "spec": "trustless-ai/pq-agent-binding spec/v1-temporal-authority.md",
+  "rules": {
+    "R1": "key_epoch 0 -> governs_from = 0",
+    "R2": "key_epoch n>0 -> governs_from = anchored_at of the EARLIEST anchored batch containing the binding's cc",
+    "R3": "key_epoch n>0 with no containing anchor -> no governs_from, never in force",
+    "R4": "among bindings with governs_from <= artifact anchor_time and not revoked at/before it, greatest governs_from wins",
+    "R5": "submitted_at MUST NOT affect any verdict"
+  },
+  "anchors": [
+    {
+      "anchor_epoch": 1,
+      "anchored_at": 1785436450,
+      "chain_id": 84532,
+      "root": "c6cd49ec034913f514643b0d390550019b556a437d705a8efe121e223f252e23",
+      "anchor_tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c",
+      "leaves": [
+        "856aeceffd58e04fe36f1af1df9815c9ef471a412336dae7bfca81d8e8809cca"
+      ]
+    },
+    {
+      "anchor_epoch": 2,
+      "anchored_at": 1786549450,
+      "chain_id": 84532,
+      "root": "2a2b4b460482adec5c75cbc46aa543cfc363aa0729f91f991e12f73026cf37c3",
+      "anchor_tx": "0xabff767b81a337a9b1428ee77cf572606464624bac0dbfebd8e08e1b74840b36",
+      "leaves": [
+        "81aec9936425763f34c69a6e986377a911675bf7046f29070bb25492b17a6601"
+      ]
+    },
+    {
+      "anchor_epoch": 3,
+      "anchored_at": 1786600000,
+      "chain_id": 84532,
+      "root": "0000000000000000000000000000000000000000000000000000000000000003",
+      "anchor_tx": null,
+      "note": "SYNTHETIC. A later batch re-containing the same still-current leaf \u2014 the ordinary case, since every batch includes each agent's current binding. Present solely to pin that re-anchoring does NOT move the boundary forward (R2 says earliest).",
+      "leaves": [
+        "81aec9936425763f34c69a6e986377a911675bf7046f29070bb25492b17a6601"
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "name": "e0",
+      "key_epoch": 0,
+      "cc": "856aeceffd58e04fe36f1af1df9815c9ef471a412336dae7bfca81d8e8809cca",
+      "submitted_at": 0,
+      "revoked_at": null,
+      "expected_governs_from": 0,
+      "why": "R1. The baseline key is the agent's key from creation; there is no honest moment before which it did not govern. Note it is ALSO in anchor 1 at 1785436450 \u2014 a conforming implementation must return 0 here, not that anchor time. Deriving epoch 0 from its anchor is precisely the defect this version fixes."
+    },
+    {
+      "name": "e1",
+      "key_epoch": 1,
+      "cc": "81aec9936425763f34c69a6e986377a911675bf7046f29070bb25492b17a6601",
+      "submitted_at": 1786548015,
+      "revoked_at": null,
+      "expected_governs_from": 1786549450,
+      "why": "R2. First contained in anchor 2. Note submitted_at is 1435s EARLIER \u2014 that gap is the live divergence this version exists to close, and an implementation reading submitted_at would answer 1786548015."
+    },
+    {
+      "name": "e2-unanchored",
+      "key_epoch": 2,
+      "cc": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "submitted_at": 1786700000,
+      "revoked_at": null,
+      "expected_governs_from": null,
+      "why": "R3. Accepted by an implementation but contained in no anchored batch. It has no temporal authority at all \u2014 a binding that cannot be proven cannot govern."
+    }
+  ],
+  "cases": [
+    {
+      "name": "baseline-governs-from-zero",
+      "asserts": "R1",
+      "artifact": {
+        "anchor_time": 1780000000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e0",
+        "governs_from": 0,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "An artifact predating EVERY anchor still resolves to the baseline key. Under a v0 implementation that derived the boundary from the epoch-0 anchor, this returned no_in_force_binding \u2014 the live bug that stranded 26 of 26 companions when their agents rotated."
+    },
+    {
+      "name": "successor-governs-from-anchor",
+      "asserts": "R2",
+      "artifact": {
+        "anchor_time": 1786600001,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e1",
+        "governs_from": 1786549450,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "After the successor is anchored, it governs \u2014 and the boundary is the anchor time, not the submission time."
+    },
+    {
+      "name": "pre-anchor-window-resolves-to-predecessor",
+      "asserts": "R2 + section 4",
+      "artifact": {
+        "anchor_time": 1786548500,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e0",
+        "governs_from": 0,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "THE v0/v1 DIVERGENCE, made explicit. 1786548500 sits after e1 was submitted (1786548015) but before it was anchored (1786549450). v0 resolved this to e1; v1 resolves it to e0, because during that window the successor was not provable and the predecessor was. Any implementation still reading a stored boundary answers e1 here and fails this case."
+    },
+    {
+      "name": "unanchored-successor-never-in-force",
+      "asserts": "R3",
+      "artifact": {
+        "anchor_time": 1786800000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e1",
+        "governs_from": 1786549450,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "Fails closed. e2-unanchored has a later submitted_at than e1 and would win under any submission-ordered rule, but it is in no anchor, so it has no authority and e1 still governs. An implementation that ranked by submitted_at returns e2 here."
+    },
+    {
+      "name": "submitted-at-is-not-verdict-bearing",
+      "asserts": "R5",
+      "mutate": {
+        "binding": "e1",
+        "field": "submitted_at",
+        "to": 1700000000
+      },
+      "artifact": {
+        "anchor_time": 1786548500,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e0",
+        "governs_from": 0,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "The load-bearing one. submitted_at is moved far into the past \u2014 a change that flips the verdict under v0 \u2014 and the answer must not move. This tests the SHAPE of the dependency, not its value: a suite that only checks implementations agree can never find a field they all read the same wrong way."
+    },
+    {
+      "name": "earliest-not-latest-containing-anchor",
+      "asserts": "R2",
+      "artifact": {
+        "anchor_time": 1786560000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e1",
+        "governs_from": 1786549450,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "e1's leaf is in anchors 2 AND 3 \u2014 the ordinary case, since each batch re-includes every current binding. The boundary is anchor 2's time. An implementation taking the latest containing anchor would put governs_from at 1786600000, find it later than this artifact, and wrongly report no key in force."
+    },
+    {
+      "name": "baseline-submitted-at-is-not-verdict-bearing",
+      "asserts": "R5 + R1",
+      "mutate": {
+        "binding": "e0",
+        "field": "submitted_at",
+        "to": 1786000000
+      },
+      "artifact": {
+        "anchor_time": 1780000000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "e0",
+        "governs_from": 0,
+        "resolution_reason": "resolved_at_anchor_time",
+        "decision": "ADMIT"
+      },
+      "why": "Added after a negative control exposed a hole in this very suite. The other R5 case mutates e1, but e0's submitted_at is 0 \u2014 which COINCIDES with R1's answer \u2014 so an implementation that wrongly returned submitted_at for the baseline still passed every value-based case. Here e0's submitted_at is moved to 1786000000, later than the artifact, so reading it yields no_in_force_binding while R1 yields e0. Two fields agreeing on one dataset is not the same as one of them being unread."
+    }
+  ]
+}
