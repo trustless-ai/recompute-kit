@@ -99,6 +99,38 @@ jobs:
           fi
           echo "negative control refuted correctly (exit $rc, reported as a suite failure)"
 
+      # The mirror of the control above, and the reason it exists: the first run of this
+      # workflow had no `bun install`, so three suites crashed on an unresolvable import
+      # and were reported as "a vector did not reproduce". A missing package was being
+      # called a broken proof. Infrastructure failure must stay infrastructure failure —
+      # red is not enough, it has to be red for the true reason, or the signal is a lie in
+      # the more dangerous direction: it accuses the evidence instead of the environment.
+      - name: Negative control — an infrastructure break must NOT look like a refuted vector
+        run: |
+          set -u
+          mv node_modules /tmp/nm_hidden
+          set +e
+          python3 tools/run_conformance.py > /tmp/infra.out 2>&1
+          rc=$?
+          set -e
+          mv /tmp/nm_hidden node_modules
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::breaking the environment did not fail the run — the runner cannot tell it is unable to execute"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          if ! grep -q "runner could not execute it (environment, not evidence)" /tmp/infra.out; then
+            echo "::error::environment break was not attributed to the environment"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          if grep -q "suite failed (a vector did not reproduce)" /tmp/infra.out; then
+            echo "::error::MASQUERADE — an unresolvable dependency was reported as a refuted vector, accusing the evidence instead of the environment"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          echo "infrastructure break correctly attributed (exit $rc, reported as environment, zero suites accused)"
+
       # The controls above restore what they touched. If anything is still modified the
       # green from the real run cannot be trusted, because it may have been produced
       # against a mutated tree.
