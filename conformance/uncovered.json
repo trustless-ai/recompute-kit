@@ -65,14 +65,11 @@
     {
       "suite": "pq-key-binding-v0",
       "files": [
-        "pq-key-binding-v0.cutoff-vectors.json",
-        "pq-key-binding-v0.rotation-vectors.json",
-        "pq-key-binding-v0.revocation-vectors.json",
         "pq-key-binding-v0.per-agent-anchor.json",
         "pq-key-binding-v0.revocation.json",
         "pq-key-binding-v0.rotation.json"
       ],
-      "reason": "suite.json declares only pq-key-binding-v0.vectors.json (run by gate.py). The cutoff/rotation/revocation vectors are run by cutoff_enforce.py, which no manifest declares \u2014 including the three baseline cases flipped in PR #10.",
+      "reason": "suite.json now declares 4 checks (grade/cutoff/rotation/revocation) covering all 3 real *-vectors.json fixture files -- these 3 remaining files are reference EXAMPLE binding documents (a real signed statement + its predecessor/revocation), not test-vector fixtures with a `cases` array, so no runner can execute them as a suite. They're referenced by the spec/docs as worked examples, not left unrun by omission.",
       "owner": "unassigned"
     },
     {

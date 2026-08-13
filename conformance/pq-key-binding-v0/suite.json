@@ -1,13 +1,51 @@
 {
   "profile": "pq_key_binding.v0",
-  "vectors": {
-    "path": "pq-key-binding-v0.vectors.json",
-    "sha256": "9ee62960f0fade98ee107ee600feac3bca9b6b1157c273568ee060efec235823"
-  },
-  "adapter": {
-    "kind": "stdio",
-    "cmd": "python3 gate.py --grade"
-  },
+  "checks": [
+    {
+      "name": "grade",
+      "vectors": {
+        "path": "pq-key-binding-v0.vectors.json",
+        "sha256": "9ee62960f0fade98ee107ee600feac3bca9b6b1157c273568ee060efec235823"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 gate.py --grade"
+      }
+    },
+    {
+      "name": "cutoff",
+      "vectors": {
+        "path": "pq-key-binding-v0.cutoff-vectors.json",
+        "sha256": "7cfd7e8906b0afbfa1d000e99177ab797b2f757dc2d71364ff79cc48fbc506f7"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 cutoff_enforce.py pq-key-binding-v0.cutoff-vectors.json"
+      }
+    },
+    {
+      "name": "rotation",
+      "vectors": {
+        "path": "pq-key-binding-v0.rotation-vectors.json",
+        "sha256": "2c046fdaaebe1a8e71b99b191cbd8efa48abe7b6449e5f4b32cc30f1750d6b1a"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 cutoff_enforce.py pq-key-binding-v0.rotation-vectors.json"
+      }
+    },
+    {
+      "name": "revocation",
+      "vectors": {
+        "path": "pq-key-binding-v0.revocation-vectors.json",
+        "sha256": "3481360d3ffa5e785ca640a06994a9724ab6e7cee1a2e033102e70b91f31cac0"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 cutoff_enforce.py pq-key-binding-v0.revocation-vectors.json"
+      }
+    }
+  ],
   "laneHint": "recomputable",
   "spec": {
     "path": "pq-key-binding-v0.spec.md",
