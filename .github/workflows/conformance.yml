@@ -87,8 +87,8 @@ jobs:
           rc=$?
           set -e
           cp /tmp/v.bk "$S/$V"; cp /tmp/s.bk "$S/suite.json"
-          if [ "$rc" -eq 0 ]; then
-            echo "::error::negative control did NOT fail — the runner cannot detect a refuted vector, so every green above is meaningless"
+          if [ "$rc" -ne 1 ]; then
+            echo "::error::a refuted vector must exit 1 (verified-bad), got $rc — the runner cannot detect a refuted vector, so every green above is meaningless"
             cat /tmp/neg.out
             exit 1
           fi
@@ -97,7 +97,7 @@ jobs:
             cat /tmp/neg.out
             exit 1
           fi
-          echo "negative control refuted correctly (exit $rc, reported as a suite failure)"
+          echo "negative control refuted correctly (exit 1 = verified-bad, reported as a suite failure)"
 
       # The mirror of the control above, and the reason it exists: the first run of this
       # workflow had no `bun install`, so three suites crashed on an unresolvable import
@@ -114,8 +114,8 @@ jobs:
           rc=$?
           set -e
           mv /tmp/nm_hidden node_modules
-          if [ "$rc" -eq 0 ]; then
-            echo "::error::breaking the environment did not fail the run — the runner cannot tell it is unable to execute"
+          if [ "$rc" -ne 2 ]; then
+            echo "::error::an environment break must exit 2 (UNVERIFIABLE), got $rc — collapsing it into 1 tells CI the vectors were refuted when they never ran — the runner cannot tell it is unable to execute"
             cat /tmp/infra.out
             exit 1
           fi
@@ -129,7 +129,7 @@ jobs:
             cat /tmp/infra.out
             exit 1
           fi
-          echo "infrastructure break correctly attributed (exit $rc, reported as environment, zero suites accused)"
+          echo "infrastructure break correctly attributed (exit 2 = UNVERIFIABLE, reported as environment, zero suites accused)"
 
       # The controls above restore what they touched. If anything is still modified the
       # green from the real run cannot be trusted, because it may have been produced
