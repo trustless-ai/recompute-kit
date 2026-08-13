@@ -18,17 +18,18 @@
   "consumer_cutoff": 1795000000,
   "cases": [
     {
-      "name": "artifact before any binding \u2192 ungoverned",
+      "name": "artifact before the baseline's own anchor \u2192 baseline still governs (governs_from = 0)",
+      "note": "FLIPPED 2026-08-13 (Merlini + pipavlo82, was REJECT/no_in_force_binding): the baseline governs from creation, not from its own anchor -- anchoring gives it a provable time, not a birthday. A SUCCESSOR (kya-l4-rotation-1) still cannot claim coverage before its own anchor -- that asymmetry is what stops this from generalizing into retroactive rotation authority. Matches PQ_baseline_governs_from_zero, verified 15/15 against the v1 profile in #9.",
       "artifact": {
         "anchor_time": 1785000000,
         "anchored": true,
         "pq_companion": null
       },
       "expected": {
-        "resolved": null,
-        "resolution_reason": "no_in_force_binding",
-        "rule": "no_in_force_binding",
-        "decision": "REJECT"
+        "resolved": "kya-l4-genesis",
+        "resolution_reason": "baseline_governs_from_zero",
+        "rule": "anchored_before_cutoff",
+        "decision": "ADMIT"
       }
     },
     {

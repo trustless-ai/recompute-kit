@@ -23,20 +23,37 @@ import sys, json, os
 
 def resolve_in_force(bindings, at_time):
     """Which binding governs an artifact anchored at `at_time`. Generic over chain length (1..n) and
-    revocation: a binding governs from its own binding_anchor_time; an optional revoked_at ends its
-    authority — artifacts anchored at/after revoked_at are no longer governed by it. Returns
-    (binding | None, reason)."""
+    revocation: a SUCCESSOR binding governs from its own binding_anchor_time; an optional revoked_at
+    ends any binding's authority — artifacts anchored at/after revoked_at are no longer governed by
+    it. Returns (binding | None, reason).
+
+    BASELINE FIX (2026-08-13, Merlini + pipavlo82, recompute-kit#10 -- PQ_baseline_governs_from_zero,
+    confirmed 15/15 against the v1 profile in #9): the baseline (the earliest-anchored binding in the
+    chain -- the one that has no predecessor) governs FROM CREATION (governs_from = 0), not from its
+    own binding_anchor_time. Anchoring gives a binding a PROVABLE time, it does not define when its
+    authority started -- there is no honest moment before which the key did not govern, because it
+    was never granted authority in the first place, it simply HAD it. This is deliberately NOT
+    "the same reasoning generalized" for a successor: a successor's authority starts at its own
+    anchor, full stop -- letting a rotation claim coverage before its own anchor would grant
+    retroactive rotation authority, which this profile forbids. The asymmetry is the fix, not a
+    special case bolted onto the general rule."""
+    if not bindings:
+        return None, "no_in_force_binding"
+    baseline = min(bindings, key=lambda b: b["binding_anchor_time"])
     eligible = []
     for b in bindings:
-        if b["binding_anchor_time"] > at_time:
-            continue                                    # not yet in force at this artifact's anchor time
+        if b is not baseline and b["binding_anchor_time"] > at_time:
+            continue                                    # successor not yet in force at this artifact's anchor time
         rev = b.get("revoked_at")
         if rev is not None and at_time >= rev:
-            continue                                    # revocation slot — authority ended at revoked_at
+            continue                                    # revocation slot — authority ended at revoked_at, even for the baseline
         eligible.append(b)
     if not eligible:
         return None, "no_in_force_binding"
-    return max(eligible, key=lambda b: b["binding_anchor_time"]), "resolved_at_anchor_time"
+    resolved = max(eligible, key=lambda b: b["binding_anchor_time"])
+    if resolved is baseline and at_time < baseline["binding_anchor_time"]:
+        return resolved, "baseline_governs_from_zero"
+    return resolved, "resolved_at_anchor_time"
 
 
 def apply_revocations(bindings, revocations):

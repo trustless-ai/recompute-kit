@@ -38,9 +38,10 @@
       "expected": { "resolved": "kya-l4-genesis", "resolution_reason": "resolved_at_anchor_time", "rule": "post_cutoff_no_valid_companion", "decision": "REJECT" }
     },
     {
-      "name": "artifact anchored before any binding existed",
+      "name": "artifact anchored before the baseline's own anchor — baseline governs from creation, not from its anchor",
+      "note": "FLIPPED 2026-08-13 (Merlini + pipavlo82, was REJECT/no_in_force_binding): the baseline governs_from = 0 -- anchoring gives kya-l4-genesis a PROVABLE time, it is not the moment its authority began. This does NOT generalize to a successor claiming coverage before its own anchor (that would be retroactive rotation authority, forbidden by this profile) -- see resolve_in_force()'s asymmetry. Matches PQ_baseline_governs_from_zero, verified 15/15 against the v1 profile in #9.",
       "artifact": { "anchor_time": 1785000000, "anchored": true, "pq_companion": null },
-      "expected": { "resolved": null, "resolution_reason": "no_in_force_binding", "rule": "no_in_force_binding", "decision": "REJECT" }
+      "expected": { "resolved": "kya-l4-genesis", "resolution_reason": "baseline_governs_from_zero", "rule": "anchored_before_cutoff", "decision": "ADMIT" }
     },
     {
       "name": "revocation slot — artifact anchored BEFORE revocation still governed (stays valid)",
