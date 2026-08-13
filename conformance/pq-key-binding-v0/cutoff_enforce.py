@@ -56,8 +56,15 @@ def apply_revocations(bindings, revocations):
              if b.get("content_address") in earliest else b) for b in bindings]
 
 
-def admit(bindings, consumer_cutoff, artifact):
-    """Resolve the in-force binding FIRST (the step the vector asserts), then apply the cutoff rule."""
+def admit(bindings, consumer_cutoff, artifact, chain_unresolvable=False):
+    """Resolve the in-force binding FIRST (the step the vector asserts), then apply the cutoff rule.
+    Third verdict (spec): a step that CANNOT COMPLETE reports UNVERIFIABLE, distinct from accept/reject."""
+    unv = {"resolved": None, "resolution_reason": "not_attempted", "decision": "UNVERIFIABLE",
+           "resolved_pq_pubkey": None}
+    if artifact.get("anchor_proof") == "unreachable":
+        return {**unv, "rule": "anchor_proof_unreachable"}   # a claim with no fetchable proof is not a proven anchor
+    if chain_unresolvable:
+        return {**unv, "rule": "chain_unresolvable"}          # resolution cannot RUN; != resolving and finding nothing
     at = artifact["anchor_time"]
     resolved, why = resolve_in_force(bindings, at)
     out = {
@@ -93,7 +100,7 @@ def run(path):
         bindings = c.get("bindings", base_bindings)
         bindings = apply_revocations(bindings, c.get("revocations", base_revocations))
         cutoff = c.get("consumer_cutoff", base_cutoff)
-        got, exp = admit(bindings, cutoff, c["artifact"]), c["expected"]
+        got, exp = admit(bindings, cutoff, c["artifact"], c.get("chain_unresolvable", False)), c["expected"]
         # assert the RESOLUTION step (which binding, by which reason) AND the decision+rule — not just the boolean
         ok = (got["decision"] == exp["decision"] and got["rule"] == exp["rule"]
               and got["resolved"] == exp["resolved"] and got["resolution_reason"] == exp["resolution_reason"])
