@@ -133,7 +133,8 @@ def load_declared_uncovered() -> dict[str, str]:
         print(f"conformance/uncovered.json is not valid JSON: {e}", file=sys.stderr)
         raise SystemExit(2)
     return ({e["suite"]: e.get("reason", "") for e in data.get("uncovered", [])},
-            {e["suite"] for e in data.get("undeclared_vectors", [])})
+            {e["suite"] for e in data.get("undeclared_vectors", [])},
+            {e["suite"]: e.get("reason", "") for e in data.get("requires_live", [])})
 
 
 def main() -> int:
@@ -146,8 +147,14 @@ def main() -> int:
         print("conformance/ contains no suite directories — refusing to report success", file=sys.stderr)
         return 2
 
-    declared, declared_undeclared_vectors = load_declared_uncovered()
-    results = [run_suite(d) for d in dirs]
+    declared, declared_undeclared_vectors, requires_live = load_declared_uncovered()
+    results = []
+    for d in dirs:
+        if d.name in requires_live:
+            # skipped, never run — and reported as such, never folded into the pass count
+            results.append(Result(d.name, False, "REQUIRES LIVE", "needs external binary / live service — not hermetic"))
+            continue
+        results.append(run_suite(d))
 
     # Separate axis from pass/fail: a suite.json declares ONE vectors file, so any other
     # .json beside it is executed by nothing. The suite still runs — dropping it would
@@ -186,12 +193,14 @@ def main() -> int:
         status = {
             "NOT COVERED": "NOT COVERED",
             "DECLARED UNCOVERED": "NOT RUN",
+            "REQUIRES LIVE": "SKIPPED",
         }.get(r.kind, "FAIL") if not r.ok else "PASS"
         print(f"{status:<12} {r.name:<{width}}  {r.detail}")
 
     passed = [r for r in results if r.ok]
     not_run = [r for r in results if r.kind == "DECLARED UNCOVERED"]
-    failed = [r for r in results if not r.ok and r.kind != "DECLARED UNCOVERED"]
+    live = [r for r in results if r.kind == "REQUIRES LIVE"]
+    failed = [r for r in results if not r.ok and r.kind not in ("DECLARED UNCOVERED", "REQUIRES LIVE")]
 
     print()
     print(f"{len(passed)}/{len(results)} suites passed")
@@ -210,6 +219,11 @@ def main() -> int:
             print(f"  {mark}{n}: {', '.join(files)}")
         if undeclared_undisclosed:
             print("  (! = not listed in conformance/uncovered.json — add it or declare the vectors)")
+
+    if live:
+        print(f"{len(live)}/{len(results)} SKIPPED as non-hermetic (conformance/uncovered.json requires_live) — not passing:")
+        for r in live:
+            print(f"    - {r.name}")
 
     if stale:
         print()

@@ -17,7 +17,12 @@
     "the same directory are run by no manifest. Listing them here is an admission that",
     "they are unrun in CI, not a claim that they pass. Clearing this needs multi-vector",
     "manifest support (suite.json declaring a list) \u2014 a schema change for the WG, not a",
-    "runner change. Until then these files are exercised only by hand."
+    "runner change. Until then these files are exercised only by hand.",
+    "",
+    "requires_live: suites that cannot run hermetically \u2014 they need an external binary on",
+    "PATH, or a live HTTP call to infrastructure we operate. They are SKIPPED by CI, not",
+    "passed. A suite whose green depends on our own service being reachable is measuring",
+    "our uptime as much as the claim, so it must not contribute to a CI pass."
   ],
   "uncovered": [
     {
@@ -77,6 +82,13 @@
         "tmerlini-evaluator-results-20.json"
       ],
       "reason": "present in the suite directory, declared by no manifest, executed by no runner",
+      "owner": "unassigned"
+    }
+  ],
+  "requires_live": [
+    {
+      "suite": "communication-chain-v0",
+      "reason": "gate.ts shells out to foundry `cast` for keccak AND makes a live MCP call to gateway.ensub.org. Intentional as a live-capability lane (it checks a running capability still returns the pinned bytes) but not hermetic: it cannot be reproduced by a third party without our gateway up, and CI has neither cast nor a reason to depend on our uptime.",
       "owner": "unassigned"
     }
   ]
