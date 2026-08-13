@@ -102,12 +102,22 @@ def run_suite(d: pathlib.Path) -> Result:
         return Result(d.name, False, "RUNNER", f"could not execute adapter.cmd: {e}")
 
     out = proc.stdout.decode("utf-8", "replace").strip()
-    tail = [l for l in out.splitlines() if l.strip()]
-    last = tail[-1][:100] if tail else "(no output)"
+    lines = [l for l in out.splitlines() if l.strip()]
+    # A crashing runtime prints its own banner last ("Bun v1.3.14 (Linux x64)"), which says
+    # nothing about why. Report the diagnostic line, not the footer.
+    noise = ("Bun v", "at ", "^", "|")
+    signal = [l for l in lines if not l.lstrip().startswith(noise)]
+    last = (signal[-1] if signal else (lines[-1] if lines else "(no output)"))[:110]
 
     if proc.returncode == 127:
         return Result(d.name, False, "RUNNER", f"command not found (127) — interpreter missing, not a suite failure: {cmd}")
     if proc.returncode != 0:
+        # A dependency that will not resolve is an environment failure. Calling it a refuted
+        # vector would be a check reporting confidently about the wrong question.
+        env_markers = ("Cannot find module", "Cannot find package", "ModuleNotFound",
+                       "ImportError", "No module named", "command not found", "ENOENT")
+        if any(m in out for m in env_markers):
+            return Result(d.name, False, "RUNNER", f"environment, not evidence: {last}")
         return Result(d.name, False, "SUITE", f"exit {proc.returncode}: {last}")
     return Result(d.name, True, "SUITE", last)
 
