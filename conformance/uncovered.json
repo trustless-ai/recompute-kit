@@ -1,0 +1,92 @@
+{
+  "_comment": [
+    "Suite directories that no runner executes, declared explicitly.",
+    "",
+    "A directory listed here is NOT passing. It is not running at all. The distinction",
+    "matters: an unrun suite and a green one are indistinguishable in a summary line,",
+    "and that ambiguity is the defect this whole repo exists to remove.",
+    "",
+    "tools/run_conformance.py fails on any uncovered directory that is NOT listed here,",
+    "and also fails on a stale entry (a directory listed here that has since gained a",
+    "suite.json). The list has to stay true to be worth having.",
+    "",
+    "To clear an entry: add a suite.json declaring adapter.cmd + vectors.path (see",
+    "conformance/tee-inference-v0/ for the four-file shape), then remove it from here.",
+    "",
+    "undeclared_vectors: a suite.json points at ONE vectors file. Other vector files in",
+    "the same directory are run by no manifest. Listing them here is an admission that",
+    "they are unrun in CI, not a claim that they pass. Clearing this needs multi-vector",
+    "manifest support (suite.json declaring a list) \u2014 a schema change for the WG, not a",
+    "runner change. Until then these files are exercised only by hand.",
+    "",
+    "requires_live: suites that cannot run hermetically \u2014 they need an external binary on",
+    "PATH, or a live HTTP call to infrastructure we operate. They are SKIPPED by CI, not",
+    "passed. A suite whose green depends on our own service being reachable is measuring",
+    "our uptime as much as the claim, so it must not contribute to a CI pass."
+  ],
+  "uncovered": [
+    {
+      "suite": "convention-hash-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "crc-claim-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "deils-leg2-reveal-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "dex-calldata-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "id-write-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "nft-fulfill-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "storage-root-v0",
+      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "owner": "unassigned"
+    }
+  ],
+  "undeclared_vectors": [
+    {
+      "suite": "pq-key-binding-v0",
+      "files": [
+        "pq-key-binding-v0.per-agent-anchor.json",
+        "pq-key-binding-v0.revocation.json",
+        "pq-key-binding-v0.rotation.json"
+      ],
+      "reason": "suite.json now declares 4 checks (grade/cutoff/rotation/revocation) covering all 3 real *-vectors.json fixture files -- these 3 remaining files are reference EXAMPLE binding documents (a real signed statement + its predecessor/revocation), not test-vector fixtures with a `cases` array, so no runner can execute them as a suite. They're referenced by the spec/docs as worked examples, not left unrun by omission.",
+      "owner": "unassigned"
+    },
+    {
+      "suite": "chronicle-checkpoint-continuity-v0",
+      "files": [
+        "chronicle-root-golden-vectors.json",
+        "tmerlini-evaluator-results-20.json"
+      ],
+      "reason": "present in the suite directory, declared by no manifest, executed by no runner",
+      "owner": "unassigned"
+    }
+  ],
+  "requires_live": [
+    {
+      "suite": "communication-chain-v0",
+      "reason": "gate.ts shells out to foundry `cast` for keccak AND makes a live MCP call to gateway.ensub.org. Intentional as a live-capability lane (it checks a running capability still returns the pinned bytes) but not hermetic: it cannot be reproduced by a third party without our gateway up, and CI has neither cast nor a reason to depend on our uptime.",
+      "owner": "unassigned"
+    }
+  ]
+}

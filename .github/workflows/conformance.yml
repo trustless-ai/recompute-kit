@@ -1,0 +1,143 @@
+name: conformance
+
+# Runs every conformance suite on every PR and push to main.
+#
+# The suites were run by hand before this existed. A suite that only runs when someone
+# remembers is, in @boardyai's phrasing, a set of intentions — so this is part of the
+# conformance claim rather than plumbing around it.
+#
+# tools/run_conformance.py reads each suite.json as the contract and distinguishes its
+# failure causes: a refuted vector, a pinned-digest drift, a runner that could not
+# execute, and a suite nobody declared. A missing interpreter and a broken proof are
+# both red, and conflating them wastes the signal.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # ethers is a real dependency of several gates. Without this the TS suites fail to
+      # resolve it, which CI would otherwise report as refuted vectors — a green-about-the-
+      # wrong-question in reverse, and exactly what the first run of this workflow did.
+      # --no-save: bun would otherwise write a lockfile the repo does not track, leaving the
+      # tree dirty and tripping the cleanliness assertion at the end of this job.
+      - name: Install dependencies
+        run: bun install --no-save
+
+      # If an interpreter is missing the suites cannot run, and "cannot run" must not be
+      # able to look like "passed". The runner reports exit 127 separately for the same
+      # reason, but failing here makes the cause unmissable.
+      - name: Toolchain present
+        run: |
+          python3 --version
+          bun --version
+
+      - name: Run all conformance suites
+        run: python3 tools/run_conformance.py
+
+      # Proves the job can actually go red, on every run, rather than trusting that it
+      # would. A deliberately refuted vector must produce a non-zero exit AND be reported
+      # as a suite failure — not as drift and not as a runner error. Without this a
+      # silently broken runner reports green forever, which is the failure this whole
+      # repo exists to detect.
+      - name: Negative control — a refuted vector must take this red
+        run: |
+          set -u
+          S=conformance/captured-admission-v0
+          V=$(python3 -c "import json;print(json.load(open('$S/suite.json'))['vectors']['path'])")
+          cp "$S/$V" /tmp/v.bk; cp "$S/suite.json" /tmp/s.bk
+          python3 - <<'PY'
+          import json, hashlib, pathlib, os
+          s = pathlib.Path(os.environ.get("S", "conformance/captured-admission-v0"))
+          m = json.loads((s / "suite.json").read_text())
+          vf = s / m["vectors"]["path"]
+          d = json.loads(vf.read_text())
+          cases = d.get("cases") or d.get("vectors")
+          key = [k for k in cases[0] if "expect" in k.lower()][0]
+          exp = cases[0][key]
+          if isinstance(exp, dict):
+              for f in ("decision", "verdict", "expected_verdict"):
+                  if f in exp:
+                      exp[f] = "__NEGATIVE_CONTROL__"
+                      break
+          else:
+              cases[0][key] = "__NEGATIVE_CONTROL__"
+          vf.write_text(json.dumps(d, indent=2))
+          # repin, so this is caught as a refuted vector and not merely as digest drift
+          m["vectors"]["sha256"] = hashlib.sha256(vf.read_bytes()).hexdigest()
+          (s / "suite.json").write_text(json.dumps(m, indent=2))
+          PY
+          set +e
+          python3 tools/run_conformance.py > /tmp/neg.out 2>&1
+          rc=$?
+          set -e
+          cp /tmp/v.bk "$S/$V"; cp /tmp/s.bk "$S/suite.json"
+          if [ "$rc" -ne 1 ]; then
+            echo "::error::a refuted vector must exit 1 (verified-bad), got $rc — the runner cannot detect a refuted vector, so every green above is meaningless"
+            cat /tmp/neg.out
+            exit 1
+          fi
+          if ! grep -q "suite failed (a vector did not reproduce)" /tmp/neg.out; then
+            echo "::error::negative control failed for the WRONG reason — red, but not because the vector was refuted"
+            cat /tmp/neg.out
+            exit 1
+          fi
+          echo "negative control refuted correctly (exit 1 = verified-bad, reported as a suite failure)"
+
+      # The mirror of the control above, and the reason it exists: the first run of this
+      # workflow had no `bun install`, so three suites crashed on an unresolvable import
+      # and were reported as "a vector did not reproduce". A missing package was being
+      # called a broken proof. Infrastructure failure must stay infrastructure failure —
+      # red is not enough, it has to be red for the true reason, or the signal is a lie in
+      # the more dangerous direction: it accuses the evidence instead of the environment.
+      - name: Negative control — an infrastructure break must NOT look like a refuted vector
+        run: |
+          set -u
+          mv node_modules /tmp/nm_hidden
+          set +e
+          python3 tools/run_conformance.py > /tmp/infra.out 2>&1
+          rc=$?
+          set -e
+          mv /tmp/nm_hidden node_modules
+          if [ "$rc" -ne 2 ]; then
+            echo "::error::an environment break must exit 2 (UNVERIFIABLE), got $rc — collapsing it into 1 tells CI the vectors were refuted when they never ran — the runner cannot tell it is unable to execute"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          if ! grep -q "runner could not execute it (environment, not evidence)" /tmp/infra.out; then
+            echo "::error::environment break was not attributed to the environment"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          if grep -q "suite failed (a vector did not reproduce)" /tmp/infra.out; then
+            echo "::error::MASQUERADE — an unresolvable dependency was reported as a refuted vector, accusing the evidence instead of the environment"
+            cat /tmp/infra.out
+            exit 1
+          fi
+          echo "infrastructure break correctly attributed (exit 2 = UNVERIFIABLE, reported as environment, zero suites accused)"
+
+      # The controls above restore what they touched. If anything is still modified the
+      # green from the real run cannot be trusted, because it may have been produced
+      # against a mutated tree.
+      - name: Working tree unchanged by the controls
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::controls left the tree dirty — the run above was not against the committed vectors"
+            git status --porcelain
+            exit 1
+          fi
