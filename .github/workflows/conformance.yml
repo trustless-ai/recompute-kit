@@ -50,6 +50,19 @@ jobs:
       - name: Run all conformance suites
         run: python3 tools/run_conformance.py
 
+      # The collapsed-state rule was written down on 4 Aug and reintroduced five times in two
+      # days, in two codebases, by the people who wrote it — once inside the fix for the
+      # collapse itself. A written rule has no failure mode; it cannot go red. This is the
+      # rule as something that can.
+      - name: Collapsed-state check — a marker must not answer two questions
+        run: python3 tools/check_collapsed_states.py tools bin mcp
+
+      # Its own controls, for the same reason the suites have them. The second axis matters:
+      # v1 of this checker flagged inert test fixtures as collapsed markers, and the original
+      # controls varied only the reason axis, so they passed while it was wrong.
+      - name: Collapsed-state controls — must fail, pass, and tell them apart
+        run: python3 tools/test_check_collapsed_states.py
+
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
       # as a suite failure — not as drift and not as a runner error. Without this a
