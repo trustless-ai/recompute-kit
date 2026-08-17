@@ -1,7 +1,7 @@
 {
   "profile": "predicate_conformance.v0",
-  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: git-authorship disjointness (C2, a checkable floor -- proves disjoint repository attribution, not full person/control/toolchain independence), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c) is ambiguous at variable-length boundaries), set-valued attribution canonicalization (dedupe + sort-by-JCS-byte-order before hashing, since plain JCS key-sorts objects but leaves array order semantic), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement and inability-to-determine are distinct terminal states, reason required iff UNRESOLVED (C4). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity) -- a fact about repository history a vectors-based gate cannot check, belongs in a real CI step against a real repo.",
-  "recompute": "disjointness_holds = mutant.author_identity != predicate.oracle_author_identity ; precommit_hash = sha256(JCS(predicate-precommit.v0 record)) ; verdict = PASS if canonical(A_i)==canonical(observed), CONFORMANCE_FAILED if both present and differ, UNRESOLVED (with reason) if either missing",
+  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: git-authorship disjointness (C2, a checkable floor -- proves disjoint repository attribution, not full person/control/toolchain independence), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c) is ambiguous at variable-length boundaries), declared+versioned attribution canonicalization (A_i carries its own canon_id -- canon.set.v0/canon.sequence.v0/canon.scalar.v0 -- which is itself part of the hash preimage; canon.set.v0 REJECTS a duplicate-bearing value as malformed rather than silently deduping it), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement and inability-to-determine are distinct terminal states, reason required iff UNRESOLVED (C4). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity) -- a fact about repository history a vectors-based gate cannot check, belongs in a real CI step against a real repo.",
+  "recompute": "disjointness_holds = mutant.author_identity != predicate.oracle_author_identity ; precommit_hash = sha256(JCS(predicate-precommit.v0 record)), null if the declared attribution is malformed ; verdict = PASS if canonicalize(A_i)==canonicalize(observed), CONFORMANCE_FAILED if both well-formed and differ, UNRESOLVED (with reason, including malformed_predicate) otherwise",
   "vectors": [
     {
       "name": "clean-disjoint-pass",
@@ -19,15 +19,21 @@
         "author_identity": "alice"
       },
       "predicate": {
-        "attribution": "CONFORMANCE_FAILED_expected_if_uneconomical",
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED_expected_if_uneconomical"
+        },
         "oracle_author_commit": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5",
         "oracle_author_identity": "bob"
       },
-      "observed_attribution": "CONFORMANCE_FAILED_expected_if_uneconomical",
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "CONFORMANCE_FAILED_expected_if_uneconomical"
+      },
       "repair": null,
       "expected": {
         "disjointness_holds": true,
-        "precommit_hash": "819448a996b6f979a4ab1806326554a596a6b25427b837334cb1207991df749d",
+        "precommit_hash": "791b778455614d88a2051db40412ef6f45148a6907db257dcc781557c2f8ad9e",
         "conformance_verdict": {
           "state": "PASS",
           "reason": null
@@ -51,15 +57,21 @@
         "author_identity": "carol"
       },
       "predicate": {
-        "attribution": "CONFORMANCE_FAILED",
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
         "oracle_author_commit": "222222222222222222222222222222222222b2",
         "oracle_author_identity": "carol"
       },
-      "observed_attribution": "CONFORMANCE_FAILED",
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "CONFORMANCE_FAILED"
+      },
       "repair": null,
       "expected": {
         "disjointness_holds": false,
-        "precommit_hash": "dff3b81a7f77414e32a0b4c3adb706bc2fb0d565117a737b7af3294f3a67e88e",
+        "precommit_hash": "c51b04cd47060e9e5f03bae7647fe1af1ded843e22c070dc6dd3d76ecc08806a",
         "conformance_verdict": {
           "state": "PASS",
           "reason": null
@@ -69,7 +81,7 @@
     },
     {
       "name": "set-valued-attribution-order-independence",
-      "note": "A_i is a set (member order not semantic). The gate's observed set is the SAME members in a DIFFERENT order -- canonical(A_i) must still match, so this is PASS, proving the dedupe+sort-then-JCS fix actually normalizes order (a naive per-array JCS would wrongly report CONFORMANCE_FAILED here).",
+      "note": "A_i is a declared canon.set.v0 (member order not semantic). The gate's observed set is the SAME members in a DIFFERENT order -- canonical(A_i) must still match, so this is PASS, proving the dedupe+sort-then-JCS fix actually normalizes order (a naive per-array JCS would wrongly report CONFORMANCE_FAILED here).",
       "invariant_definition": {
         "rule": "flagged_invariant_violations",
         "version": 1
@@ -83,26 +95,77 @@
         "author_identity": "dave"
       },
       "predicate": {
-        "attribution": [
-          "reentrancy",
-          "unchecked_transfer",
-          "integer_overflow"
-        ],
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "reentrancy",
+            "unchecked_transfer",
+            "integer_overflow"
+          ]
+        },
         "oracle_author_commit": "4444444444444444444444444444444444444d",
         "oracle_author_identity": "erin"
       },
-      "observed_attribution": [
-        "integer_overflow",
-        "reentrancy",
-        "unchecked_transfer"
-      ],
+      "observed_attribution": {
+        "canon_id": "canon.set.v0",
+        "value": [
+          "integer_overflow",
+          "reentrancy",
+          "unchecked_transfer"
+        ]
+      },
       "repair": null,
       "expected": {
         "disjointness_holds": true,
-        "precommit_hash": "38ddb043d368ab17d3c38da3d1392164431f4cac4182116409eb9f66c9f03e1d",
+        "precommit_hash": "0aa39d06c1b9d9a56215839706f7210b42e4a3ee26d69a4c20411abbd9ac64aa",
         "conformance_verdict": {
           "state": "PASS",
           "reason": null
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "declared-set-with-duplicate-is-rejected-not-deduped",
+      "note": "A_i is declared canon.set.v0 but its own value carries a duplicate member -- MALFORMED, fails closed as UNRESOLVED/malformed_predicate. This is the real, load-bearing fix (2026-08-17, Merlini): the obvious first draft silently dedupes a duplicate-bearing 'set', which hides the exact defect (whoever fed this isn't actually emitting a set) the same way folding distinct causes into one marker string does. A gate that dedupes here would wrongly report a verdict at all.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m3b",
+        "content": {
+          "diff": "remove bounds check on withdraw(), variant"
+        },
+        "author_commit": "3333333333333333333333333333333333333d",
+        "author_identity": "dave"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "reentrancy",
+            "reentrancy",
+            "integer_overflow"
+          ]
+        },
+        "oracle_author_commit": "4444444444444444444444444444444444444e",
+        "oracle_author_identity": "erin"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.set.v0",
+        "value": [
+          "reentrancy",
+          "integer_overflow"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": null,
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "malformed_predicate"
         },
         "repair_verdict": null
       }
@@ -123,7 +186,10 @@
         "author_identity": "frank"
       },
       "predicate": {
-        "attribution": "PASS_expected_no_real_change",
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "PASS_expected_no_real_change"
+        },
         "oracle_author_commit": "6666666666666666666666666666666666666f",
         "oracle_author_identity": "grace"
       },
@@ -131,7 +197,7 @@
       "repair": null,
       "expected": {
         "disjointness_holds": true,
-        "precommit_hash": "874e588402d606cde884b5207279a33a7957d4f3fb4376f0b0c654b283afb54d",
+        "precommit_hash": "89d1cdd9de0df2076666abc68a5e0253aa3407baaf634c59fdc302462af15a25",
         "conformance_verdict": {
           "state": "UNRESOLVED",
           "reason": "no_observation"
@@ -155,15 +221,21 @@
         "author_identity": "heidi"
       },
       "predicate": {
-        "attribution": "CONFORMANCE_FAILED",
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
         "oracle_author_commit": "8888888888888888888888888888888888888b",
         "oracle_author_identity": "ivan"
       },
-      "observed_attribution": "PASS",
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "PASS"
+      },
       "repair": null,
       "expected": {
         "disjointness_holds": true,
-        "precommit_hash": "0ea13a97e02dc42c910629680b11324e060e8ae6ef8e98f5e0c93df4bee25555",
+        "precommit_hash": "9d75950d90ae73f879806c3e6fcdf9b943ea2ad4bf471d43e026524401081f28",
         "conformance_verdict": {
           "state": "CONFORMANCE_FAILED",
           "reason": null
@@ -187,17 +259,26 @@
         "author_identity": "judy"
       },
       "predicate": {
-        "attribution": "CONFORMANCE_FAILED",
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
         "oracle_author_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad",
         "oracle_author_identity": "mallory"
       },
-      "observed_attribution": "PASS",
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "PASS"
+      },
       "repair": {
-        "observed_attribution_after_repair": "CONFORMANCE_FAILED"
+        "observed_attribution_after_repair": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        }
       },
       "expected": {
         "disjointness_holds": true,
-        "precommit_hash": "3c389556fbe240d42c286fd76a56a1cb2c618186babf15f1ce5ae823bd4bdb34",
+        "precommit_hash": "c0b31f3fddefcd645d810704d4b36c3eaaf02ef943811d7c382377d8e494d329",
         "conformance_verdict": {
           "state": "CONFORMANCE_FAILED",
           "reason": null

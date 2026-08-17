@@ -25,10 +25,19 @@
 //                        Proves disjoint REPOSITORY ATTRIBUTION only — does_not_prove person/
 //                        control/toolchain independence, stated in the record itself, not hidden.
 //   C3  hash recompute  mutant.hash = sha256(JCS(mutant.content)); predicate.attribution_hash =
-//                        sha256(canonical(A_i)) (set-valued A_i: dedupe, sort members by their own
-//                        JCS-byte order, THEN JCS the array — array order is semantic under plain
-//                        JCS, scalars/objects canonicalize via JCS directly); precommit_hash =
-//                        sha256(JCS(the whole predicate-precommit.v0 record)).
+//                        sha256(JCS({canon_id, value: canonicalize(canon_id, A_i.value)})) — A_i
+//                        DECLARES its own canon_id (canon.set.v0 / canon.sequence.v0 /
+//                        canon.scalar.v0), and that id is part of the hash preimage, so a change of
+//                        canonicalization rule is a change of hash, never a silent re-canon across
+//                        versions (Merlini, 2026-08-17). canon.set.v0: a value carrying duplicates
+//                        is MALFORMED for a declared set and fails closed (UNRESOLVED/
+//                        malformed_predicate) rather than being silently deduped — deduping a
+//                        duplicate-bearing "set" hides the exact defect this thread's own
+//                        collapsed-marker rule exists to catch; only a duplicate-free value is
+//                        accepted, then sorted by JCS-byte order. canon.sequence.v0: order is
+//                        significant, duplicates allowed, JCS directly, no sort. canon.scalar.v0:
+//                        JCS directly. precommit_hash = sha256(JCS(the whole
+//                        predicate-precommit.v0 record)).
 //   C4  verdict enum    state in {PASS, CONFORMANCE_FAILED, UNRESOLVED}; reason REQUIRED iff
 //                        UNRESOLVED. Disagreement (A_i and observed both exist and differ) and
 //                        inability-to-determine (comparison could not complete) are DISTINCT
@@ -71,21 +80,56 @@ function sha256hex(s: string): string {
   return createHash("sha256").update(s, "utf8").digest("hex");
 }
 
-// canonical(A_i): set-valued (array) -> dedupe, sort members by their OWN JCS-byte order, emit as
-// a JSON array, then JCS the whole thing. Scalar/object A_i -> JCS directly. This is the exact
-// fix for the load-bearing counterexample Merlini named: plain JCS fixes object-KEY order but
-// leaves ARRAY order semantic, so two logically-identical sets in different member order would
-// otherwise hash differently.
-function canonicalAttribution(a: Json): string {
-  if (Array.isArray(a)) {
-    const byteReps = a.map((m) => jcs(m));
-    const dedupedSorted = [...new Set(byteReps)].sort();
-    return dedupedSorted.join(","); // stable, order-independent representation, then hash below
+// A_i is a DECLARED, VERSIONED value: { canon_id, value }. canon_id names which canonicalization
+// rule applies, and is itself part of the hash preimage (Merlini, 2026-08-17) — changing the rule
+// changes the hash, never a silent re-canonicalization of old records under a new rule.
+type CanonId = "canon.set.v0" | "canon.sequence.v0" | "canon.scalar.v0";
+type Attribution = { canon_id: CanonId; value: Json };
+
+const VALID_CANON_IDS: ReadonlySet<string> = new Set([
+  "canon.set.v0",
+  "canon.sequence.v0",
+  "canon.scalar.v0",
+]);
+
+type CanonResult = { ok: true; canonicalValue: Json } | { ok: false; reason: string };
+
+// canon.set.v0: value MUST be an array with no duplicate members (by JCS-byte identity). A
+// duplicate-bearing input is MALFORMED for a declared set and is REJECTED, not deduped — silently
+// dropping the duplicate would hide the exact defect (an implementation feeding a "set" that isn't
+// actually one) the same way folding distinct causes into one marker string does. A well-formed
+// set is then sorted by JCS-byte order (member order is not semantic for a real set) and emitted
+// as a JSON array.
+// canon.sequence.v0: value MUST be an array; order IS semantic, duplicates are allowed, no sort.
+// canon.scalar.v0: value is JCS'd directly (any non-array shape).
+function canonicalize(a: Attribution): CanonResult {
+  if (!VALID_CANON_IDS.has(a.canon_id)) {
+    return { ok: false, reason: `unknown canon_id: ${a.canon_id}` };
   }
-  return jcs(a);
+  if (a.canon_id === "canon.set.v0") {
+    if (!Array.isArray(a.value)) return { ok: false, reason: "canon.set.v0 requires an array value" };
+    const byteReps = a.value.map((m) => jcs(m));
+    const seen = new Set<string>();
+    for (const r of byteReps) {
+      if (seen.has(r)) return { ok: false, reason: "canon.set.v0: duplicate member — malformed for a declared set" };
+      seen.add(r);
+    }
+    return { ok: true, canonicalValue: [...byteReps].sort().map((r) => JSON.parse(r)) };
+  }
+  if (a.canon_id === "canon.sequence.v0") {
+    if (!Array.isArray(a.value)) return { ok: false, reason: "canon.sequence.v0 requires an array value" };
+    return { ok: true, canonicalValue: a.value };
+  }
+  // canon.scalar.v0
+  return { ok: true, canonicalValue: a.value };
 }
-function attributionHash(a: Json): string {
-  return sha256hex(canonicalAttribution(a));
+
+// The hash preimage is {canon_id, value: canonicalized-per-rule} — canon_id sits INSIDE what gets
+// hashed, so it is literally part of the preimage, not just documentation alongside it.
+function attributionHash(a: Attribution): CanonResult & { hash?: string } {
+  const c = canonicalize(a);
+  if (!c.ok) return c;
+  return { ...c, hash: sha256hex(jcs({ canon_id: a.canon_id, value: c.canonicalValue })) };
 }
 
 // ---------- record recomputation ----------
@@ -95,8 +139,8 @@ type Precommit = {
   invariant: { definition_hash: string };
   mutant: { id: string; hash: string; author_commit: string; author_identity: string };
   predicate: {
-    attribution: Json;
-    attribution_hash: string;
+    attribution: Attribution;
+    attribution_hash: string | null; // null iff the declared attribution is malformed (C3 fails closed)
     oracle_author_commit: string;
     oracle_author_identity: string;
   };
@@ -109,10 +153,11 @@ function buildPrecommit(
   mutantId: string,
   mutantAuthorCommit: string,
   mutantAuthorIdentity: string,
-  attribution: Json,
+  attribution: Attribution,
   oracleAuthorCommit: string,
   oracleAuthorIdentity: string
 ): Precommit {
+  const ah = attributionHash(attribution);
   return {
     record: "predicate-precommit.v0",
     invariant: { definition_hash: sha256hex(jcs(invariantDefinition)) },
@@ -124,7 +169,7 @@ function buildPrecommit(
     },
     predicate: {
       attribution,
-      attribution_hash: attributionHash(attribution),
+      attribution_hash: ah.ok ? ah.hash! : null,
       oracle_author_commit: oracleAuthorCommit,
       oracle_author_identity: oracleAuthorIdentity,
     },
@@ -137,7 +182,11 @@ function buildPrecommit(
   };
 }
 
-function precommitHash(p: Precommit): string {
+// precommit_hash is only computable when the declared attribution is well-formed — a malformed A_i
+// means there is no valid predicate.attribution_hash to fold into the record, so the precommit
+// itself cannot be frozen. Fails closed (null), never silently hashed around the gap.
+function precommitHash(p: Precommit): string | null {
+  if (p.predicate.attribution_hash === null) return null;
   return sha256hex(jcs(p as unknown as Json));
 }
 
@@ -155,16 +204,22 @@ const VALID_UNRESOLVED_REASONS = new Set([
 // C4: derive a verdict by recompute-and-compare, never by trusting a caller's claim. Disagreement
 // (both sides exist and differ) and inability-to-determine (either side missing/malformed) are
 // distinct terminal states — never merged into one.
-function deriveVerdict(attribution: Json | undefined, observed: Json | undefined): Verdict {
+function deriveVerdict(attribution: Attribution | undefined, observed: Attribution | undefined): Verdict {
   if (attribution === undefined || attribution === null) {
     return { state: "UNRESOLVED", reason: "no_predicate" };
+  }
+  const attrResult = attributionHash(attribution);
+  if (!attrResult.ok) {
+    return { state: "UNRESOLVED", reason: "malformed_predicate" };
   }
   if (observed === undefined || observed === null) {
     return { state: "UNRESOLVED", reason: "no_observation" };
   }
-  const attrHash = attributionHash(attribution);
-  const obsHash = attributionHash(observed);
-  return attrHash === obsHash
+  const obsResult = attributionHash(observed);
+  if (!obsResult.ok) {
+    return { state: "UNRESOLVED", reason: "malformed_predicate" };
+  }
+  return attrResult.hash === obsResult.hash
     ? { state: "PASS", reason: null }
     : { state: "CONFORMANCE_FAILED", reason: null };
 }
@@ -181,12 +236,12 @@ type Vector = {
   name: string;
   invariant_definition: Json;
   mutant: { id: string; content: Json; author_commit: string; author_identity: string };
-  predicate: { attribution: Json; oracle_author_commit: string; oracle_author_identity: string };
-  observed_attribution?: Json;
-  repair?: { observed_attribution_after_repair: Json };
+  predicate: { attribution: Attribution; oracle_author_commit: string; oracle_author_identity: string };
+  observed_attribution?: Attribution;
+  repair?: { observed_attribution_after_repair: Attribution };
   expected: {
     disjointness_holds: boolean;
-    precommit_hash: string;
+    precommit_hash: string | null;
     conformance_verdict: Verdict;
     repair_verdict: Verdict | null;
   };
@@ -238,11 +293,14 @@ function matchesExpected(got: ReturnType<typeof evaluate>, expected: Vector["exp
 // live risk once field boundaries aren't structurally fixed (predicate.oracle_author_commit in
 // particular is a variable-length git commit id, not a fixed-width hash). Since the correct method
 // hashes a structured JSON object (real delimiters: braces, quotes, commas) and the tampered
-// method hashes bare concatenation, the two preimages differ in EVERY vector, not just a
-// specially-constructed one — precommit_hash mismatches across the whole fixture under --tamper,
-// which is itself the honest finding: the flaw corrupts every record built this way, not an edge
-// case a narrow counterexample could isolate.
-function precommitHashTampered(p: Precommit): string {
+// method hashes bare concatenation, the two preimages differ across every WELL-FORMED vector, not
+// just a specially-constructed one — precommit_hash mismatches across the whole fixture under
+// --tamper (except the one vector whose attribution is malformed, where both methods correctly
+// return null: neither can hash a record that was never built), which is itself the honest
+// finding: the flaw corrupts every real record built this way, not an edge case a narrow
+// counterexample could isolate.
+function precommitHashTampered(p: Precommit): string | null {
+  if (p.predicate.attribution_hash === null) return null; // same fail-closed rule as the correct method
   return sha256hex(p.invariant.definition_hash + p.mutant.hash + p.predicate.attribution_hash);
 }
 
@@ -282,7 +340,7 @@ if (import.meta.main) {
   console.log(
     `${fx.vectors.length - fails}/${fx.vectors.length} reproduced${
       tamper
-        ? " (tamper: naive hash concatenation — EVERY vector's precommit_hash mismatches by design, not just one; the flaw corrupts every record, not an edge case)"
+        ? " (tamper: naive hash concatenation — every WELL-FORMED vector's precommit_hash mismatches by design, not just one; the flaw corrupts every real record, not an edge case. A malformed-attribution vector correctly still matches: precommit_hash is null under both methods, since neither can hash a record that was never built.)"
         : ""
     }`
   );
