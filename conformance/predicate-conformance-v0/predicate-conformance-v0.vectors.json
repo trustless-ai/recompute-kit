@@ -1,0 +1,212 @@
+{
+  "profile": "predicate_conformance.v0",
+  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: git-authorship disjointness (C2, a checkable floor -- proves disjoint repository attribution, not full person/control/toolchain independence), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c) is ambiguous at variable-length boundaries), set-valued attribution canonicalization (dedupe + sort-by-JCS-byte-order before hashing, since plain JCS key-sorts objects but leaves array order semantic), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement and inability-to-determine are distinct terminal states, reason required iff UNRESOLVED (C4). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity) -- a fact about repository history a vectors-based gate cannot check, belongs in a real CI step against a real repo.",
+  "recompute": "disjointness_holds = mutant.author_identity != predicate.oracle_author_identity ; precommit_hash = sha256(JCS(predicate-precommit.v0 record)) ; verdict = PASS if canonical(A_i)==canonical(observed), CONFORMANCE_FAILED if both present and differ, UNRESOLVED (with reason) if either missing",
+  "vectors": [
+    {
+      "name": "clean-disjoint-pass",
+      "note": "mutant and predicate authored by different, disjoint parties; the gate's observed attribution matches A_i exactly -- PASS, and independence holds at its real (checkable-floor) strength.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m1",
+        "content": {
+          "diff": "swap fee-cap constant 25 -> 40"
+        },
+        "author_commit": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+        "author_identity": "alice"
+      },
+      "predicate": {
+        "attribution": "CONFORMANCE_FAILED_expected_if_uneconomical",
+        "oracle_author_commit": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5",
+        "oracle_author_identity": "bob"
+      },
+      "observed_attribution": "CONFORMANCE_FAILED_expected_if_uneconomical",
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "819448a996b6f979a4ab1806326554a596a6b25427b837334cb1207991df749d",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "same-author-disjointness-violation",
+      "note": "mutant and predicate authored by the SAME identity -- disjointness_holds is false (a real, mechanically-caught independence-floor violation), reported as its own fact, separate from the conformance verdict (which still computes normally on its own inputs).",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m2",
+        "content": {
+          "diff": "swap fee-cap constant 25 -> 999"
+        },
+        "author_commit": "1111111111111111111111111111111111111a",
+        "author_identity": "carol"
+      },
+      "predicate": {
+        "attribution": "CONFORMANCE_FAILED",
+        "oracle_author_commit": "222222222222222222222222222222222222b2",
+        "oracle_author_identity": "carol"
+      },
+      "observed_attribution": "CONFORMANCE_FAILED",
+      "repair": null,
+      "expected": {
+        "disjointness_holds": false,
+        "precommit_hash": "dff3b81a7f77414e32a0b4c3adb706bc2fb0d565117a737b7af3294f3a67e88e",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "set-valued-attribution-order-independence",
+      "note": "A_i is a set (member order not semantic). The gate's observed set is the SAME members in a DIFFERENT order -- canonical(A_i) must still match, so this is PASS, proving the dedupe+sort-then-JCS fix actually normalizes order (a naive per-array JCS would wrongly report CONFORMANCE_FAILED here).",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m3",
+        "content": {
+          "diff": "remove bounds check on withdraw()"
+        },
+        "author_commit": "3333333333333333333333333333333333333c",
+        "author_identity": "dave"
+      },
+      "predicate": {
+        "attribution": [
+          "reentrancy",
+          "unchecked_transfer",
+          "integer_overflow"
+        ],
+        "oracle_author_commit": "4444444444444444444444444444444444444d",
+        "oracle_author_identity": "erin"
+      },
+      "observed_attribution": [
+        "integer_overflow",
+        "reentrancy",
+        "unchecked_transfer"
+      ],
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "38ddb043d368ab17d3c38da3d1392164431f4cac4182116409eb9f66c9f03e1d",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "unresolved-no-observation",
+      "note": "The gate under test never produced an observation (crashed, timed out, or genuinely could not run) -- UNRESOLVED/no_observation, NOT silently treated as a pass, NOT collapsed into CONFORMANCE_FAILED (which would falsely claim a determinate disagreement that never happened).",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m4",
+        "content": {
+          "diff": "reorder two independent statements"
+        },
+        "author_commit": "5555555555555555555555555555555555555e",
+        "author_identity": "frank"
+      },
+      "predicate": {
+        "attribution": "PASS_expected_no_real_change",
+        "oracle_author_commit": "6666666666666666666666666666666666666f",
+        "oracle_author_identity": "grace"
+      },
+      "observed_attribution": null,
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "874e588402d606cde884b5207279a33a7957d4f3fb4376f0b0c654b283afb54d",
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "no_observation"
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "conformance-failed-real-disagreement",
+      "note": "The gate under test genuinely disagrees with A_i (both exist, both determinate, both differ) -- CONFORMANCE_FAILED, the honest determinate-disagreement state, distinct from UNRESOLVED.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m5",
+        "content": {
+          "diff": "widen slippage tolerance 0.5% -> 5%"
+        },
+        "author_commit": "7777777777777777777777777777777777777a",
+        "author_identity": "heidi"
+      },
+      "predicate": {
+        "attribution": "CONFORMANCE_FAILED",
+        "oracle_author_commit": "8888888888888888888888888888888888888b",
+        "oracle_author_identity": "ivan"
+      },
+      "observed_attribution": "PASS",
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "0ea13a97e02dc42c910629680b11324e060e8ae6ef8e98f5e0c93df4bee25555",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "repair-run-restores-pass",
+      "note": "The original run mismatched (CONFORMANCE_FAILED); a repair to the mutant is applied and RE-RUN (a bound recomputing run per C5, not a stored boolean) -- the repair-run's own observed_attribution now matches A_i, so repair_verdict is PASS while the ORIGINAL conformance_verdict on this vector stays whatever it genuinely was.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m6",
+        "content": {
+          "diff": "cap raised without a matching liquidity check"
+        },
+        "author_commit": "9999999999999999999999999999999999999c",
+        "author_identity": "judy"
+      },
+      "predicate": {
+        "attribution": "CONFORMANCE_FAILED",
+        "oracle_author_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad",
+        "oracle_author_identity": "mallory"
+      },
+      "observed_attribution": "PASS",
+      "repair": {
+        "observed_attribution_after_repair": "CONFORMANCE_FAILED"
+      },
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "3c389556fbe240d42c286fd76a56a1cb2c618186babf15f1ce5ae823bd4bdb34",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
+        },
+        "repair_verdict": {
+          "state": "PASS",
+          "reason": null
+        }
+      }
+    }
+  ]
+}
