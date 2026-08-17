@@ -2,7 +2,7 @@
   "profile": "predicate_conformance.v0",
   "vectors": {
     "path": "predicate-conformance-v0.vectors.json",
-    "sha256": "4a051bad3243458d2b21636cfc809b945a0bcb346ad87eb03355994babf8c5e7"
+    "sha256": "f03e8f3f1100b8e6f343640c15bc140dba275ec686be3e580b8236b2e7db8d1a"
   },
   "adapter": {
     "kind": "stdio",

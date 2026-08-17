@@ -1,6 +1,6 @@
 {
   "profile": "predicate_conformance.v0",
-  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: git-authorship disjointness (C2, a checkable floor -- proves disjoint repository attribution, not full person/control/toolchain independence), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c) is ambiguous at variable-length boundaries), declared+versioned attribution canonicalization (A_i carries its own canon_id -- canon.set.v0/canon.sequence.v0/canon.scalar.v0 -- which is itself part of the hash preimage; canon.set.v0 REJECTS a duplicate-bearing value as malformed rather than silently deduping it), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement and inability-to-determine are distinct terminal states, reason required iff UNRESOLVED (C4). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity) -- a fact about repository history a vectors-based gate cannot check, belongs in a real CI step against a real repo.",
+  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: git-authorship disjointness (C2, a checkable floor -- proves disjoint repository attribution, not full person/control/toolchain independence), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c) is ambiguous at variable-length boundaries), declared+versioned attribution canonicalization (A_i carries its own canon_id -- canon.set.v0/canon.sequence.v0/canon.scalar.v0 -- which is itself part of the hash preimage; canon.set.v0 REJECTS a duplicate-bearing value as malformed rather than silently deduping it -- verified load-bearing by an independent regression check: reverting the reject to a dedupe reproduces the pre-fix bug and that specific vector's pinned expected mismatches, i.e. it genuinely goes red -- and that canon_id is really part of the hash preimage, not just documentation alongside it: an identical value declared under two different canon_ids mismatches by hash even though its canonicalized form is the same either way), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement and inability-to-determine are distinct terminal states, reason required iff UNRESOLVED (C4). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity) -- a fact about repository history a vectors-based gate cannot check, belongs in a real CI step against a real repo.",
   "recompute": "disjointness_holds = mutant.author_identity != predicate.oracle_author_identity ; precommit_hash = sha256(JCS(predicate-precommit.v0 record)), null if the declared attribution is malformed ; verdict = PASS if canonicalize(A_i)==canonicalize(observed), CONFORMANCE_FAILED if both well-formed and differ, UNRESOLVED (with reason, including malformed_predicate) otherwise",
   "vectors": [
     {
@@ -166,6 +166,50 @@
         "conformance_verdict": {
           "state": "UNRESOLVED",
           "reason": "malformed_predicate"
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "canon-mismatch-same-value-different-declared-canon",
+      "note": "The SAME array value ['integer_overflow','reentrancy'] (already duplicate-free and already JCS-byte-sorted, so canon.set.v0's own sort is a no-op here) is declared canon.set.v0 in A_i and canon.sequence.v0 in observed_attribution -- literally identical canonicalValue either way, yet the verdict is CONFORMANCE_FAILED because canon_id sits inside the hash preimage (Merlini, 2026-08-17: 'a record built under canon.set.v0 and re-checked under a different declared canon must mismatch by hash -- so the canon version travels with the value is demonstrated, not asserted'). A gate that hashed only the canonicalized value (dropping canon_id from the preimage) would wrongly PASS this vector.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m7",
+        "content": {
+          "diff": "remove reentrancy guard on claim()"
+        },
+        "author_commit": "5555555555555555555555555555555555555f",
+        "author_identity": "trent"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "integer_overflow",
+            "reentrancy"
+          ]
+        },
+        "oracle_author_commit": "6666666666666666666666666666666666666a",
+        "oracle_author_identity": "sybil"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.sequence.v0",
+        "value": [
+          "integer_overflow",
+          "reentrancy"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "3d116bfad004a32918f406b381d3b6e4cd7be4658eb94b0f597a3a44ce7f9c99",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
         },
         "repair_verdict": null
       }
