@@ -56,16 +56,27 @@ Fails closed, never hashed around the gap.
 }
 ```
 
-FIXED 2026-08-18 (Pavlo, PR #14 review): `consumes_precommit` is now actually CHECKED, not just
-documented — the gate recomputes `precommit_hash` fresh and compares it against `run.consumes_precommit`
-BEFORE any attribution comparison happens (`reason: precommit_not_consumed` if they don't match). A
-run that isn't correctly bound to the precommit it claims to consume cannot produce a meaningful
-verdict, even if the underlying attributions would otherwise agree — the suite now proves a bound
-run consumed the frozen precommit, not just that hash-comparison logic works in isolation. Also
-fixed same pass: the `proves` line above said "before this RECORDED execution" — record_identity
-(what this object supports) proves only `precommit_before_recorded_result`; "execution" belongs
-exclusively to the stronger `execution_witness` claim below, and a record must never borrow that
-word for the weaker claim it's actually making.
+FIXED 2026-08-18 (Pavlo, PR #14 review, first round): `consumes_precommit` is now actually CHECKED,
+not just documented — the gate recomputes `precommit_hash` fresh and compares it against
+`run.consumes_precommit` BEFORE any attribution comparison happens (`reason: precommit_not_consumed`
+if they don't match). A run that isn't correctly bound to the precommit it claims to consume cannot
+produce a meaningful verdict, even if the underlying attributions would otherwise agree — the suite
+now proves a bound run consumed the frozen precommit, not just that hash-comparison logic works in
+isolation. Also fixed same pass: the `proves` line above said "before this RECORDED execution" —
+record_identity (what this object supports) proves only `precommit_before_recorded_result`;
+"execution" belongs exclusively to the stronger `execution_witness` claim below, and a record must
+never borrow that word for the weaker claim it's actually making.
+
+SCHEMA-COMPLETED 2026-08-18 (Pavlo, second review round: "the spec's predicate-conformance-run.v0
+contains observed_hash and verdict, but the implemented ConformanceRun type contains neither...
+'the specified run object is now mechanically constructed' still rounds up past what the
+implementation builds"). Fair catch — the first-round fix built the binding CHECK correctly but
+left the constructed object's own shape incomplete relative to this JSON example. `observed_hash`
+and `verdict` are now real fields ON the constructed `ConformanceRun`/`RepairRun` object (see
+`observedHash()` + the object-construction code in `evaluate()`), not values computed separately
+and left off the record. `verdict` on the run object is the exact same value `evaluate()`'s own
+top-level `conformance_verdict`/`repair_verdict` returns — one computation, attached in both
+places it belongs, never two independent derivations that could drift out of sync.
 
 `predicate-repair-run.v0` is the same shape, plus `repaired_mutant_commit`, for a post-repair
 re-check — including the same `consumes_precommit` binding check. It is a **bound run that
@@ -109,7 +120,7 @@ repo's `check_collapsed_states.py` targets (a marker that skips the recompute is
     and silently accepted an array here too — a real spec/code mismatch, now rejected with the
     same fail-closed discipline as `set.v0`/`sequence.v0`'s own shape checks.
   `precommit_hash = sha256(JCS(the whole predicate-precommit.v0 record))`, not a delimiter-free
-  concatenation of child fields (see the counterexample below).
+  concatenation of child fields (see the "why naive concatenation is wrong" section below).
 - **C4 — verdict enum, four distinct UNRESOLVED reasons for four distinct causes.**
   `state ∈ {PASS, CONFORMANCE_FAILED, UNRESOLVED}`; `reason` required iff `UNRESOLVED`. Disagreement
   (`A_i` and `observed` both well-formed and differ) and inability-to-determine (comparison could
@@ -128,26 +139,38 @@ repo's `check_collapsed_states.py` targets (a marker that skips the recompute is
   repair and derives its own verdict by the same path as the original run — never a pre-asserted
   boolean.
 
-## The counterexample — why naive concatenation is non-conformant
+## Why naive concatenation is the wrong construction (not a demonstrated collision)
 
 The obvious first draft hashes the precommit as `sha256(invariant_hash + mutant_hash + attribution_hash + oracle_author_commit)`
-— string concatenation, no delimiter. `predicate.oracle_author_commit` is a **variable-length**
-git commit id (abbreviated or full), sitting next to three fixed-width sha256 hex digests: the
-field boundary at that join is not structurally fixed, so `a‖bc == ab‖c` is a live risk, not a
-theoretical one. The fix already in production elsewhere in this ecosystem
-(`registered_mediator_evidence()`'s own `registry_snapshot_sha256`) is the same one used here:
-hash the **structured JSON object** (`sha256(JCS(record))`), where braces/quotes/commas are real,
-unambiguous delimiters. `--tamper` in the adapter computes the concatenation method instead — and,
-FIXED 2026-08-18 (Pavlo, PR #14 review: "the stated preimage has fixed-width SHA-256 fields
-followed by a variable-length commit id... the claimed ambiguous boundary is not demonstrated as
-written; --tamper currently omits oracle_author_commit entirely"): the prior implementation's
-`--tamper` mode had genuinely omitted `oracle_author_commit` from its own concatenation, so the
-boundary this section describes wasn't actually the one being exercised — a control that didn't
-test the claim it stated. Now included, so every **well-formed** vector's `precommit_hash`
-mismatches under it (not a narrow edge case, because the two preimages differ everywhere the naive
-method is used, not just at one specially constructed boundary); malformed-attribution vectors
-correctly still match, since neither method can hash a record that was never built (`null` under
-both).
+— string concatenation, no delimiter.
+
+CLAIM CORRECTED 2026-08-18 (Pavlo, PR #14 review, two rounds): the original framing called this a
+live `a‖bc == ab‖c` delimiter-collision risk, reasoning that `oracle_author_commit`'s
+variable length sitting next to fixed-width sha256 hex digests made the field boundary ambiguous.
+Round one caught that `--tamper`'s own implementation had omitted `oracle_author_commit` from its
+concatenation entirely, so that boundary was never actually exercised — fixed by including it.
+Round two caught that including it still doesn't demonstrate a collision: the preimage is
+`fixed64 ‖ fixed64 ‖ fixed64 ‖ variable_tail` — three SHA-256 hex fields of known, fixed length
+(64 characters each), with the one variable-length field placed **last**. That arrangement is
+always unambiguously parseable (split at byte 192, the remainder is `oracle_author_commit`) no
+matter what bytes it contains — there is no live boundary ambiguity in this specific four-field
+order. A genuine `a‖bc == ab‖c` collision needs either two adjacent variable-length fields, or a
+variable-length field not pinned to a fixed position — neither is true here.
+
+**The honest claim: this is a structured-commitment argument, not a demonstrated collision.**
+Hashing the **structured JSON object** (`sha256(JCS(record))`), where braces/quotes/commas are
+real, unambiguous delimiters, is the right construction **on principle** — the fix already in
+production elsewhere in this ecosystem (`registered_mediator_evidence()`'s own
+`registry_snapshot_sha256`) is the same one used here. It doesn't depend on the current field
+count, order, or width holding forever: a future schema change (an inserted field, a second
+variable-length field, a reordering) could reintroduce real ambiguity in a naive concatenation;
+JCS-object hashing is immune to that class of risk by construction, not just today, by virtue of
+never encoding field boundaries into raw byte adjacency at all. `--tamper` in the adapter computes
+the concatenation method (now genuinely including `oracle_author_commit`) — every **well-formed**
+vector's `precommit_hash` mismatches under it, confirming the two constructions aren't accidentally
+equivalent, which is real and worth checking even though it isn't evidence of the specific
+collision risk the original framing claimed. Malformed-attribution vectors correctly still match,
+since neither method can hash a record that was never built (`null` under both).
 
 ## Two honest bounds
 

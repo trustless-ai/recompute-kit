@@ -237,12 +237,24 @@ const VALID_UNRESOLVED_REASONS = new Set([
 // binding/witnessing of those is C1's real-repo-CI job, out of scope here, same as ever) but
 // consumes_precommit IS checked here, against the freshly recomputed precommit_hash -- a run that
 // doesn't correctly bind to the precommit it claims to consume cannot produce a meaningful verdict.
+//
+// SCHEMA-COMPLETED 2026-08-18 (Pavlo, second review round: "the spec's predicate-conformance-run.v0
+// contains observed_hash and verdict, but the implemented ConformanceRun type contains neither...
+// 'the specified run object is now mechanically constructed' still rounds up past what the
+// implementation builds"). observed_hash and verdict are now real fields ON the constructed
+// object, not values computed separately and left off the record -- see buildConformanceRun /
+// buildRepairRun below, which compute both and attach them, matching predicate-conformance-v0.spec.md's
+// own JSON shape exactly. verdict here is the SAME value as the top-level conformance_verdict/
+// repair_verdict evaluate() returns (one computation, attached in both places it belongs) -- not a
+// second independent derivation to keep in sync.
 export type ConformanceRun = {
   record: "predicate-conformance-run.v0";
   consumes_precommit: string | null;
   gate_commit: string;
   run_identity: string;
   observed_attribution: Attribution;
+  observed_hash: string | null;
+  verdict: Verdict;
 };
 
 export type RepairRun = {
@@ -252,6 +264,8 @@ export type RepairRun = {
   run_identity: string;
   repaired_mutant_commit: string;
   observed_attribution: Attribution;
+  observed_hash: string | null;
+  verdict: Verdict;
 };
 
 // C4: derive a verdict by recompute-and-compare, never by trusting a caller's claim. Disagreement
@@ -326,6 +340,15 @@ export type Vector = {
   };
 };
 
+// Computes observed_hash the exact same way attribution_hash is computed (C3's own recipe) --
+// null iff the declared observed attribution is malformed, same fail-closed rule as everywhere
+// else in this file.
+function observedHash(observed: Attribution | undefined | null): string | null {
+  if (observed === undefined || observed === null) return null;
+  const r = attributionHash(observed);
+  return r.ok ? r.hash! : null;
+}
+
 export function evaluate(v: Vector) {
   const precommit = buildPrecommit(
     v.invariant_definition,
@@ -342,38 +365,61 @@ export function evaluate(v: Vector) {
   const pHash = precommitHash(precommit);
 
   const hasObservation = v.observed_attribution !== undefined && v.observed_attribution !== null;
+  const conformanceConsumes =
+    v.run_consumes_precommit_override !== undefined ? v.run_consumes_precommit_override : pHash;
+  const conformance_verdict = deriveVerdict(
+    precommit,
+    pHash,
+    hasObservation
+      ? { consumes_precommit: conformanceConsumes, observed_attribution: v.observed_attribution as Attribution }
+      : undefined
+  );
+  // Full predicate-conformance-run.v0 object, matching the spec's own JSON shape exactly --
+  // observed_hash and verdict are real fields on the record, not values computed separately and
+  // left off it (Pavlo, PR #14 second review round).
   const conformanceRun: ConformanceRun | undefined = hasObservation
     ? {
         record: "predicate-conformance-run.v0",
-        consumes_precommit:
-          v.run_consumes_precommit_override !== undefined ? v.run_consumes_precommit_override : pHash,
+        consumes_precommit: conformanceConsumes,
         gate_commit: "test-gate-commit",
         run_identity: `${v.name}-run`,
         observed_attribution: v.observed_attribution as Attribution,
+        observed_hash: observedHash(v.observed_attribution),
+        verdict: conformance_verdict,
       }
     : undefined;
-  const conformance_verdict = deriveVerdict(precommit, pHash, conformanceRun);
 
+  const repairConsumes = v.repair
+    ? v.repair.repair_consumes_precommit_override !== undefined
+      ? v.repair.repair_consumes_precommit_override
+      : pHash
+    : null;
+  const repair_verdict = v.repair
+    ? deriveVerdict(precommit, pHash, {
+        consumes_precommit: repairConsumes,
+        observed_attribution: v.repair.observed_attribution_after_repair,
+      })
+    : null;
   const repairRun: RepairRun | undefined = v.repair
     ? {
         record: "predicate-repair-run.v0",
-        consumes_precommit:
-          v.repair.repair_consumes_precommit_override !== undefined
-            ? v.repair.repair_consumes_precommit_override
-            : pHash,
+        consumes_precommit: repairConsumes,
         gate_commit: "test-gate-commit",
         run_identity: `${v.name}-repair-run`,
         repaired_mutant_commit: "test-repaired-mutant-commit",
         observed_attribution: v.repair.observed_attribution_after_repair,
+        observed_hash: observedHash(v.repair.observed_attribution_after_repair),
+        verdict: repair_verdict as Verdict,
       }
     : undefined;
-  const repair_verdict = v.repair ? deriveVerdict(precommit, pHash, repairRun) : null;
 
   return {
     disjointness_holds,
     precommit_hash: pHash,
     conformance_verdict,
     repair_verdict,
+    conformance_run: conformanceRun,
+    repair_run: repairRun,
     // exposed for debugging / self-check readability, not part of the pinned `expected` shape
     _precommit: precommit,
   };
@@ -391,21 +437,28 @@ function matchesExpected(got: ReturnType<typeof evaluate>, expected: Vector["exp
 }
 
 // A deliberately-wrong reference method, matching this repo's own "--tamper" convention: hash the
-// precommit by naive concatenation of the child fields instead of JCS-object hashing. This is the
-// exact collision surface Merlini named — sha256(a + b + c) has no delimiter, so a‖bc == ab‖c is a
-// live risk once field boundaries aren't structurally fixed (predicate.oracle_author_commit in
-// particular is a variable-length git commit id, not a fixed-width hash). FIXED 2026-08-18 (Pavlo,
-// PR #14 review): the prior version of this function omitted oracle_author_commit from the
-// concatenation entirely, so the stated counterexample (a variable-length field sitting next to
-// fixed-width hashes) was never actually what --tamper computed — the control didn't exercise the
-// claim it stated. Now includes it, so the boundary the comment describes is the one actually
-// tested. Since the correct method hashes a structured JSON object (real delimiters: braces,
-// quotes, commas) and the tampered method hashes bare concatenation, the two preimages differ
-// across every WELL-FORMED vector, not just a specially-constructed one — precommit_hash
-// mismatches across the whole fixture under --tamper (except vectors whose attribution is
-// malformed, where both methods correctly return null: neither can hash a record that was never
-// built), which is itself the honest finding: the flaw corrupts every real record built this way,
-// not an edge case a narrow counterexample could isolate.
+// precommit by naive concatenation of the child fields instead of JCS-object hashing.
+//
+// CLAIM CORRECTED 2026-08-18 (Pavlo, second PR #14 review round, recomputed d596a14..dcbdfcd
+// himself): the 2026-08-18 fix above added oracle_author_commit to the concatenation, but that
+// does NOT demonstrate the "a‖bc == ab‖c" delimiter-collision Merlini originally named. Pavlo's
+// exact, correct point: the preimage here is fixed64 ‖ fixed64 ‖ fixed64 ‖ variable_tail — three
+// SHA-256 hex fields of KNOWN, FIXED length (64 chars each), with the one variable-length field
+// LAST. That arrangement is always unambiguously parseable (split at byte 192, the remainder is
+// oracle_author_commit) — there is no live boundary ambiguity in THIS specific field order, no
+// matter what oracle_author_commit's own bytes are. A genuine a‖bc == ab‖c collision needs either
+// two adjacent variable-length fields, or a variable-length field NOT pinned to a fixed position
+// — neither is true of predicate-precommit.v0's actual four fields as concatenated here.
+//
+// The corrected, honest claim: this is a STRUCTURED-COMMITMENT argument, not a demonstrated
+// collision. Hashing the structured JSON object (real delimiters: braces, quotes, commas) is the
+// right construction on principle — it doesn't depend on the current field count/order/width
+// holding forever (a future schema change, e.g. an inserted field or a second variable-length
+// field, could reintroduce real ambiguity in a naive concatenation; JCS-object hashing is immune
+// to that by construction, not just today). --tamper still demonstrates that the naive method
+// produces a DIFFERENT hash than the correct method across every well-formed vector (confirming
+// the two constructions aren't accidentally equivalent), which is real and worth checking — it
+// just isn't evidence of the specific collision risk the original framing claimed.
 function precommitHashTampered(p: Precommit): string | null {
   if (p.predicate.attribution_hash === null) return null; // same fail-closed rule as the correct method
   return sha256hex(
