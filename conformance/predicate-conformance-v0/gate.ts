@@ -21,9 +21,15 @@
 // What this gate checks (pure recompute over the vector's raw inputs, per this repo's own
 // convention — never verifies a caller's claimed hash, always recomputes independently):
 //
-//   C2  disjointness   mutant.author_identity !== predicate.oracle_author_identity.
-//                        Proves disjoint REPOSITORY ATTRIBUTION only — does_not_prove person/
-//                        control/toolchain independence, stated in the record itself, not hidden.
+//   C2  disjointness   mutant.author_identity !== predicate.oracle_author_identity. FIXED 2026-08-18
+//                        (Pavlo, recomputed the head, PR #14 review): the prior wording said this
+//                        "proves disjoint repository attribution" — overclaimed, since author_identity
+//                        is a DECLARED string the vector supplies, never resolved against a real git
+//                        repo (author_commit -> git author is not something this vectors-based gate can
+//                        do, same structural reason C1 defers ancestry to a real CI step). What this
+//                        actually proves: the two DECLARED identity strings differ — does_not_prove
+//                        even repository attribution, let alone person/control/toolchain independence.
+//                        A real authorship check needs the same real-repo CI step C1 is deferred to.
 //   C3  hash recompute  mutant.hash = sha256(JCS(mutant.content)); predicate.attribution_hash =
 //                        sha256(JCS({canon_id, value: canonicalize(canon_id, A_i.value)})) — A_i
 //                        DECLARES its own canon_id (canon.set.v0 / canon.sequence.v0 /
@@ -43,6 +49,14 @@
 //                        inability-to-determine (comparison could not complete) are DISTINCT
 //                        terminal states with no merge path — collapsing them is exactly the
 //                        review_unavailable-class defect this whole thread traces back to.
+//                        FIXED 2026-08-18 (Pavlo, PR #14 review, two findings folded together):
+//                        (a) malformed_predicate and malformed_observation are now distinct
+//                        reasons — this rule's own implementation previously collapsed them, the
+//                        exact defect the rule exists to catch; (b) the run objects below are now
+//                        actually constructed and their consumes_precommit field checked against
+//                        the freshly recomputed precommit_hash BEFORE comparing attribution
+//                        hashes — reason precommit_not_consumed — so the suite proves a bound run
+//                        consumed the frozen precommit, not just that hash comparison works.
 //   C5  repair as a run repair_verdict is computed by the SAME recompute-and-compare path as the
 //                        conformance verdict, against the post-repair observed_attribution — never
 //                        a pre-asserted boolean.
@@ -53,7 +67,10 @@
 // repo, not a vectors-based gate. Encoding it here would either fake git operations against
 // synthetic commit ids (worthless) or silently narrow the claim to "the vector SAYS it's an
 // ancestor" (exactly the unearned-trust shape C1 exists to rule out). Named plainly rather than
-// quietly skipped.
+// quietly skipped. The SAME real-CI step should also resolve mutant.author_commit and
+// predicate.oracle_author_commit to their actual git authors (`git log --format=%an/%ae`) rather
+// than trust the declared author_identity strings C2 compares here -- both are real-repo-dependent
+// facts this vectors-based gate structurally cannot check, deferred together, not two separate gaps.
 //
 // Adapter contract for bin/conformance-suite: fixture JSON on stdin -> {name: result} on stdout.
 
@@ -64,7 +81,7 @@ type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
 // ---------- canonicalization ----------
 // Plain-JCS-in-spirit: recursively key-sorted, compact JSON, UTF-8 — same convention already used
 // by conformance/chronicle-checkpoint-continuity-v0/continuity_gate.ts in this repo.
-function jcs(o: Json): string {
+export function jcs(o: Json): string {
   return JSON.stringify(sortKeys(o));
 }
 function sortKeys(o: Json): Json {
@@ -76,7 +93,7 @@ function sortKeys(o: Json): Json {
   }
   return o;
 }
-function sha256hex(s: string): string {
+export function sha256hex(s: string): string {
   return createHash("sha256").update(s, "utf8").digest("hex");
 }
 
@@ -84,7 +101,7 @@ function sha256hex(s: string): string {
 // rule applies, and is itself part of the hash preimage (Merlini, 2026-08-17) — changing the rule
 // changes the hash, never a silent re-canonicalization of old records under a new rule.
 type CanonId = "canon.set.v0" | "canon.sequence.v0" | "canon.scalar.v0";
-type Attribution = { canon_id: CanonId; value: Json };
+export type Attribution = { canon_id: CanonId; value: Json };
 
 const VALID_CANON_IDS: ReadonlySet<string> = new Set([
   "canon.set.v0",
@@ -102,7 +119,7 @@ type CanonResult = { ok: true; canonicalValue: Json } | { ok: false; reason: str
 // as a JSON array.
 // canon.sequence.v0: value MUST be an array; order IS semantic, duplicates are allowed, no sort.
 // canon.scalar.v0: value is JCS'd directly (any non-array shape).
-function canonicalize(a: Attribution): CanonResult {
+export function canonicalize(a: Attribution): CanonResult {
   if (!VALID_CANON_IDS.has(a.canon_id)) {
     return { ok: false, reason: `unknown canon_id: ${a.canon_id}` };
   }
@@ -120,13 +137,16 @@ function canonicalize(a: Attribution): CanonResult {
     if (!Array.isArray(a.value)) return { ok: false, reason: "canon.sequence.v0 requires an array value" };
     return { ok: true, canonicalValue: a.value };
   }
-  // canon.scalar.v0
+  // canon.scalar.v0 — FIXED 2026-08-18 (Pavlo, PR #14 review): spec says non-array, but this
+  // branch previously fell through and silently accepted an array too (a real spec/code mismatch).
+  // Reject the shape it's not declared for, same fail-closed discipline as set.v0/sequence.v0.
+  if (Array.isArray(a.value)) return { ok: false, reason: "canon.scalar.v0 requires a non-array value" };
   return { ok: true, canonicalValue: a.value };
 }
 
 // The hash preimage is {canon_id, value: canonicalized-per-rule} — canon_id sits INSIDE what gets
 // hashed, so it is literally part of the preimage, not just documentation alongside it.
-function attributionHash(a: Attribution): CanonResult & { hash?: string } {
+export function attributionHash(a: Attribution): CanonResult & { hash?: string } {
   const c = canonicalize(a);
   if (!c.ok) return c;
   return { ...c, hash: sha256hex(jcs({ canon_id: a.canon_id, value: c.canonicalValue })) };
@@ -134,7 +154,7 @@ function attributionHash(a: Attribution): CanonResult & { hash?: string } {
 
 // ---------- record recomputation ----------
 
-type Precommit = {
+export type Precommit = {
   record: "predicate-precommit.v0";
   invariant: { definition_hash: string };
   mutant: { id: string; hash: string; author_commit: string; author_identity: string };
@@ -147,7 +167,7 @@ type Precommit = {
   independence: { claim: string; checked: string; does_not_prove: string };
 };
 
-function buildPrecommit(
+export function buildPrecommit(
   invariantDefinition: Json,
   mutantContent: Json,
   mutantId: string,
@@ -174,10 +194,10 @@ function buildPrecommit(
       oracle_author_identity: oracleAuthorIdentity,
     },
     independence: {
-      claim: "disjoint_repository_attribution",
+      claim: "disjoint_declared_identity",
       checked: "mutant.author_identity != predicate.oracle_author_identity",
       does_not_prove:
-        "person / control / toolchain independence — the parties can still fail the same way; a checkable floor, strictly below independently-grounded.",
+        "repository attribution (author_commit is never resolved against a real git repo -- these are DECLARED strings the vector supplies, not git-verified authors), let alone person / control / toolchain independence -- a checkable floor over declared data, strictly below anything real-repo-grounded. See C1's note on the deferred real-CI step, which should also resolve author_commit -> git author, not just ancestry.",
     },
   };
 }
@@ -185,26 +205,66 @@ function buildPrecommit(
 // precommit_hash is only computable when the declared attribution is well-formed — a malformed A_i
 // means there is no valid predicate.attribution_hash to fold into the record, so the precommit
 // itself cannot be frozen. Fails closed (null), never silently hashed around the gap.
-function precommitHash(p: Precommit): string | null {
+export function precommitHash(p: Precommit): string | null {
   if (p.predicate.attribution_hash === null) return null;
   return sha256hex(jcs(p as unknown as Json));
 }
 
-type Verdict = { state: "PASS" | "CONFORMANCE_FAILED" | "UNRESOLVED"; reason: string | null };
+export type Verdict = { state: "PASS" | "CONFORMANCE_FAILED" | "UNRESOLVED"; reason: string | null };
 
+// FIXED 2026-08-18 (Pavlo, PR #14 review, two findings folded into one fix): (a) malformed_predicate
+// vs malformed_observation are now DISTINCT reasons -- the prior version returned malformed_predicate
+// for BOTH a malformed A_i and a malformed observed_attribution, the exact collapsed-marker defect
+// this whole thread's own C4 rule exists to catch, now found inside the rule's own implementation.
+// (b) precommit_not_consumed is new: a run whose bound consumes_precommit doesn't match the freshly
+// recomputed precommit_hash cannot produce a meaningful verdict (see ConformanceRun/RepairRun below).
 const VALID_UNRESOLVED_REASONS = new Set([
   "no_predicate",
   "no_observation",
   "malformed_predicate",
+  "malformed_observation",
+  "precommit_not_consumed",
   "gate_error",
   "comparison_incomplete",
   "other",
 ]);
 
+// predicate-conformance-run.v0 / predicate-repair-run.v0 (Merlini, 2026-08-17), now actually
+// CONSTRUCTED and CHECKED, not just documented in prose -- FIXED 2026-08-18 (Pavlo, PR #14 review:
+// "the run objects are specified but not mechanically exercised... evaluate() currently builds the
+// precommit and calls deriveVerdict() directly"). consumes_precommit is the run's own BOUND claim
+// about which precommit it consumed; gate_commit/run_identity are carried for completeness (real
+// binding/witnessing of those is C1's real-repo-CI job, out of scope here, same as ever) but
+// consumes_precommit IS checked here, against the freshly recomputed precommit_hash -- a run that
+// doesn't correctly bind to the precommit it claims to consume cannot produce a meaningful verdict.
+export type ConformanceRun = {
+  record: "predicate-conformance-run.v0";
+  consumes_precommit: string | null;
+  gate_commit: string;
+  run_identity: string;
+  observed_attribution: Attribution;
+};
+
+export type RepairRun = {
+  record: "predicate-repair-run.v0";
+  consumes_precommit: string | null;
+  gate_commit: string;
+  run_identity: string;
+  repaired_mutant_commit: string;
+  observed_attribution: Attribution;
+};
+
 // C4: derive a verdict by recompute-and-compare, never by trusting a caller's claim. Disagreement
-// (both sides exist and differ) and inability-to-determine (either side missing/malformed) are
-// distinct terminal states — never merged into one.
-function deriveVerdict(attribution: Attribution | undefined, observed: Attribution | undefined): Verdict {
+// (both sides exist and differ) and inability-to-determine (either side missing/malformed, or the
+// run isn't bound to the precommit it claims) are distinct terminal states — never merged into one.
+// precommitHashComputed is the FRESH recompute (never the vector's own claimed precommit_hash) --
+// the binding check below would be worthless if it compared a claim against itself.
+export function deriveVerdict(
+  precommit: Precommit,
+  precommitHashComputed: string | null,
+  run: { consumes_precommit: string | null; observed_attribution?: Attribution } | undefined
+): Verdict {
+  const attribution = precommit.predicate.attribution;
   if (attribution === undefined || attribution === null) {
     return { state: "UNRESOLVED", reason: "no_predicate" };
   }
@@ -212,12 +272,23 @@ function deriveVerdict(attribution: Attribution | undefined, observed: Attributi
   if (!attrResult.ok) {
     return { state: "UNRESOLVED", reason: "malformed_predicate" };
   }
+  if (run === undefined) {
+    return { state: "UNRESOLVED", reason: "no_observation" };
+  }
+  // BINDING CHECK, new: a run whose consumes_precommit doesn't match what was actually just
+  // recomputed cannot be trusted to have consumed THIS precommit -- checked before comparing
+  // attribution hashes, since comparing against the wrong precommit's frozen predicate would be
+  // meaningless even if the byte comparison happened to succeed.
+  if (run.consumes_precommit !== precommitHashComputed) {
+    return { state: "UNRESOLVED", reason: "precommit_not_consumed" };
+  }
+  const observed = run.observed_attribution;
   if (observed === undefined || observed === null) {
     return { state: "UNRESOLVED", reason: "no_observation" };
   }
   const obsResult = attributionHash(observed);
   if (!obsResult.ok) {
-    return { state: "UNRESOLVED", reason: "malformed_predicate" };
+    return { state: "UNRESOLVED", reason: "malformed_observation" };
   }
   return attrResult.hash === obsResult.hash
     ? { state: "PASS", reason: null }
@@ -232,13 +303,21 @@ function verdictValid(v: Verdict): boolean {
 
 // ---------- vector shape ----------
 
-type Vector = {
+export type Vector = {
   name: string;
   invariant_definition: Json;
   mutant: { id: string; content: Json; author_commit: string; author_identity: string };
   predicate: { attribution: Attribution; oracle_author_commit: string; oracle_author_identity: string };
-  observed_attribution?: Attribution;
-  repair?: { observed_attribution_after_repair: Attribution };
+  observed_attribution?: Attribution | null;
+  // Test-only escape hatch for the precommit_not_consumed negative vector: normally the run's
+  // consumes_precommit is auto-bound to the freshly recomputed precommit_hash (undefined here
+  // means "use the real value"); a vector may override it to a deliberately WRONG hash to prove
+  // the binding check actually catches a mis-bound run, not just document that it should.
+  run_consumes_precommit_override?: string | null;
+  repair?: {
+    observed_attribution_after_repair: Attribution;
+    repair_consumes_precommit_override?: string | null;
+  };
   expected: {
     disjointness_holds: boolean;
     precommit_hash: string | null;
@@ -247,7 +326,7 @@ type Vector = {
   };
 };
 
-function evaluate(v: Vector) {
+export function evaluate(v: Vector) {
   const precommit = buildPrecommit(
     v.invariant_definition,
     v.mutant.content,
@@ -261,10 +340,34 @@ function evaluate(v: Vector) {
   const disjointness_holds =
     precommit.mutant.author_identity !== precommit.predicate.oracle_author_identity;
   const pHash = precommitHash(precommit);
-  const conformance_verdict = deriveVerdict(v.predicate.attribution, v.observed_attribution);
-  const repair_verdict = v.repair
-    ? deriveVerdict(v.predicate.attribution, v.repair.observed_attribution_after_repair)
-    : null;
+
+  const hasObservation = v.observed_attribution !== undefined && v.observed_attribution !== null;
+  const conformanceRun: ConformanceRun | undefined = hasObservation
+    ? {
+        record: "predicate-conformance-run.v0",
+        consumes_precommit:
+          v.run_consumes_precommit_override !== undefined ? v.run_consumes_precommit_override : pHash,
+        gate_commit: "test-gate-commit",
+        run_identity: `${v.name}-run`,
+        observed_attribution: v.observed_attribution as Attribution,
+      }
+    : undefined;
+  const conformance_verdict = deriveVerdict(precommit, pHash, conformanceRun);
+
+  const repairRun: RepairRun | undefined = v.repair
+    ? {
+        record: "predicate-repair-run.v0",
+        consumes_precommit:
+          v.repair.repair_consumes_precommit_override !== undefined
+            ? v.repair.repair_consumes_precommit_override
+            : pHash,
+        gate_commit: "test-gate-commit",
+        run_identity: `${v.name}-repair-run`,
+        repaired_mutant_commit: "test-repaired-mutant-commit",
+        observed_attribution: v.repair.observed_attribution_after_repair,
+      }
+    : undefined;
+  const repair_verdict = v.repair ? deriveVerdict(precommit, pHash, repairRun) : null;
 
   return {
     disjointness_holds,
@@ -288,20 +391,26 @@ function matchesExpected(got: ReturnType<typeof evaluate>, expected: Vector["exp
 }
 
 // A deliberately-wrong reference method, matching this repo's own "--tamper" convention: hash the
-// precommit by naive concatenation of the child hashes instead of JCS-object hashing. This is the
+// precommit by naive concatenation of the child fields instead of JCS-object hashing. This is the
 // exact collision surface Merlini named — sha256(a + b + c) has no delimiter, so a‖bc == ab‖c is a
 // live risk once field boundaries aren't structurally fixed (predicate.oracle_author_commit in
-// particular is a variable-length git commit id, not a fixed-width hash). Since the correct method
-// hashes a structured JSON object (real delimiters: braces, quotes, commas) and the tampered
-// method hashes bare concatenation, the two preimages differ across every WELL-FORMED vector, not
-// just a specially-constructed one — precommit_hash mismatches across the whole fixture under
-// --tamper (except the one vector whose attribution is malformed, where both methods correctly
-// return null: neither can hash a record that was never built), which is itself the honest
-// finding: the flaw corrupts every real record built this way, not an edge case a narrow
-// counterexample could isolate.
+// particular is a variable-length git commit id, not a fixed-width hash). FIXED 2026-08-18 (Pavlo,
+// PR #14 review): the prior version of this function omitted oracle_author_commit from the
+// concatenation entirely, so the stated counterexample (a variable-length field sitting next to
+// fixed-width hashes) was never actually what --tamper computed — the control didn't exercise the
+// claim it stated. Now includes it, so the boundary the comment describes is the one actually
+// tested. Since the correct method hashes a structured JSON object (real delimiters: braces,
+// quotes, commas) and the tampered method hashes bare concatenation, the two preimages differ
+// across every WELL-FORMED vector, not just a specially-constructed one — precommit_hash
+// mismatches across the whole fixture under --tamper (except vectors whose attribution is
+// malformed, where both methods correctly return null: neither can hash a record that was never
+// built), which is itself the honest finding: the flaw corrupts every real record built this way,
+// not an edge case a narrow counterexample could isolate.
 function precommitHashTampered(p: Precommit): string | null {
   if (p.predicate.attribution_hash === null) return null; // same fail-closed rule as the correct method
-  return sha256hex(p.invariant.definition_hash + p.mutant.hash + p.predicate.attribution_hash);
+  return sha256hex(
+    p.invariant.definition_hash + p.mutant.hash + p.predicate.attribution_hash + p.predicate.oracle_author_commit
+  );
 }
 
 function evaluateTampered(v: Vector) {
