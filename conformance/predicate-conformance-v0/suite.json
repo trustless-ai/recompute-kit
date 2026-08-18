@@ -2,7 +2,7 @@
   "profile": "predicate_conformance.v0",
   "vectors": {
     "path": "predicate-conformance-v0.vectors.json",
-    "sha256": "a1c79afcdd354207163ef5f65720c73435a2d86af726ab86c5da27eac91ebd1f"
+    "sha256": "30480aa9d3cd55c1677ac0cab53a7386e322019cb4fc66d324aaaec669691212"
   },
   "adapter": {
     "kind": "stdio",
@@ -11,6 +11,6 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "predicate-conformance-v0.spec.md",
-    "sha256": "4d879b9f5f9c921252c65dce835925d18767882683fdc200381835da06db063b"
+    "sha256": "6216ac3ae09c017178ecd1c6556da4c905eae725805f87911b6111432b212d05"
   }
 }

@@ -36,7 +36,8 @@
           "state": "PASS",
           "reason": null
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ed88c28ecdea03f59157361e09f59a54db69fa98531b30e7b83f665113bc266b"
       }
     },
     {
@@ -74,7 +75,8 @@
           "state": "PASS",
           "reason": null
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
       }
     },
     {
@@ -120,7 +122,8 @@
           "state": "PASS",
           "reason": null
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "404e6bfb44465c378c00139e6ad81630c6e59fc0aaf1dc670aeceb1298819bbc"
       }
     },
     {
@@ -165,7 +168,8 @@
           "state": "UNRESOLVED",
           "reason": "malformed_predicate"
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "e6a8a7594673be93d5517edb960f76aeeb339789b7615b692a4258b5ab374e4b"
       }
     },
     {
@@ -209,7 +213,8 @@
           "state": "CONFORMANCE_FAILED",
           "reason": null
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "2e55d860205e666860b9b89825757cb17d473828915017e0dc42cc03a6e194ec"
       }
     },
     {
@@ -282,7 +287,8 @@
           "state": "CONFORMANCE_FAILED",
           "reason": null
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "0329c63de294e0fc82d437aa65e8d3e1e67bd4fedba64e4a6b0761f0ec2938b9"
       }
     },
     {
@@ -328,7 +334,9 @@
         "repair_verdict": {
           "state": "PASS",
           "reason": null
-        }
+        },
+        "conformance_run_observed_hash": "0329c63de294e0fc82d437aa65e8d3e1e67bd4fedba64e4a6b0761f0ec2938b9",
+        "repair_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
       }
     },
     {
@@ -371,7 +379,8 @@
           "state": "UNRESOLVED",
           "reason": "malformed_observation"
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": null
       }
     },
     {
@@ -411,7 +420,8 @@
           "state": "UNRESOLVED",
           "reason": "malformed_predicate"
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "44b7c1432f1d33f62b37468dcc3ae6967b13e4abeadf309b2bdfb8212a61db4d"
       }
     },
     {
@@ -450,7 +460,8 @@
           "state": "UNRESOLVED",
           "reason": "precommit_not_consumed"
         },
-        "repair_verdict": null
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
       }
     }
   ],

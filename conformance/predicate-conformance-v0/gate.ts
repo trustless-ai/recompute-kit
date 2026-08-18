@@ -337,6 +337,14 @@ export type Vector = {
     precommit_hash: string | null;
     conformance_verdict: Verdict;
     repair_verdict: Verdict | null;
+    // Added 2026-08-18 (Pavlo, PR #14 third review round): conformance_run/repair_run carry
+    // observed_hash as a real field (their verdict is already implicitly pinned via
+    // conformance_verdict/repair_verdict above, since evaluate() sets run.verdict to the same
+    // value) -- observed_hash was the one normative field on those objects matchesExpected()
+    // never compared, so a regression there could drift silently even in the self-check.
+    // undefined when no observation exists for this vector (conformance_run/repair_run absent).
+    conformance_run_observed_hash?: string | null;
+    repair_run_observed_hash?: string | null;
   };
 };
 
@@ -433,6 +441,18 @@ function matchesExpected(got: ReturnType<typeof evaluate>, expected: Vector["exp
   if (JSON.stringify(got.repair_verdict) !== JSON.stringify(expected.repair_verdict)) return false;
   if (!verdictValid(got.conformance_verdict)) return false;
   if (got.repair_verdict && !verdictValid(got.repair_verdict)) return false;
+  // conformance_run/repair_run presence must track whether an observation exists at all, and
+  // their observed_hash (the one normative field verdict-equality above doesn't already pin,
+  // since run.verdict is set to the same value as conformance_verdict/repair_verdict by
+  // construction) must match too -- closes the "schema completion isn't discriminating" gap.
+  const gotConfHash = got.conformance_run ? got.conformance_run.observed_hash : undefined;
+  const expConfHash = "conformance_run_observed_hash" in expected ? expected.conformance_run_observed_hash : undefined;
+  if ((got.conformance_run !== undefined) !== (expConfHash !== undefined)) return false;
+  if (expConfHash !== undefined && gotConfHash !== expConfHash) return false;
+  const gotRepairHash = got.repair_run ? got.repair_run.observed_hash : undefined;
+  const expRepairHash = "repair_run_observed_hash" in expected ? expected.repair_run_observed_hash : undefined;
+  if ((got.repair_run !== undefined) !== (expRepairHash !== undefined)) return false;
+  if (expRepairHash !== undefined && gotRepairHash !== expRepairHash) return false;
   return true;
 }
 
@@ -475,15 +495,26 @@ function evaluateTampered(v: Vector) {
 if (import.meta.main) {
   const tamper = Bun.argv.includes("--tamper");
   if (Bun.argv.includes("--grade")) {
+    // FIXED 2026-08-18 (Pavlo, PR #14 third review round, recomputed f7da995 himself): --grade
+    // previously computed and printed each vector's result, then unconditionally exit(0) --
+    // it never called matchesExpected(), so tools/run_conformance.py (which treats this
+    // adapter's exit 0 as PASS, per its own doc comment) could not actually tell a correct
+    // evaluator from a broken one that still emits well-formed JSON. The suite manifest wires
+    // exactly "bun gate.ts --grade" with no flags, so this is the real CI-executed path -- it
+    // must be load-bearing, not just the standalone self-check below. Still prints the full
+    // grade JSON (unchanged contract for anything else consuming it), but now also diffs each
+    // vector against its own pinned `expected` and exits 1 if any vector disagrees.
     const fx = JSON.parse(await Bun.stdin.text());
     const out: Record<string, unknown> = {};
+    let fails = 0;
     for (const v of fx.vectors as Vector[]) {
       const got = tamper ? evaluateTampered(v) : evaluate(v);
       const { _precommit, ...pub } = got;
       out[v.name] = pub;
+      if (!matchesExpected(got, v.expected)) fails++;
     }
     console.log(JSON.stringify(out));
-    process.exit(0);
+    process.exit(fails ? 1 : 0);
   }
   // Standalone self-check: recompute each vector and diff against its pinned expected.
   const fx = JSON.parse(

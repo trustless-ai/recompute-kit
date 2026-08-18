@@ -188,9 +188,33 @@ since neither method can hash a record that was never built (`null` under both).
    unearned-trust shape C1 exists to close. They belong in a real CI step against a real repo, not
    this fixture — deferred together, not as separate gaps.
 
+## The CI-executed path is now actually load-bearing
+
+FIXED 2026-08-18 (Pavlo, PR #14 review, third round, recomputed f7da995 himself): the suite
+manifest wires `bun gate.ts --grade` (stdio adapter, no flags) as the command
+`tools/run_conformance.py` actually runs, and that runner treats the adapter's exit code as the
+only pass/fail signal — it does not diff `--grade`'s JSON output against anything. `--grade`
+previously computed and printed each vector's result, then unconditionally `exit(0)` regardless
+of what it computed — it never called `matchesExpected()`, so an evaluator regression that still
+emits well-formed JSON (a broken `disjointness_holds`, a mis-derived verdict, a silently-dropped
+`observed_hash`) would stay CI-green. The standalone self-check (`bun gate.ts`, no `--grade`) did
+call `matchesExpected()` and was never the gap — but it is not the path CI runs.
+Fixed: `--grade` now calls the exact same `matchesExpected()` the self-check uses on every vector
+and exits 1 if any vector disagrees, while still printing the full grade JSON unchanged (nothing
+downstream consuming that JSON needs to change). A second, narrower gap closed the same round:
+`matchesExpected()` compared `conformance_verdict`/`repair_verdict` (which pins `conformance_run
+.verdict`/`repair_run.verdict` by construction, since `evaluate()` sets them to the same value)
+but never compared `observed_hash` on those run objects — the one normative field on the new
+run-object schema (added the prior round) that wasn't actually discriminating. `Vector["expected"]`
+now carries `conformance_run_observed_hash`/`repair_run_observed_hash`, and `matchesExpected()`
+checks both the hash and that a run object is present/absent exactly when an observation is/isn't.
+Verified by deliberately injecting a real regression (flipping `disjointness_holds`'s comparison
+operator) and confirming `bun gate.ts --grade` goes red (previously would have stayed green).
+
 ## Reproduce it yourself
 
 ```bash
 bun gate.ts              # recompute every vector, diff against pinned expected
 bun gate.ts --tamper     # recompute with the naive-concatenation method — well-formed vectors should mismatch
+bun gate.ts --grade < predicate-conformance-v0.vectors.json   # the exact command CI runs — now exits 1 on any real mismatch, not just 0 always
 ```
