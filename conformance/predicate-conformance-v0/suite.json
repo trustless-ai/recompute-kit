@@ -1,0 +1,16 @@
+{
+  "profile": "predicate_conformance.v0",
+  "vectors": {
+    "path": "predicate-conformance-v0.vectors.json",
+    "sha256": "30480aa9d3cd55c1677ac0cab53a7386e322019cb4fc66d324aaaec669691212"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "bun gate.ts --grade"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "predicate-conformance-v0.spec.md",
+    "sha256": "6216ac3ae09c017178ecd1c6556da4c905eae725805f87911b6111432b212d05"
+  }
+}
