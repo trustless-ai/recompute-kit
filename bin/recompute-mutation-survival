@@ -23,11 +23,15 @@ anyone can re-derive by re-running against the same ref. Stdlib only.
 Usage:
   bin/recompute-mutation-survival --dir <repo> --test-cmd "<cmd>" --mutations <mutations.json> [--out run.json]
 
-mutations.json: [ { "file", "find", "replace", "class": "guard"|"probe", "label" }, ... ]
+mutations.json: [ { "file", "find", "replace", "class": "guard"|"probe", "label", "must" }, ... ]
   file    path relative to --dir
   find    exact substring present in the current source (its absence => UNVERIFIABLE for a guard)
   replace the mutated substring
   class   "guard" (must be KILLED, gates the verdict) | "probe" (informational only)
+  must    optional — the specification obligation this mutant guards (e.g. an ERC MUST). When a
+          mutation set maps every normative MUST to a guard mutant, a green run means the spec's
+          obligations are demonstrably load-bearing in the implementation, not merely declared: the
+          gate becomes a conformance property of the specification itself, not just of the code.
 """
 import sys, os, json, argparse, subprocess, hashlib
 
@@ -76,11 +80,11 @@ def main():
 
     killed = sum(1 for r in results if r["verdict"] == "KILLED")
     surv   = sum(1 for r in results if r["verdict"] == "SURVIVED")
-    print(f"{'mutation':44} {'class':7} {'verdict'}")
-    print("-" * 70)
+    print(f"{'mutation':44} {'class':7} {'verdict':9} guards")
+    print("-" * 78)
     for r in results:
-        print(f"{r['label'][:44]:44} {r['class']:7} {r['verdict']}")
-    print("-" * 70)
+        print(f"{r['label'][:44]:44} {r['class']:7} {r['verdict']:9} {r.get('must','')}")
+    print("-" * 78)
     print(f"killed {killed} / survived {surv} / applied {len(results)}")
 
     verdict = "UNVERIFIABLE" if unverifiable else ("verified-bad" if guard_survived else "verified-good")
@@ -99,7 +103,8 @@ def main():
     sys.exit(2 if unverifiable else (1 if guard_survived else 0))
 
 def _lbl(m):
-    return {"label": m.get("label", f"{m['file']}: {m['find'][:30]}"), "class": m.get("class", "probe")}
+    return {"label": m.get("label", f"{m['file']}: {m['find'][:30]}"),
+            "class": m.get("class", "probe"), "must": m.get("must", "")}
 
 if __name__ == "__main__":
     main()
