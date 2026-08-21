@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""recompute-mutation-survival — recompute that a suite's tests are LOAD-BEARING, not decorative.
+
+Where `recompute-repo` proves "clone @ SHA, run the tests yourself, they pass," this proves the
+next thing that pass silently assumes: that those passing tests would actually FAIL if the code were
+wrong. A green suite with a decorative test — one that executes the code and asserts nothing
+load-bearing — is 100% line-covered and catches zero bugs. Coverage/CRAP score it as safe; only a
+mutation catches it.
+
+Method (the automated form of the house rule "prove the check can fail"): for each declared mutation
+— a small semantic change to real source — apply it, run the suite, restore. A guard mutation is
+KILLED if a test fails (the suite caught it) and SURVIVED if the suite stays green (a fault the tests
+cannot see). Probes are informational: their survivors are the actionable coverage backlog.
+
+Verdict (kit-standard exit codes):
+  0  verified-good  — baseline green AND every `guard` mutation was KILLED (tests are load-bearing)
+  1  verified-bad   — a `guard` mutation SURVIVED (a decorative test that should catch it does not)
+  2  UNVERIFIABLE   — baseline not green, a guard anchor not found, or the suite could not be run
+
+The run is itself recomputable: --out writes a MutationRun artifact (each mutation + verdict) that
+anyone can re-derive by re-running against the same ref. Stdlib only.
+
+Usage:
+  bin/recompute-mutation-survival --dir <repo> --test-cmd "<cmd>" --mutations <mutations.json> [--out run.json]
+
+mutations.json: [ { "file", "find", "replace", "class": "guard"|"probe", "label" }, ... ]
+  file    path relative to --dir
+  find    exact substring present in the current source (its absence => UNVERIFIABLE for a guard)
+  replace the mutated substring
+  class   "guard" (must be KILLED, gates the verdict) | "probe" (informational only)
+"""
+import sys, os, json, argparse, subprocess, hashlib
+
+def run(cmd, cwd):
+    r = subprocess.run(cmd, cwd=cwd, shell=True, capture_output=True, text=True)
+    return r.returncode
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dir", required=True)
+    ap.add_argument("--test-cmd", required=True)
+    ap.add_argument("--mutations", required=True)
+    ap.add_argument("--out")
+    a = ap.parse_args()
+
+    muts = json.loads(open(a.mutations).read())
+    # baseline MUST be green — a red baseline can't tell a kill from a pre-existing failure
+    if run(a.test_cmd, a.dir) != 0:
+        print("UNVERIFIABLE: baseline suite is not green (exit != 0) — cannot distinguish kills")
+        sys.exit(2)
+
+    results = []
+    unverifiable = False
+    guard_survived = False
+    for m in muts:
+        full = os.path.join(a.dir, m["file"])
+        try:
+            src = open(full, encoding="utf-8").read()
+        except OSError:
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "file not found"})
+            if m.get("class") == "guard": unverifiable = True
+            continue
+        if m["find"] not in src:
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "anchor not found"})
+            if m.get("class") == "guard": unverifiable = True
+            continue
+        open(full, "w", encoding="utf-8").write(src.replace(m["find"], m["replace"], 1))
+        try:
+            green = run(a.test_cmd, a.dir) == 0   # green under mutation => SURVIVED
+        finally:
+            open(full, "w", encoding="utf-8").write(src)   # always restore
+        verdict = "SURVIVED" if green else "KILLED"
+        results.append({**_lbl(m), "verdict": verdict})
+        if m.get("class") == "guard" and verdict == "SURVIVED":
+            guard_survived = True
+
+    killed = sum(1 for r in results if r["verdict"] == "KILLED")
+    surv   = sum(1 for r in results if r["verdict"] == "SURVIVED")
+    print(f"{'mutation':44} {'class':7} {'verdict'}")
+    print("-" * 70)
+    for r in results:
+        print(f"{r['label'][:44]:44} {r['class']:7} {r['verdict']}")
+    print("-" * 70)
+    print(f"killed {killed} / survived {surv} / applied {len(results)}")
+
+    verdict = "UNVERIFIABLE" if unverifiable else ("verified-bad" if guard_survived else "verified-good")
+    print(f"VERDICT: {verdict}")
+    survivors = [r["label"] for r in results if r["verdict"] == "SURVIVED"]
+    if survivors:
+        print("SURVIVORS (coverage gaps — a fault the suite cannot see): " + ", ".join(survivors))
+
+    if a.out:
+        art = {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
+               "test_cmd": a.test_cmd,
+               "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
+               "results": results, "verdict": verdict}
+        open(a.out, "w").write(json.dumps(art, indent=2, sort_keys=True) + "\n")
+
+    sys.exit(2 if unverifiable else (1 if guard_survived else 0))
+
+def _lbl(m):
+    return {"label": m.get("label", f"{m['file']}: {m['find'][:30]}"), "class": m.get("class", "probe")}
+
+if __name__ == "__main__":
+    main()
