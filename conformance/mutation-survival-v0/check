@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Conformance for recompute-mutation-survival. The gate MUST tell load-bearing coverage from
+# decorative coverage: verified-good (0) when a guard mutation is killed, verified-bad (1) when it
+# survives. If it can't distinguish them, the gate is decorative itself and this check fails.
+here="$(cd "$(dirname "$0")" && pwd)"
+bin="$here/../../bin/recompute-mutation-survival"
+tc="rm -rf __pycache__ && python3 test.py"
+run() { python3 "$bin" --dir "$here/fixtures/$1" --test-cmd "$tc" --mutations "$here/fixtures/$1/mutations.json" >/dev/null 2>&1; echo $?; }
+fail=0
+lb=$(run load-bearing);  [ "$lb" = "0" ]  && echo "OK   load-bearing -> verified-good (0)" || { echo "FAIL load-bearing -> $lb (want 0)"; fail=1; }
+dec=$(run decorative);   [ "$dec" = "1" ] && echo "OK   decorative   -> verified-bad (1)"  || { echo "FAIL decorative   -> $dec (want 1)"; fail=1; }
+[ "$fail" = 0 ] && echo "mutation-survival-v0: CONFORMANT" || echo "mutation-survival-v0: NON-CONFORMANT"
+exit $fail
