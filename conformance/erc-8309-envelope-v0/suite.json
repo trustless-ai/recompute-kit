@@ -1,0 +1,17 @@
+{
+  "profile": "erc-8309.envelope.golden-set.v0",
+  "vectors": {
+    "path": "erc-8309-envelope-v0.vectors.json",
+    "sha256": "04e4641f7fd23f02e549339dd463973f661765925d017121eefcbba2bf74adb1"
+  },
+  "spec": {
+    "path": "erc-8309.envelope.schema.json",
+    "sha256": "de1395884ac62fc5d05b39fc3d5401ab993c54a64cb22cd1d385d7a32da71821"
+  },
+  "upstream": "babyblueviper1/invinoveritas @ f88d5263 (erc-8309.envelope schema, \u00a75)",
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 erc-8309-envelope-grade.py"
+  },
+  "laneHint": "read-only"
+}
