@@ -36,6 +36,7 @@ exit 1 even when other suites could not run, so a real break is never softened t
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import json
 import pathlib
@@ -55,10 +56,63 @@ def sha256(p: pathlib.Path) -> str:
 DETERMINATE = {"SUITE", "DRIFT"}
 UNDETERMINED = {"RUNNER", "NOT COVERED", "UNDECLARED"}
 
+# These signatures identify failures in the command/runtime/dependency layer, before an
+# adapter can answer its conformance question. Keep them specific: generic words such as
+# "error", "failed", "package", or "unexpected" also occur in legitimate suite verdicts.
+ENVIRONMENT_FAILURE_SIGNATURES = (
+    "Unexpected while resolving package",
+    "Cannot find module",
+    "Cannot find package",
+    "ModuleNotFound",
+    "ImportError",
+    "No module named",
+    "command not found",
+    "not recognized as an internal or external command",
+    "is not recognized as a name of a cmdlet",
+    "ENOENT",
+)
+
 
 class Result:
     def __init__(self, name: str, ok: bool, kind: str, detail: str):
         self.name, self.ok, self.kind, self.detail = name, ok, kind, detail
+
+
+@dataclass(frozen=True)
+class ProcessFailure:
+    kind: str
+    detail: str
+
+
+def _last_process_diagnostic(output: str) -> str:
+    lines = [line for line in output.splitlines() if line.strip()]
+    # A crashing runtime prints its own banner last ("Bun v1.3.14 (Linux x64)"), which says
+    # nothing about why. Report the diagnostic line, not the footer.
+    noise = ("Bun v", "at ", "^", "|")
+    signal = [line for line in lines if not line.lstrip().startswith(noise)]
+    return (signal[-1] if signal else (lines[-1] if lines else "(no output)"))[:110]
+
+
+def classify_process_failure(returncode: int, output: str, cmd: str) -> ProcessFailure:
+    """Attribute one non-zero adapter process exit without judging vector semantics."""
+    if returncode == 0:
+        raise ValueError("classify_process_failure requires a non-zero return code")
+    if returncode in (126, 127):
+        return ProcessFailure(
+            "RUNNER",
+            f"command could not execute ({returncode}) — interpreter missing or unavailable: {cmd}",
+        )
+    last = _last_process_diagnostic(output)
+    if any(signature in output for signature in ENVIRONMENT_FAILURE_SIGNATURES):
+        return ProcessFailure("RUNNER", f"environment, not evidence: {last}")
+    return ProcessFailure("SUITE", f"exit {returncode}: {last}")
+
+
+def exit_code_for_failures(failures: list[Result]) -> int:
+    """Apply repository precedence: determinate refutation outranks could-not-run."""
+    if not failures:
+        return 0
+    return 1 if any(result.kind in DETERMINATE for result in failures) else 2
 
 
 def run_suite(d: pathlib.Path) -> list:
@@ -140,24 +194,10 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
         return Result(label, False, "RUNNER", f"could not execute adapter.cmd: {e}")
 
     out = proc.stdout.decode("utf-8", "replace").strip()
-    lines = [l for l in out.splitlines() if l.strip()]
-    # A crashing runtime prints its own banner last ("Bun v1.3.14 (Linux x64)"), which says
-    # nothing about why. Report the diagnostic line, not the footer.
-    noise = ("Bun v", "at ", "^", "|")
-    signal = [l for l in lines if not l.lstrip().startswith(noise)]
-    last = (signal[-1] if signal else (lines[-1] if lines else "(no output)"))[:110]
-
-    if proc.returncode == 127:
-        return Result(label, False, "RUNNER", f"command not found (127) — interpreter missing, not a suite failure: {cmd}")
     if proc.returncode != 0:
-        # A dependency that will not resolve is an environment failure. Calling it a refuted
-        # vector would be a check reporting confidently about the wrong question.
-        env_markers = ("Cannot find module", "Cannot find package", "ModuleNotFound",
-                       "ImportError", "No module named", "command not found", "ENOENT")
-        if any(m in out for m in env_markers):
-            return Result(label, False, "RUNNER", f"environment, not evidence: {last}")
-        return Result(label, False, "SUITE", f"exit {proc.returncode}: {last}")
-    return Result(label, True, "SUITE", last)
+        failure = classify_process_failure(proc.returncode, out, cmd)
+        return Result(label, False, failure.kind, failure.detail)
+    return Result(label, True, "SUITE", _last_process_diagnostic(out))
 
 
 def load_declared_uncovered() -> dict[str, str]:
@@ -312,12 +352,12 @@ def main() -> int:
             for r in group:
                 print(f"    - {r.name}: {r.detail}")
 
-        determinate = [r for r in failed if r.kind in DETERMINATE]
-        if determinate:
+        exit_code = exit_code_for_failures(failed)
+        if exit_code == 1:
             print("\nexit 1 — verified-bad (something ran and refuted)")
             return 1
         print("\nexit 2 — UNVERIFIABLE (nothing refuted; something could not be run)")
-        return 2
+        return exit_code
 
     return 0
 
