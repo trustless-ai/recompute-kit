@@ -215,6 +215,38 @@ def load_declared_uncovered() -> dict[str, str]:
             {e["suite"]: e.get("reason", "") for e in data.get("requires_live", [])})
 
 
+def undeclared_json_files(d) -> list[str]:
+    """Names of *.json in a suite dir that the suite.json declares no path for.
+
+    Declared paths are vectors.path, every checks[].vectors.path, AND spec.path — the
+    spec/schema is normative material this suite pins by digest, not an unrun vector file.
+    Returns [] when there is no suite.json, it is unreadable, or it declares no paths at
+    all (an empty declared set would flag every .json, which is a different condition).
+    """
+    man = d / "suite.json"
+    if not man.is_file():
+        return []
+    try:
+        mm = json.loads(man.read_text())
+    except Exception:
+        return []
+    declared_paths = set()
+    v = mm.get("vectors")
+    if isinstance(v, dict) and v.get("path"):
+        declared_paths.add(v["path"])
+    for c in (mm.get("checks") or []):
+        cv = c.get("vectors")
+        if isinstance(cv, dict) and cv.get("path"):
+            declared_paths.add(cv["path"])
+    sp = mm.get("spec")
+    if isinstance(sp, dict) and sp.get("path"):
+        declared_paths.add(sp["path"])
+    if not declared_paths:
+        return []
+    return sorted(p.name for p in d.glob("*.json")
+                  if p.name not in ({"suite.json"} | declared_paths))
+
+
 def main() -> int:
     if not CONFORMANCE.is_dir():
         print(f"no conformance/ directory at {CONFORMANCE}", file=sys.stderr)
@@ -240,26 +272,7 @@ def main() -> int:
     # five vector files never ran is false coverage, so it gets its own report.
     undeclared: list[tuple[str, list[str]]] = []
     for d in dirs:
-        man = d / "suite.json"
-        if not man.is_file():
-            continue
-        try:
-            mm = json.loads(man.read_text())
-        except Exception:
-            continue
-        # every path the manifest declares, singular form or checks array
-        declared_paths = set()
-        v = mm.get("vectors")
-        if isinstance(v, dict) and v.get("path"):
-            declared_paths.add(v["path"])
-        for c in (mm.get("checks") or []):
-            cv = c.get("vectors")
-            if isinstance(cv, dict) and cv.get("path"):
-                declared_paths.add(cv["path"])
-        if not declared_paths:
-            continue
-        others = sorted(p.name for p in d.glob("*.json")
-                        if p.name not in ({"suite.json"} | declared_paths))
+        others = undeclared_json_files(d)
         if others:
             undeclared.append((d.name, others))
 
