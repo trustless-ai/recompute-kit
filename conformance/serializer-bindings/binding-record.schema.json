@@ -36,9 +36,22 @@
       "description": "The serializer conformance-vectors digest this record pins."
     },
     "effective_commit": {
-      "type": "string",
-      "pattern": "^[0-9a-f]{40}$",
-      "description": "Explicit producer-adoption boundary as a full commit SHA — not derived implicitly from PR or landing time. An artifact of binding_subject produced AT OR AFTER this commit is bound to serializer_contract_id; everything before it remains historically unversioned."
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "description": "Explicit producer-adoption boundary — not derived implicitly from PR or landing time. A bare SHA is not self-resolving across repositories, so the namespace is machine-explicit. An artifact of binding_subject produced AT OR AFTER this commit is bound to serializer_contract_id; everything before it remains historically unversioned. This is the PRODUCER's adoption commit — a conformant encoder merely being available in the contract repo is not evidence the producer adopted it.",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The producer repository the commit belongs to, host-qualified, e.g. 'github.com/OWNER/REPO'."
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The exact adoption commit SHA in that repository."
+        }
+      }
     },
     "producer_conformance": {
       "type": "object",
@@ -47,9 +60,27 @@
       "description": "Evidence that the FORWARD producer actually implements the serializer contract.",
       "properties": {
         "implementation": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The genuinely-conformant producer implementation/revision pinned here — the encoder adopted at effective_commit, which actually implements the contract for all admitted inputs. NOT a byte-coincidental predecessor that merely happened to reproduce historical bytes."
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "revision", "path"],
+          "description": "The genuinely-conformant producer, resolving to immutable source — not a descriptive string. It is the encoder adopted at effective_commit that actually implements the contract for all admitted inputs, NOT a byte-coincidental predecessor that merely reproduced historical bytes.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Host-qualified producer repository, e.g. 'github.com/OWNER/REPO'."
+            },
+            "revision": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$",
+              "description": "The exact immutable revision at which the implementation is qualified."
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Path to the producer implementation within the repository at that revision."
+            }
+          }
         },
         "qualification": {
           "type": "string",
