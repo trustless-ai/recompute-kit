@@ -1,0 +1,51 @@
+{
+  "profile": "encode-json-utf8-lf.v0",
+  "contract_id": "encode-json-utf8-lf.v0",
+  "spec": {
+    "path": "encode-json-utf8-lf-v0.spec.md",
+    "sha256": "22207f8c4047044414da98b5497a2c9683aea14a7a498fc1819a9094c920a1f9"
+  },
+  "vectors": {
+    "path": "encode-json-utf8-lf-v0.vectors.json",
+    "sha256": "8d53ab1d3dfb2de1ba9db23ed06d6864b08b516451938a4b1f6db6bcdcf1950f"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python gate.py --grade"
+  },
+  "implementations": [
+    {
+      "language": "python",
+      "path": "encoder.py",
+      "sha256": "469105707cc91a11d530f5c25a9d51e0407297c09f24591277c6b97701736cbc"
+    },
+    {
+      "language": "typescript",
+      "path": "encoder.ts",
+      "sha256": "70c9f1b81786e65dcc1ea081a66e417e9f6451debad4ba50ab21f9791ce1cd2d"
+    }
+  ],
+  "required_checks": [
+    "spec_sha256",
+    "vectors_sha256",
+    "implementation_sha256",
+    "python_all_vectors",
+    "typescript_all_vectors",
+    "cross_language_exact_bytes",
+    "cross_language_rejection_category",
+    "success_bytes_hex",
+    "success_byte_length",
+    "success_sha256",
+    "appendix_b_domain_first_classification",
+    "negative_controls"
+  ],
+  "negative_controls": [
+    "python_codepoint_sort",
+    "python_native_number_spelling",
+    "permit_negative_zero",
+    "permit_unsafe_integral_value",
+    "missing_terminal_lf",
+    "permit_lone_surrogate"
+  ],
+  "laneHint": "recomputable"
+}
