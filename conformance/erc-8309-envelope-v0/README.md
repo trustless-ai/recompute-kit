@@ -19,13 +19,29 @@ to *differ* from the JCS digest (wrong-serializer rejection earned by recompute,
 emits one trailing `0x0a` and is a separately-bound serializer — the same object digests to unrelated hashes
 under the two). A checker that can only pass proves nothing when the encoder is wrong.
 
-## Partial discharge — the LF-equality leg is PENDING, not missing
+## The wrong-serializer counterfactual leg — DISCHARGED against encode-json-utf8-lf.v0
 
-One vector is deliberately absent: the failure-comparison entry whose digest *equals* the same object's
-`encodeJsonUtf8Lf` serialization. That equality needs the **LF byte-contract binding**, which is not yet
-specified in any normative serializer-contract artifact (Pavlo's leg). The vectors file records this as
-`lf_equality_leg: PENDING` with a machine-readable closing condition — absence stated, never blurred into done.
-When the LF byte-contract lands, add that vector and recompute.
+The LF byte-contract has landed (`encode-json-utf8-lf.v0`, recompute-kit `conformance/encode-json-utf8-lf-v0`),
+so the previously-`PENDING` LF leg is now recomputed against it and pinned once in the vectors file to
+`contract_id = encode-json-utf8-lf.v0`, `spec_sha256 = 22207f8c…`, `vectors_sha256 = 8d53ab1d…`.
+
+Because `.v0` has a real input domain, the counterfactual is **discriminated, not a boolean** — the field is
+`lf_v0_counterfactual_result`, one of:
+
+- **ENCODED** → exact `bytes_hex`, `byte_length`, `sha256`, and `relation_to_jcs` (here `DISTINCT`);
+- **REJECTED** → the exact `.v0` rejection category.
+
+Across the four vectors it discharges as **3 ENCODED (`DISTINCT`) + 1 REJECTED**. `jcs_number_edges` carries a
+JCS-admitted negative zero and is `REJECTED` as `NEGATIVE_ZERO`: the wrong serializer is out-of-domain entirely,
+which is why a boolean "different digest" was too weak a vocabulary — the strongest wrong-serializer evidence in
+the set, and the concrete reason `erc-8309.envelope` stays JCS-bound rather than `.v0`.
+
+This is **separate** from `lf_equality_leg` — a hypothetical dedicated object whose stored digest *equals* its own
+`.v0` serialization. The `NEGATIVE_ZERO` rejection does **not** close that; the companion (invinoveritas
+`erc-8309-vantage` §5) does not mandate such a vector at this head, so it is recorded `SEPARATE_NOT_REQUIRED`. If
+the companion ever requires it, add and recompute it as its own vector.
+
+Envelope stays JCS-bound; all four JCS conforming digests are byte-identical to the pre-refresh golden set.
 
 ## Provenance
 

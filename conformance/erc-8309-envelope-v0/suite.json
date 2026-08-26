@@ -2,7 +2,7 @@
   "profile": "erc-8309.envelope.golden-set.v0",
   "vectors": {
     "path": "erc-8309-envelope-v0.vectors.json",
-    "sha256": "04e4641f7fd23f02e549339dd463973f661765925d017121eefcbba2bf74adb1"
+    "sha256": "6a66c7578ff839f00b8fb6e4b96549199d736c91c23c3ea5e1b6fe943f5085d7"
   },
   "spec": {
     "path": "erc-8309.envelope.schema.json",
