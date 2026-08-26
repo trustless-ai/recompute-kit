@@ -67,6 +67,16 @@ jobs:
       - name: Collapsed-state controls — must fail, pass, and tell them apart
         run: python3 tools/test_check_collapsed_states.py
 
+      # The runner's own unit tests. A runner that mis-attributes a failure (missing tool vs
+      # refuted vector) or mis-inventories declared files (a spec.path reported as an unrun
+      # vector) is worse than none — but a test that CI never runs has no failure mode. Neither
+      # of these was wired in before, so both run here: the failure-classification test and the
+      # declared-file inventory regression.
+      - name: Runner unit tests — failure classification + declared-file inventory
+        run: |
+          python3 tools/test_run_conformance_failure_classification.py
+          python3 tools/test_run_conformance_undeclared_inventory.py
+
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
       # as a suite failure — not as drift and not as a runner error. Without this a
