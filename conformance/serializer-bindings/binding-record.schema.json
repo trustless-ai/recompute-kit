@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "PLACEHOLDER — unplaced until the commons home is decided; the point is it isn't ours to own",
+  "title": "serializer binding record",
+  "description": "One immutable record binding a named artifact schema to a versioned serializer contract, prospective from an explicit commit boundary. Owner-neutral: any producer, any binding subject; it names no company and privileges no party. The serializer contract remains the authority; this record is evidence that a specific forward producer actually implements it, effective from an exact commit. It does NOT migrate historical artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "binding_subject",
+    "serializer_contract_id",
+    "spec_sha256",
+    "vectors_sha256",
+    "effective_commit",
+    "producer_conformance",
+    "non_retroactivity"
+  ],
+  "properties": {
+    "binding_subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The exact schema/artifact identity being bound, e.g. 'tsei.frozen-artifact'. Not a repo or a producer — the subject of the binding."
+    },
+    "serializer_contract_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The versioned serializer contract, e.g. 'encode-json-utf8-lf.v0'. The version suffix is part of identity; the unversioned name never resolves here."
+    },
+    "spec_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The serializer specification digest this record pins."
+    },
+    "vectors_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The serializer conformance-vectors digest this record pins."
+    },
+    "effective_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Explicit producer-adoption boundary as a full commit SHA — not derived implicitly from PR or landing time. An artifact of binding_subject produced AT OR AFTER this commit is bound to serializer_contract_id; everything before it remains historically unversioned."
+    },
+    "producer_conformance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation", "qualification"],
+      "description": "Evidence that the FORWARD producer actually implements the serializer contract.",
+      "properties": {
+        "implementation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The genuinely-conformant producer implementation/revision pinned here — the encoder adopted at effective_commit, which actually implements the contract for all admitted inputs. NOT a byte-coincidental predecessor that merely happened to reproduce historical bytes."
+        },
+        "qualification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The conformance evidence qualifying that implementation, e.g. 'passes all N pinned serializer-contract vectors at vectors_sha256'. Byte-reproduction of historical artifacts under the new producer is MIGRATION evidence (that the boundary is backward-identical), not conformance evidence for the implementation."
+        }
+      }
+    },
+    "non_retroactivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prospective_only",
+        "byte_reproduction_is_not_binding",
+        "historical_binding_requires_separate_record"
+      ],
+      "description": "Machine-checkable non-retroactivity semantics — declared, not left to prose.",
+      "properties": {
+        "prospective_only": {
+          "const": true,
+          "description": "This binding governs only artifacts produced at or after effective_commit."
+        },
+        "byte_reproduction_is_not_binding": {
+          "const": true,
+          "description": "That a historical artifact re-encodes byte-identically under the new producer does NOT make it a serializer_contract_id artifact."
+        },
+        "historical_binding_requires_separate_record": {
+          "const": true,
+          "description": "Binding a historical identity to the contract, if ever chosen deliberately, requires its own separate immutable legacy-resolution record scoped to that exact historical identity."
+        }
+      }
+    }
+  }
+}
