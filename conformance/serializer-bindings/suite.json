@@ -1,0 +1,20 @@
+{
+  "profile": "serializer_binding_record.v0",
+  "vectors": {
+    "path": "binding-record.vectors.json",
+    "sha256": "b24b2e9b06fa4fad7cb83bd8a3f042bde42bd3c7693b9169aab871351a271a1a"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 validate_binding_record.py binding-record.vectors.json"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "binding-record.schema.json",
+    "sha256": "cea5e6948c114529aef5adbb8d1ae2c64446d1eb0f2fdc1547233e5ff7b676f1"
+  },
+  "checker": {
+    "path": "validate_binding_record.py",
+    "sha256": "60511fcc189cf6a2ec8d5edf709cc9b21026afd2af8660ee5ac229e31131d9fd"
+  }
+}
