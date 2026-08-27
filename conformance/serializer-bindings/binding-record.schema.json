@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "serializer binding record",
-  "description": "One immutable record binding a named artifact schema to a versioned serializer contract, prospective from an explicit commit boundary. Owner-neutral: any producer, any binding subject; it names no company and privileges no party. The serializer contract remains the authority; this record is evidence that a specific forward producer actually implements it, effective from an exact commit. It does NOT migrate historical artifacts. Every reference resolves to an immutable pre-image (repository+revision+path+sha256): a digest alone does not identify what it is the digest of.",
+  "description": "One immutable record binding a named artifact schema to a versioned serializer contract, prospective from an explicit commit boundary. Owner-neutral: any producer, any binding subject; it names no company and privileges no party. The serializer contract remains the authority; this record is evidence that a specific forward producer actually implements it, effective from an exact commit. It does NOT migrate historical artifacts. Every reference is a complete immutable source reference (repository+revision+path+sha256): a digest alone does not identify what it is the digest of. This record only PINS those references; dereferencing them and recomputing the referenced bytes is a resolver's job, when a real record lands.",
   "type": "object",
   "additionalProperties": false,
   "definitions": {

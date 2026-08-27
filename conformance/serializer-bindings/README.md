@@ -17,8 +17,8 @@ specific forward producer actually implements that contract, effective from an e
 does two things and nothing more:
 
 - names the **`binding_subject`** (e.g. `tsei.frozen-artifact`) and the **`serializer_contract`**
-  — its versioned `id` (`encode-json-utf8-lf.v0`) plus its `spec` and `vectors`, each resolved to
-  an immutable pre-image;
+  — its versioned `id` (`encode-json-utf8-lf.v0`) plus its `spec` and `vectors`, each a complete
+  immutable source reference;
 - fixes the **`effective_commit`** — the producer-adoption boundary, an explicit full SHA, not
   derived from PR or landing time. Artifacts produced at or after it are bound; everything before
   remains historically unversioned.
@@ -29,7 +29,7 @@ that merely *reproduces historical bytes* is not qualified by that alone — byt
 **migration** evidence that the boundary is backward-identical, not **conformance** evidence for
 the implementation.
 
-## Every reference resolves to a pre-image (no bare digests)
+## Every reference is a complete source reference (no bare digests)
 
 A digest does not name what it is the digest *of*. So every reference in a record is a
 `source_ref` — **`{repository, revision, path, sha256}`** — where `repository + revision + path`
@@ -71,8 +71,11 @@ Every record declares `non_retroactivity` with three `const: true` facts:
   controls, each pinned to the exact rejection token, so every rule is proven able to fail. These
   test the shape, not a real binding (coordinates are synthetic but well-formed).
 - `validate_binding_record.py` — the checker. Pure stdlib; it reads the schema and enforces it
-  directly (a subset of draft-07), then applies the cross-field semantic above. Exit `0` all
-  reproduced, `1` a determinate mismatch, `2` the checker itself could not run.
+  directly (a subset of draft-07), then applies the cross-field semantic above. It proves each
+  reference is a *complete* pin and that `qualification.vectors` equals `serializer_contract.vectors`;
+  it does **not** dereference repositories or recompute the referenced digests — that is a resolver's
+  job, for when a real record lands. Exit `0` all reproduced, `1` a determinate mismatch, `2` the
+  checker itself could not run.
 - `suite.json` — wires this into `tools/run_conformance.py` so the registry is *covered*, not
   merely present.
 

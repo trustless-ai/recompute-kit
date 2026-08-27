@@ -11,7 +11,7 @@
   "laneHint": "recomputable",
   "spec": {
     "path": "binding-record.schema.json",
-    "sha256": "cea5e6948c114529aef5adbb8d1ae2c64446d1eb0f2fdc1547233e5ff7b676f1"
+    "sha256": "87ea63d6cc98dfea8f9f88fe27b27cfd87f9cf4b0039e304ccd0e97d32644d9e"
   },
   "checker": {
     "path": "validate_binding_record.py",
