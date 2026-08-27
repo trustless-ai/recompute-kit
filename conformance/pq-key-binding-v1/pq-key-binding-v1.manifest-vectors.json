@@ -1,0 +1,273 @@
+{
+  "profile": "pq_key_binding.v1/manifest-earliest",
+  "description": "§10.2.1 chain-completeness half of governs_from: earliest is PROVEN by reconstructing the manifest chain from genesis, never taken from the earliest VISIBLE manifest. Two positive controls (complete chain resolves; a later container does not move the earliest), the two required negatives (incomplete history -> UNRESOLVED, not earliest-visible; shared-prev manifest fork -> conflict), and two controls (genesis fork; not covered). Content addresses are recomputed sha256(JCS(manifest)); `available:false` models a manifest the verifier cannot fetch and recompute.",
+  "cases": [
+    {
+      "name": "earliest-resolves-from-complete-chain",
+      "target": "binding_cc_target",
+      "expected": "resolved:100",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 1,
+            "max_seq": 1,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": "d3661b3f1a26578c9e1b627e64d149b419505241976725531c691f80f9f87df3"
+          },
+          "anchor_time": 100,
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "later-container-does-not-move-earliest",
+      "target": "binding_cc_target",
+      "expected": "resolved:100",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 1,
+            "max_seq": 1,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": "d3661b3f1a26578c9e1b627e64d149b419505241976725531c691f80f9f87df3"
+          },
+          "anchor_time": 100,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 2,
+            "max_seq": 2,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": "0dd3aa3e6ca3220613cc817f85f7b2b5a3a3892c9032944384b802ab5302da57"
+          },
+          "anchor_time": 200,
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "governs-from-unresolved-when-manifest-chain-incomplete",
+      "target": "binding_cc_target",
+      "expected": "unresolved:incomplete_history",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 1,
+            "max_seq": 1,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": "d3661b3f1a26578c9e1b627e64d149b419505241976725531c691f80f9f87df3"
+          },
+          "anchor_time": 100,
+          "available": false
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 2,
+            "max_seq": 2,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": "ff9c947cc741750c308fa2f91c4c8357b8351141327907b1ce81dfa150082101"
+          },
+          "anchor_time": 200,
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "manifest-fork-shared-prev-surfaces-conflict",
+      "target": "binding_cc_target",
+      "expected": "unresolved:manifest_fork",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 1,
+            "max_seq": 1,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": "d3661b3f1a26578c9e1b627e64d149b419505241976725531c691f80f9f87df3"
+          },
+          "anchor_time": 100,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 2,
+            "max_seq": 2,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": "ff9c947cc741750c308fa2f91c4c8357b8351141327907b1ce81dfa150082101"
+          },
+          "anchor_time": 200,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 2,
+            "max_seq": 2,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_y"
+            ],
+            "prev_manifest_cc": "ff9c947cc741750c308fa2f91c4c8357b8351141327907b1ce81dfa150082101"
+          },
+          "anchor_time": 210,
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "genesis-fork-surfaces-conflict",
+      "target": "binding_cc_target",
+      "expected": "unresolved:manifest_fork",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_target"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        },
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_z"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 60,
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "not-covered-when-no-manifest-contains-target",
+      "target": "binding_cc_target",
+      "expected": "not_covered",
+      "manifests": [
+        {
+          "content": {
+            "schema": "kya.pq_manifest.v1",
+            "construction_version": 1,
+            "min_seq": 0,
+            "max_seq": 0,
+            "count": 1,
+            "entries": [
+              "binding_cc_other_x"
+            ],
+            "prev_manifest_cc": null
+          },
+          "anchor_time": 50,
+          "available": true
+        }
+      ]
+    }
+  ]
+}

@@ -43,9 +43,21 @@ than an implementation artefact.
   Work paragraph (Lean Consensus PQ registry: expiry-from-statefulness vs explicit anchored
   authority-termination).
 
+## Manifest-chain `governs_from` resolution (spec §10.2.1)
+
+`manifest_resolve.py` is the chain-completeness half of `governs_from`: the earliest manifest that
+governs a binding is **proven** by reconstructing the manifest chain from genesis (`prev_manifest_cc =
+null`), never taken from the earliest *visible* manifest. It recomputes each manifest's content address
+and enforces the two fail-closed rules the spec states normatively — a required prev link that cannot
+be fetched and recomputed makes `governs_from` `UNRESOLVED`/`UNVERIFIABLE` (never earliest-visible), and
+two manifests sharing a `prev_manifest_cc` are a fork surfaced as conflict, never silently resolved.
+Two positive controls, the two required negatives, plus genesis-fork and not-covered controls; each
+negative reds independently if the resolver regresses (verified by mutation).
+
 ## Run
 ```
-python3 cutoff_enforce.py pq-key-binding-v1.cutoff-vectors.json   # 9/9 reproduced
+python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 9/9 reproduced
+python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 6/6 reproduced
 ```
 
 Provenance: zexoverz's ERC-8373 review (magicians #7) surfaced the v0 pre-cutoff rejection; the fix
