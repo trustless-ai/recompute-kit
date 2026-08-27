@@ -1,0 +1,720 @@
+{
+  "description": "serializer binding-record SHAPE vectors — they exercise the record schema + the one cross-field semantic, NOT a real binding (there is no records/ yet; a real record lands later and its authority begins only then). Coordinates are synthetic but well-formed. One positive (a valid forward binding) and fourteen negative controls, each pinned to the exact rejection token the validator emits — representative critical-rule controls (at least one negative per implemented rule class), so disabling any one guard reds the suite; not an exhaustive per-property enumeration. They cover: required fields, complete source_ref coordinates (a bare digest is rejected — every reference must carry repository+revision+path+sha256), hex patterns, the qualification.vectors == serializer_contract.vectors pre-image identity, the rejection of a free-form-string qualification, the non_retroactivity and method consts INCLUDING JSON boolean-vs-number distinction (a flag set to the number 1 must be rejected, not silently accepted via Python 1==True), owner-neutral rejection of extra fields, a non-zero vector count, and rejection of the pre-review bare-digest field shape.",
+  "cases": [
+    {
+      "case_id": "valid_forward_binding",
+      "expected_verdict": "valid",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "missing_serializer_contract",
+      "expected_verdict": "missing:serializer_contract",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "contract_spec_missing_sha256",
+      "expected_verdict": "missing:serializer_contract.spec.sha256",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "implementation_revision_not_40hex",
+      "expected_verdict": "pattern:producer_conformance.implementation.revision",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "deadbeef",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "contract_spec_sha256_wrong_length",
+      "expected_verdict": "pattern:serializer_contract.spec.sha256",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "qualification_vectors_ne_contract_vectors",
+      "expected_verdict": "qualification_vectors_ne_contract_vectors",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "9999999999999999999999999999999999999999",
+              "path": "conformance/some-other-suite/vectors.json",
+              "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "qualification_free_form_string_rejected",
+      "expected_verdict": "type:producer_conformance.qualification",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": "passes all 12 pinned serializer-contract vectors at vectors_sha256"
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "non_retroactivity_prospective_only_false",
+      "expected_verdict": "const:non_retroactivity.prospective_only",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": false,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "non_retroactivity_prospective_only_integer_one",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": 1,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      },
+      "expected_verdict": "const:non_retroactivity.prospective_only",
+      "note": "boolean const true is NOT satisfied by JSON number 1 — JSON-type-aware const equality; regressing that check reds this case"
+    },
+    {
+      "case_id": "non_retroactivity_byte_reproduction_integer_one",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": 1,
+          "historical_binding_requires_separate_record": true
+        }
+      },
+      "expected_verdict": "const:non_retroactivity.byte_reproduction_is_not_binding",
+      "note": "boolean const true is NOT satisfied by JSON number 1 — JSON-type-aware const equality; regressing that check reds this case"
+    },
+    {
+      "case_id": "non_retroactivity_historical_binding_integer_one",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": 1
+        }
+      },
+      "expected_verdict": "const:non_retroactivity.historical_binding_requires_separate_record",
+      "note": "boolean const true is NOT satisfied by JSON number 1 — JSON-type-aware const equality; regressing that check reds this case"
+    },
+    {
+      "case_id": "qualification_method_unrecognized",
+      "expected_verdict": "const:producer_conformance.qualification.method",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "trust-us-it-passed",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "owner_neutral_extra_field_rejected",
+      "expected_verdict": "additional:owner",
+      "record": {
+        "owner": "vertice-criativo",
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "qualification_vector_count_zero",
+      "expected_verdict": "minimum:producer_conformance.qualification.vector_count",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 0
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    },
+    {
+      "case_id": "pre_review_bare_digest_field_rejected",
+      "expected_verdict": "additional:spec_sha256",
+      "record": {
+        "binding_subject": "tsei.frozen-artifact",
+        "spec_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "serializer_contract": {
+          "id": "encode-json-utf8-lf.v0",
+          "spec": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "1111111111111111111111111111111111111111",
+            "path": "conformance/encode-json-utf8-lf-v0/README.md",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "vectors": {
+            "repository": "github.com/trustless-ai/recompute-kit",
+            "revision": "2222222222222222222222222222222222222222",
+            "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        },
+        "effective_commit": {
+          "repository": "github.com/example-org/example-producer",
+          "commit": "3333333333333333333333333333333333333333"
+        },
+        "producer_conformance": {
+          "implementation": {
+            "repository": "github.com/example-org/example-producer",
+            "revision": "4444444444444444444444444444444444444444",
+            "path": "src/encode_json_utf8_lf.py",
+            "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "qualification": {
+            "method": "passes-pinned-serializer-vectors",
+            "vectors": {
+              "repository": "github.com/trustless-ai/recompute-kit",
+              "revision": "2222222222222222222222222222222222222222",
+              "path": "conformance/encode-json-utf8-lf-v0/vectors.json",
+              "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            "vector_count": 12
+          }
+        },
+        "non_retroactivity": {
+          "prospective_only": true,
+          "byte_reproduction_is_not_binding": true,
+          "historical_binding_requires_separate_record": true
+        }
+      }
+    }
+  ]
+}

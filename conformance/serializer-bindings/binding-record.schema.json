@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "serializer binding record",
+  "description": "One immutable record binding a named artifact schema to a versioned serializer contract, prospective from an explicit commit boundary. Owner-neutral: any producer, any binding subject; it names no company and privileges no party. The serializer contract remains the authority; this record is evidence that a specific forward producer actually implements it, effective from an exact commit. It does NOT migrate historical artifacts. Every reference is a complete immutable source reference (repository+revision+path+sha256): a digest alone does not identify what it is the digest of. This record only PINS those references; dereferencing them and recomputing the referenced bytes is a resolver's job, when a real record lands.",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "revision", "path", "sha256"],
+      "description": "An immutable, pre-image-identifying coordinate. repository+revision+path LOCATE the exact bytes; sha256 PINS them. A bare digest is not accepted anywhere in this record, because a hash does not name its own pre-image and cannot be resolved without one.",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Host-qualified repository, e.g. 'github.com/OWNER/REPO'. A bare SHA is not self-resolving across repositories, so the namespace is machine-explicit."
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The exact immutable revision (full 40-hex commit) at which the path resolves."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to the bytes within the repository at that revision."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of those exact bytes. Must be reproducible from repository+revision+path."
+        }
+      }
+    }
+  },
+  "required": [
+    "binding_subject",
+    "serializer_contract",
+    "effective_commit",
+    "producer_conformance",
+    "non_retroactivity"
+  ],
+  "properties": {
+    "binding_subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The exact schema/artifact identity being bound, e.g. 'tsei.frozen-artifact'. Not a repo or a producer — the subject of the binding."
+    },
+    "serializer_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "spec", "vectors"],
+      "description": "The versioned serializer contract this record binds to, resolved to its immutable pre-images. The contract remains the authority; this record is only evidence that a forward producer implements it.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The versioned serializer contract id, e.g. 'encode-json-utf8-lf.v0'. The version suffix is part of identity; the unversioned name never resolves here."
+        },
+        "spec": {
+          "$ref": "#/definitions/source_ref",
+          "description": "The serializer specification, located and pinned. Replaces a bare spec digest: the digest now travels with the coordinates that resolve to it."
+        },
+        "vectors": {
+          "$ref": "#/definitions/source_ref",
+          "description": "The serializer conformance-vectors, located and pinned. The producer's qualification is measured against THIS exact pre-image."
+        }
+      }
+    },
+    "effective_commit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "description": "Explicit producer-adoption boundary — not derived implicitly from PR or landing time. This names a commit, not a file, so it carries no path/sha256. An artifact of binding_subject produced AT OR AFTER this commit is bound to serializer_contract.id; everything before it remains historically unversioned. This is the PRODUCER's adoption commit — a conformant encoder merely being available in the contract repo is not evidence the producer adopted it.",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The producer repository the commit belongs to, host-qualified, e.g. 'github.com/OWNER/REPO'."
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The exact adoption commit SHA in that repository."
+        }
+      }
+    },
+    "producer_conformance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation", "qualification"],
+      "description": "Evidence that the FORWARD producer actually implements the serializer contract.",
+      "properties": {
+        "implementation": {
+          "$ref": "#/definitions/source_ref",
+          "description": "The genuinely-conformant producer, resolved to immutable source — not a descriptive string. It is the encoder adopted at effective_commit that actually implements the contract for all admitted inputs, NOT a byte-coincidental predecessor that merely reproduced historical bytes."
+        },
+        "qualification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "vectors", "vector_count"],
+          "description": "The conformance evidence qualifying that implementation — structurally resolvable, not a free-form claim. Byte-reproduction of historical artifacts under the new producer is MIGRATION evidence (that the boundary is backward-identical), not conformance evidence for the implementation.",
+          "properties": {
+            "method": {
+              "const": "passes-pinned-serializer-vectors",
+              "description": "The only method this schema admits: the implementation passes the contract's pinned conformance vectors. A closed value, so a validator verifies it rather than parsing prose."
+            },
+            "vectors": {
+              "$ref": "#/definitions/source_ref",
+              "description": "The EXACT vectors pre-image the implementation was run against. It MUST be the same pre-image as serializer_contract.vectors — an implementation that passed some other vector set has not been qualified against THIS contract. (Cross-field identity is enforced by the validator, which JSON Schema alone cannot express.)"
+            },
+            "vector_count": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "How many vectors the implementation passed. A count of zero is not evidence."
+            }
+          }
+        }
+      }
+    },
+    "non_retroactivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prospective_only",
+        "byte_reproduction_is_not_binding",
+        "historical_binding_requires_separate_record"
+      ],
+      "description": "Machine-checkable non-retroactivity semantics — declared, not left to prose.",
+      "properties": {
+        "prospective_only": {
+          "const": true,
+          "description": "This binding governs only artifacts produced at or after effective_commit."
+        },
+        "byte_reproduction_is_not_binding": {
+          "const": true,
+          "description": "That a historical artifact re-encodes byte-identically under the new producer does NOT make it a serializer_contract.id artifact."
+        },
+        "historical_binding_requires_separate_record": {
+          "const": true,
+          "description": "Binding a historical identity to the contract, if ever chosen deliberately, requires its own separate immutable legacy-resolution record scoped to that exact historical identity."
+        }
+      }
+    }
+  }
+}
