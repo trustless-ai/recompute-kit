@@ -15,6 +15,6 @@
   },
   "checker": {
     "path": "validate_binding_record.py",
-    "sha256": "f05cceff80b46065b1041dacde68ce743965c9bc56b8d75cd75bf36f55b30136"
+    "sha256": "6d079d05548534985db46c79faacbdb66736da8bb59b8f6a90abf34c13c100c0"
   }
 }

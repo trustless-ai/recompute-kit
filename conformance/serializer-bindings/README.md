@@ -67,9 +67,11 @@ Every record declares `non_retroactivity` with three `const: true` facts:
 - `binding-record.schema.json` — the frozen record shape (draft-07). No `$id`: where this registry
   ultimately lives is an open question, so it is placed under no owner; a stable owner-neutral URI
   is added when the commons home is decided, not before.
-- `binding-record.vectors.json` — **shape** vectors: one valid forward binding + eleven negative
-  controls, each pinned to the exact rejection token, so every rule is proven able to fail. These
-  test the shape, not a real binding (coordinates are synthetic but well-formed).
+- `binding-record.vectors.json` — **shape** vectors: one valid forward binding + fourteen negative
+  controls, each pinned to the exact rejection token — representative critical-rule coverage (at least
+  one negative per implemented rule class, including the const JSON boolean-vs-number distinction), not
+  an exhaustive per-property proof. These test the shape, not a real binding (coordinates are synthetic
+  but well-formed).
 - `validate_binding_record.py` — the checker. Pure stdlib; it reads the schema and enforces it
   directly (a subset of draft-07), then applies the cross-field semantic above. It proves each
   reference is a *complete* pin and that `qualification.vectors` equals `serializer_contract.vectors`;

@@ -7,9 +7,11 @@ hand (a hand-copy would silently drift from the shape it claims to check). A sma
 implemented: exactly the constructs this schema uses — type (object/string/integer), required,
 additionalProperties:false, properties, $ref to #/definitions, pattern, minLength, minimum, const.
 const uses JSON equality (same JSON type AND value), so a boolean const is NOT satisfied by the number 1.
-The implemented keyword set is EXPLICIT (SUPPORTED_KEYWORDS): any schema keyword outside it — e.g. adding
-maxLength — is a VALIDATOR FAULT surfaced distinctly (exit 2), never silently ignored. "Couldn't check"
-is its own verdict; an unimplemented construct can never turn into a false pass.
+The implemented keyword set is EXPLICIT (SUPPORTED_KEYWORDS) and the WHOLE schema is preflighted once
+against it before any record is checked (_preflight_schema), so a keyword outside it — e.g. adding
+maxLength, even inside an unused definition or an absent optional property — is a VALIDATOR FAULT
+surfaced distinctly (exit 2), never silently ignored. "Couldn't check" is its own verdict; an
+unimplemented construct can never turn into a false pass, regardless of which record exercised it.
 
 On top of structure it enforces the ONE cross-field semantic JSON Schema alone cannot express:
 
@@ -59,6 +61,24 @@ def _check_keywords(node):
             raise ValidatorFault(f"unsupported schema keyword '{k}' — not in the implemented subset")
 
 
+def _preflight_schema(node, where="<root>"):
+    """Walk the ENTIRE schema ONCE, up front, and fault on any keyword outside SUPPORTED_KEYWORDS —
+    including inside unused definitions and optional properties that no test record happens to reach.
+    This is what makes "any unsupported construct is a validator fault" a property of the schema rather
+    than of whichever record exercised it. Recurses through properties and definitions; a $ref node is
+    checked for stray siblings but its target is reached via the definitions walk (so no cycles)."""
+    if "$ref" in node:
+        for k in node:
+            if k not in ("$ref", "description"):
+                raise ValidatorFault(f"unsupported keyword beside $ref at {where}: '{k}'")
+        return
+    _check_keywords(node)
+    for name, sub in node.get("properties", {}).items():
+        _preflight_schema(sub, _join(where if where != "<root>" else "", name))
+    for name, sub in node.get("definitions", {}).items():
+        _preflight_schema(sub, f"#/definitions/{name}")
+
+
 def _json_type(v):
     """JSON's own type of a Python value. bool is tested BEFORE int deliberately: in Python bool is a
     subclass of int (True == 1, False == 0), but JSON boolean true is NOT JSON number 1. Conflating
@@ -102,12 +122,11 @@ def _validate(node, value, path, root):
     """Return the FIRST violation token in a deterministic walk (required in declared order, then
     properties in schema order), or None if valid. Deterministic order makes each expected verdict
     a single stable token."""
-    if "$ref" in node:                                          # a $ref node carries only $ref (+ description)
-        for k in node:
-            if k not in ("$ref", "description"):
-                raise ValidatorFault(f"unsupported keyword beside $ref at {path or '<root>'}: '{k}'")
+    # Keyword-inventory enforcement is NOT here: a per-record walk only reaches the nodes THIS record
+    # exercises, so an unsupported keyword in an unused definition or an absent optional property would
+    # slip through. The whole schema is preflighted once (see _preflight_schema), so the "any
+    # unsupported keyword is a fault" guarantee is a property of the schema, not of the record.
     s = _resolve(node, root)
-    _check_keywords(s)                                          # the effective schema uses only implemented keywords
     t = s.get("type")
 
     if t == "object":
@@ -169,6 +188,15 @@ def verdict(record):
 
 
 def main(argv):
+    # Preflight the whole schema ONCE before any record: an unimplemented keyword anywhere in the
+    # schema (even in an unused definition) makes the entire suite unverifiable, not silently green.
+    try:
+        _preflight_schema(SCHEMA)
+    except ValidatorFault as f:
+        print(f"FAULT schema preflight -> VALIDATOR_FAULT:{f}")
+        print(f"\nschema uses a construct this checker does not implement — VALIDATOR FAULT (unverifiable)")
+        return 2
+
     path = argv[1] if len(argv) > 1 else "binding-record.vectors.json"
     fx = json.load(open(path))
     cases = fx["cases"]
