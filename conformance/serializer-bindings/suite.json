@@ -2,7 +2,7 @@
   "profile": "serializer_binding_record.v0",
   "vectors": {
     "path": "binding-record.vectors.json",
-    "sha256": "b24b2e9b06fa4fad7cb83bd8a3f042bde42bd3c7693b9169aab871351a271a1a"
+    "sha256": "7beaabc7166816ae984eb1c5fffc55dc457ca4f86743f1f14e8795841626485e"
   },
   "adapter": {
     "kind": "stdio",
@@ -15,6 +15,6 @@
   },
   "checker": {
     "path": "validate_binding_record.py",
-    "sha256": "60511fcc189cf6a2ec8d5edf709cc9b21026afd2af8660ee5ac229e31131d9fd"
+    "sha256": "f05cceff80b46065b1041dacde68ce743965c9bc56b8d75cd75bf36f55b30136"
   }
 }

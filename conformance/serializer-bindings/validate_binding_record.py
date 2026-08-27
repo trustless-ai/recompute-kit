@@ -6,8 +6,10 @@ primary artifact, so structural validity is recomputed from it rather than re-en
 hand (a hand-copy would silently drift from the shape it claims to check). A small draft-07 subset is
 implemented: exactly the constructs this schema uses — type (object/string/integer), required,
 additionalProperties:false, properties, $ref to #/definitions, pattern, minLength, minimum, const.
-A schema construct this subset does not implement is a VALIDATOR FAULT, surfaced distinctly (exit 2),
-never silently treated as a pass — "couldn't check" is its own verdict.
+const uses JSON equality (same JSON type AND value), so a boolean const is NOT satisfied by the number 1.
+The implemented keyword set is EXPLICIT (SUPPORTED_KEYWORDS): any schema keyword outside it — e.g. adding
+maxLength — is a VALIDATOR FAULT surfaced distinctly (exit 2), never silently ignored. "Couldn't check"
+is its own verdict; an unimplemented construct can never turn into a false pass.
 
 On top of structure it enforces the ONE cross-field semantic JSON Schema alone cannot express:
 
@@ -19,7 +21,10 @@ qualified against some other vector set has not been qualified against this cont
 
 Each vector case is {case_id, record, expected_verdict}. The validator recomputes a verdict token and
 compares. Negative controls (records that MUST be rejected, each pinned to its exact rejection token)
-prove every rule can fail. Exit 0 when all reproduce, 1 on any determinate mismatch, 2 if the checker
+are representative critical-rule controls: at least one negative per implemented rule class — type,
+required, additionalProperties, pattern, minLength, minimum, const (including the boolean-vs-number
+distinction), and the cross-field vectors-identity rule — so disabling any one guard reds the suite.
+They are not an exhaustive per-property enumeration. Exit 0 when all reproduce, 1 on any determinate mismatch, 2 if the checker
 itself could not run a case. Pure stdlib — no jsonschema import, so a missing dependency can never
 turn this suite into a false green.
 """
@@ -35,6 +40,48 @@ SCHEMA = json.load(open(HERE / "binding-record.schema.json"))
 class ValidatorFault(Exception):
     """The schema used a construct this subset does not implement — a fault in the checker, not a
     verdict about the record. Kept distinct so 'could not check' never masquerades as 'valid'."""
+
+
+# The draft-07 keyword subset this validator implements. ANY schema keyword outside this set is a
+# VALIDATOR FAULT (see _check_keywords), never silently ignored — so adding e.g. maxLength to the
+# schema surfaces as unverifiable rather than a false pass. ($schema/$id/title/description/definitions
+# are structural or documentation and assert nothing per-node.)
+SUPPORTED_KEYWORDS = {
+    "$schema", "$id", "title", "description", "definitions",
+    "type", "required", "additionalProperties", "properties", "$ref",
+    "pattern", "minLength", "minimum", "const",
+}
+
+
+def _check_keywords(node):
+    for k in node:
+        if k not in SUPPORTED_KEYWORDS:
+            raise ValidatorFault(f"unsupported schema keyword '{k}' — not in the implemented subset")
+
+
+def _json_type(v):
+    """JSON's own type of a Python value. bool is tested BEFORE int deliberately: in Python bool is a
+    subclass of int (True == 1, False == 0), but JSON boolean true is NOT JSON number 1. Conflating
+    them is exactly the const-equality bug this guards."""
+    if isinstance(v, bool):
+        return "boolean"
+    if isinstance(v, (int, float)):
+        return "number"
+    if isinstance(v, str):
+        return "string"
+    if v is None:
+        return "null"
+    if isinstance(v, list):
+        return "array"
+    if isinstance(v, dict):
+        return "object"
+    return "unknown"
+
+
+def _json_equal(a, b):
+    """draft-07 const equality is JSON equality: same JSON type AND equal value. Python's bare ==
+    would accept 1 == True and 0 == False; JSON does not, so a boolean const is not satisfied by 1."""
+    return _json_type(a) == _json_type(b) and a == b
 
 
 def _resolve(node, root):
@@ -55,7 +102,12 @@ def _validate(node, value, path, root):
     """Return the FIRST violation token in a deterministic walk (required in declared order, then
     properties in schema order), or None if valid. Deterministic order makes each expected verdict
     a single stable token."""
+    if "$ref" in node:                                          # a $ref node carries only $ref (+ description)
+        for k in node:
+            if k not in ("$ref", "description"):
+                raise ValidatorFault(f"unsupported keyword beside $ref at {path or '<root>'}: '{k}'")
     s = _resolve(node, root)
+    _check_keywords(s)                                          # the effective schema uses only implemented keywords
     t = s.get("type")
 
     if t == "object":
@@ -93,7 +145,7 @@ def _validate(node, value, path, root):
         return None
 
     if "const" in s:
-        return None if value == s["const"] else f"const:{path}"
+        return None if _json_equal(value, s["const"]) else f"const:{path}"
 
     raise ValidatorFault(f"unhandled schema construct at {path or '<root>'}")
 
