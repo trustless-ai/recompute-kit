@@ -11,6 +11,17 @@
         "kind": "stdio",
         "cmd": "python3 cutoff_enforce.py pq-key-binding-v1.cutoff-vectors.json"
       }
+    },
+    {
+      "name": "manifest",
+      "vectors": {
+        "path": "pq-key-binding-v1.manifest-vectors.json",
+        "sha256": "e245249692329407a021af5bcc6dc1158b704ba8804451d71f4237975110bde5"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json"
+      }
     }
   ],
   "laneHint": "recomputable",

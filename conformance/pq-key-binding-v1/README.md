@@ -43,9 +43,33 @@ than an implementation artefact.
   Work paragraph (Lean Consensus PQ registry: expiry-from-statefulness vs explicit anchored
   authority-termination).
 
+## Manifest-chain `governs_from` resolution (spec §10.2.1)
+
+`manifest_resolve.py` is the chain-completeness half of `governs_from`: the earliest manifest that
+governs a binding is **proven** by reconstructing the manifest chain from genesis (`prev_manifest_cc =
+null`), never taken from the earliest *visible* manifest. It recomputes each manifest's content address
+and enforces the two fail-closed rules the spec states normatively — a required prev link that cannot
+be fetched and recomputed makes `governs_from` `UNRESOLVED`/`UNVERIFIABLE` (never earliest-visible), and
+two manifests sharing a `prev_manifest_cc` are a fork surfaced as conflict, never silently resolved.
+
+**Scope — this is an ABSTRACT chain-completeness model, not an exact-manifest conformance checker.** It
+verifies the *chain* (content-address recomputation + `prev_manifest_cc` reconstruction); it does not
+verify `entries_root` / Merkle membership, which is a separate concern modelled here via a per-manifest
+`contains` input kept **outside** the hashed `content` (so it never affects the cc). Most vectors use a
+compact surrogate `content`; the **`exact-shape-*` control** carries the full normative §10 field set
+(`profile, acceptance_head_cc, covered_through_seq, min_seq, max_seq, count, entries_root, prev_manifest_cc`)
+and proves the same `prev_manifest_cc` recomputation over normative manifest bytes. Its `entries_root` is a
+**well-formed but opaque fixture value** — no entry pre-images are supplied and membership is not verified
+here, so no derivation/membership claim is made about it (a dedicated membership suite can prove real roots
+later). 7 cases: two positive controls, the two required negatives,
+genesis-fork and not-covered controls, and the exact-shape control; each guard reds independently under
+mutation (missing-link-as-visible, forks-ignored, and a corrupted `prev_manifest_cc` on the exact-shape
+manifest all break the right case).
+
 ## Run
 ```
-python3 cutoff_enforce.py pq-key-binding-v1.cutoff-vectors.json   # 9/9 reproduced
+python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 9/9 reproduced
+python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 6/6 reproduced
 ```
 
 Provenance: zexoverz's ERC-8373 review (magicians #7) surfaced the v0 pre-cutoff rejection; the fix
