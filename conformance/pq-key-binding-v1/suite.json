@@ -16,7 +16,7 @@
       "name": "manifest",
       "vectors": {
         "path": "pq-key-binding-v1.manifest-vectors.json",
-        "sha256": "b286ff825e93151c43f5d733e46bb11b5740b70dbf3a976f124d82d88a1515ee"
+        "sha256": "508689b1ead3eb2ee765c4409916e55fd20e1224c8b164efa31d7a0135a28a9d"
       },
       "adapter": {
         "kind": "stdio",

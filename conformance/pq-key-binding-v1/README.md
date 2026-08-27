@@ -51,8 +51,18 @@ null`), never taken from the earliest *visible* manifest. It recomputes each man
 and enforces the two fail-closed rules the spec states normatively — a required prev link that cannot
 be fetched and recomputed makes `governs_from` `UNRESOLVED`/`UNVERIFIABLE` (never earliest-visible), and
 two manifests sharing a `prev_manifest_cc` are a fork surfaced as conflict, never silently resolved.
-Two positive controls, the two required negatives, plus genesis-fork and not-covered controls; each
-negative reds independently if the resolver regresses (verified by mutation).
+
+**Scope — this is an ABSTRACT chain-completeness model, not an exact-manifest conformance checker.** It
+verifies the *chain* (content-address recomputation + `prev_manifest_cc` reconstruction); it does not
+verify `entries_root` / Merkle membership, which is a separate concern modelled here via a per-manifest
+`contains` input kept **outside** the hashed `content` (so it never affects the cc). Most vectors use a
+compact surrogate `content`; the **`exact-shape-*` control** carries the full normative §10 field set
+(`profile, acceptance_head_cc, covered_through_seq, min_seq, max_seq, count, entries_root, prev_manifest_cc`,
+with a real `entries_root` = Merkle over `H(JCS(entry))`) and proves the same `prev_manifest_cc`
+recomputation over normative manifest bytes. 7 cases: two positive controls, the two required negatives,
+genesis-fork and not-covered controls, and the exact-shape control; each guard reds independently under
+mutation (missing-link-as-visible, forks-ignored, and a corrupted `prev_manifest_cc` on the exact-shape
+manifest all break the right case).
 
 ## Run
 ```

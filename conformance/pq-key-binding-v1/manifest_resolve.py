@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 """pq_key_binding.v1 — manifest-chain `governs_from` resolution (§10.2.1 of the spec).
 
+SCOPE — this is an ABSTRACT chain-completeness model, NOT an exact-manifest conformance checker.
+What it verifies is the CHAIN half of `governs_from`: content-address recomputation of each manifest
+and reconstruction of the prev_manifest_cc chain from a candidate container back to genesis. What it
+deliberately does NOT verify is entries_root / Merkle membership — that is a separate concern, modelled
+here rather than checked. So the claim is precise: this suite proves the chain logic and the two
+fail-closed rules below over the bytes it is given; it does not assert that a passing manifest is a
+byte-exact normative §10 manifest, EXCEPT in the `exact-shape-*` control, whose `content` IS the full
+§10 field set and which proves the same prev_manifest_cc recomputation over normative manifest bytes.
+
 `governs_from` is the anchor time of the EARLIEST manifest whose entries contain a binding. "Earliest"
 is only meaningful against a complete, reconstructible manifest chain: a membership proof shows a root
-CONTAINS an entry, never that no EARLIER root did. This checker recomputes each manifest's content
+CONTAINS an entry, never that no EARLIER root did. The checker recomputes each manifest's content
 address and reconstructs the chain from the candidate container back to genesis (prev_manifest_cc =
-null), and enforces the two fail-closed rules the spec states normatively:
+null), enforcing the two fail-closed rules the spec states normatively:
 
   - Reconstruction is required. If any manifest required to close the chain from genesis through the
     candidate cannot be fetched and recomputed, `governs_from` is UNRESOLVED/UNVERIFIABLE — a verifier
@@ -13,10 +22,11 @@ null), and enforces the two fail-closed rules the spec states normatively:
   - Canonical history. Two anchored manifests sharing a prev_manifest_cc are a manifest-layer fork; a
     verifier that depends on that segment MUST surface conflict/UNRESOLVED, never silently pick a branch.
 
-`available` on a vector manifest models "the verifier can fetch and recompute it"; a referenced-but-
-unavailable prev link is exactly the missing-history case. Membership is modelled as an explicit
-`entries` list (the entries_root's contents) — Merkle membership is a separate, already-covered check;
-this suite is the CHAIN-completeness half.
+Vector-manifest fields: `content` is the object hashed for the content address — a compact surrogate in
+most vectors, the exact §10 field set in the exact-shape control. `contains` is an explicit model input
+standing in for entries_root membership (which this suite does not verify), kept OUTSIDE `content` so it
+never affects the recomputed cc. `available` models "the verifier can fetch and recompute it"; a
+referenced-but-unavailable prev link is exactly the missing-history case.
 
 Verdict tokens: `resolved:<anchor_time>` | `unresolved:incomplete_history` |
 `unresolved:manifest_fork` | `not_covered`. Run: python3 manifest_resolve.py [manifest-vectors.json]
@@ -50,8 +60,9 @@ def resolve(manifests, target):
         by_prev[m["content"].get("prev_manifest_cc")].append(c)
     forks = {p for p, cs in by_prev.items() if len(cs) > 1}
 
-    # 3. Containers: available manifests whose entries include the target binding.
-    containers = [(c, m) for c, m in avail.items() if target in m["content"].get("entries", [])]
+    # 3. Containers: available manifests that cover the target. Membership is the model input `contains`
+    #    (a stand-in for entries_root membership), kept out of `content` so it never affects the cc.
+    containers = [(c, m) for c, m in avail.items() if target in m.get("contains", [])]
     if not containers:
         return "not_covered"
 
