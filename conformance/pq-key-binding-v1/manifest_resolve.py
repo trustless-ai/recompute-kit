@@ -9,6 +9,9 @@ here rather than checked. So the claim is precise: this suite proves the chain l
 fail-closed rules below over the bytes it is given; it does not assert that a passing manifest is a
 byte-exact normative §10 manifest, EXCEPT in the `exact-shape-*` control, whose `content` IS the full
 §10 field set and which proves the same prev_manifest_cc recomputation over normative manifest bytes.
+The `entries_root` in that control is a well-formed but OPAQUE fixture value: no entry pre-images are
+supplied and membership is not verified here, so no derivation/membership claim is made about it — a
+dedicated membership suite can prove real roots later.
 
 `governs_from` is the anchor time of the EARLIEST manifest whose entries contain a binding. "Earliest"
 is only meaningful against a complete, reconstructible manifest chain: a membership proof shows a root

@@ -57,9 +57,11 @@ verifies the *chain* (content-address recomputation + `prev_manifest_cc` reconst
 verify `entries_root` / Merkle membership, which is a separate concern modelled here via a per-manifest
 `contains` input kept **outside** the hashed `content` (so it never affects the cc). Most vectors use a
 compact surrogate `content`; the **`exact-shape-*` control** carries the full normative §10 field set
-(`profile, acceptance_head_cc, covered_through_seq, min_seq, max_seq, count, entries_root, prev_manifest_cc`,
-with a real `entries_root` = Merkle over `H(JCS(entry))`) and proves the same `prev_manifest_cc`
-recomputation over normative manifest bytes. 7 cases: two positive controls, the two required negatives,
+(`profile, acceptance_head_cc, covered_through_seq, min_seq, max_seq, count, entries_root, prev_manifest_cc`)
+and proves the same `prev_manifest_cc` recomputation over normative manifest bytes. Its `entries_root` is a
+**well-formed but opaque fixture value** — no entry pre-images are supplied and membership is not verified
+here, so no derivation/membership claim is made about it (a dedicated membership suite can prove real roots
+later). 7 cases: two positive controls, the two required negatives,
 genesis-fork and not-covered controls, and the exact-shape control; each guard reds independently under
 mutation (missing-link-as-visible, forks-ignored, and a corrupted `prev_manifest_cc` on the exact-shape
 manifest all break the right case).
