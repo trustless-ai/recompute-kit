@@ -2,90 +2,82 @@
 
 ## Purpose
 
-Make the build-first pattern *checkable*. When a proposal is brought with a pre-built implementation, it
-declares an **origination anchor** — the commit or on-chain transaction that existed before the discussion
-opened — and this profile verifies, by recomputation, that the anchor was **independently witnessed** to
-exist before the proposal opened. Recompute-don't-trust, applied to provenance at thread-open.
+Make the build-first pattern *checkable*, and make **origination** mean what it says. A proposal brought
+with a pre-built implementation declares an **origination anchor**; this profile verifies, by recomputation,
+that the anchor **committed to that proposal and its implementation artifact** before the proposal opened.
 
-## Scope — what it proves, and what it does not
+## The claim is declared, so a PASS never overreaches
 
-It proves a **witnessed temporal + existence** claim: *this artifact was independently observed to exist
-before the proposal opened.* It proves nothing about **semantics** — whether the anchored artifact IS the
-primitive the spec describes (human review; e.g. distinguishing a same-day spec repo from the
-implementation it was written from). A gate claiming to settle semantics would be a written rule with no
-failure mode.
+@zexoverz/Faisal's finding: a free-standing transaction that merely *exists* before a proposal proves
+**pre-existence, not origination** — you could move an unrelated pre-existing tx into the record and it would
+pass. (The real 8299 anchor commits `sha256("hello")`; it timestamps a demo, it does not bind the WYRIWE
+artifact.) The fix is structural: **the record declares its `claim`**, and the verdict carries it.
 
-Resolution is split, matching `pq-key-binding.v1/manifest`:
-- **`provenance_gate.py`** — deterministic verdict logic. Resolution is a MODEL INPUT, so the graded suite
-  is byte-deterministic.
-- **`resolve_anchor.py`** — the live companion that fetches AND enforces the facts (subject binding on both
-  sides, no self-reported time, witnessed + added thread-open), producing the resolution the gate consumes.
+- `claim: "origination"` — the anchor transaction MUST commit the digest of a canonical **anchor-binding**
+  object (below). PASS is `PASS:origination`.
+- `claim: "pre_existence"` — only witnessed precedence is required; the anchor need not bind the proposal.
+  PASS is `PASS:pre_existence`.
 
-## Five facts, each independently established
+Because PASS is `PASS:<claim>`, pre-existence can never be read as origination. The 8299/8373 anchors are
+therefore **`pre_existence` only** — honestly demoted, because they carry no proposal binding.
 
-Precedence is decided between two **witnessed** times, and every witness must be **bound** to the thing it
-witnesses:
+## anchor-binding.v0 — what an origination anchor must commit
 
-1. **content identity** — recompute the object; confirm it exists and its bytes/hash are stable.
-2. **existence witness** — an observation of publication time from a source the author does **not**
-   control. Never the object's own self-reported time.
-3. **anchor subject binding** — the anchor witness must reference *this* anchor. An on-chain commitment of a
-   commit must carry that commit hash in its calldata; the block timestamp of an unrelated transaction is
-   not a witness of the commit.
-4. **thread subject binding** — the thread witness must be *this proposal's* **opening** boundary. A
-   `forge_event` PR binds only if **(a)** it is in the proposal's **canonical repository** (erc →
-   `ethereum/ERCs`, eip → `ethereum/EIPs`; repo compared case-insensitively) **and (b)** it **ADDs** the
-   proposal's spec file at its **exact-case** path (`ERCS/erc-<id>.md`, `status == "added"`). A spoof
-   repository that adds the same path, a later amendment that merely *modifies* the file, or a case-variant
-   path is **not** the opening. Both conditions are enforced in the deterministic gate (a non-canonical repo
-   returns `thread_not_bound` regardless of a resolution claiming `subject_bound=true`) and the live
-   resolver. All PR-file pages are read, or the resolver fails closed.
-5. **witnessed precedence** — the witnessed anchor time strictly precedes the witnessed **thread-open**
-   time; both sides are witnessed facts, never unverified record fields.
+```
+{ "schema": "anchor-binding.v0",
+  "proposal": { "kind": "erc"|"eip", "id": <int>, "repo": "<canonical repo>" },
+  "artifact": { "repo": "<owner/name>", "commit": "<40-hex>" } }
+digest = sha256( JCS(object) )
+```
+The anchor transaction's calldata MUST contain `digest`. The resolver recomputes the digest from the
+declared binding and checks the tx commits it (`bound`). The gate additionally requires the binding's
+`proposal` to be exactly the scored proposal in its canonical repo (`binding_incoherent` otherwise). If an
+`originator` is declared on the anchor, the tx **signer** must equal it (`signer_mismatch` otherwise) —
+else the claim stays pre-existence.
 
-The gate also refuses to trust the resolution blindly: it checks the resolution is **coherent** with the
-declared anchor (a bare commit cannot claim a witness → `incoherent_resolution`), **fails closed** on a
-non-dict record or non-object resolution, and **rejects `bool`** where an integer is required.
+## Facts (each independently established)
 
-## Record & anchor kinds
+1. **content identity** — the tx is mined / the commit resolves.
+2. **existence witness** — an independent observation of publication time (on-chain: block timestamp; git:
+   a separate witness). Never the object's self-reported time.
+3. **anchor subject binding** — the anchor's witness references the anchor (git: commit hash in the
+   commitment tx calldata).
+4. **thread subject binding** — the thread witness is the proposal's opening PR: a `forge_event` in the
+   **canonical repository** (erc→ethereum/ERCs, eip→ethereum/EIPs) that **ADDs** the exact-case
+   `ERCS/erc-<id>.md`. Enforced in the deterministic gate (canonical repo) and the live resolver
+   (added-file + full pagination or fail closed).
+5. **anchor → proposal/artifact binding** *(origination only)* — the tx commits the anchor-binding digest,
+   the binding is coherent with the scored proposal, and (if declared) the signer is the originator.
+6. **witnessed precedence** — the witnessed anchor time strictly precedes the witnessed thread-open time.
 
-The record carries `proposal {kind, id}` (the scored subject — `erc` or `eip`), `thread_open.witness`, and
-`anchor`.
+The gate fails closed on a non-dict record or non-object resolution, rejects `bool` where an int is required,
+and **rejects an empty corpus** (`0 cases` is not a pass). A null `eth_getTransactionByHash` is
+`unavailable_rpc`, never `not_found` — a single node's silence cannot prove absence.
 
-| anchor kind | content identity | existence witness | subject binding |
-|---|---|---|---|
-| `onchain_tx` | tx (`0x`+64hex) is mined | **intrinsic** — block timestamp (consensus) | the tx is its own subject |
-| `git_commit` | commit (`40hex`) resolves in `repo` | **separate & required** — a `witness`: `onchain_commitment` \| `transparency_log` \| `forge_event`. Bare commit → UNVERIFIABLE. | `onchain_commitment` MUST carry the commit hash in calldata; unwired `transparency_log`/`forge_event` → `witness_unresolved` |
+## Verdict — closed enumerations
 
-`onchain_deploy` is **not** in v0 (was declared-but-unexecutable; removed rather than shipped broken).
-Anchors carry **no self-reported timestamp field**. Thread-open `witness` is `forge_event` (resolves the
-ERC PR's GitHub-stamped `created_at`, bound via the added-file rule above) or `onchain_commitment`.
-
-## Verdict — three states, closed enumerations, never a silent green
-
-- **PASS** — content confirmed, both witnesses present & bound, thread-open witnessed & added, witnessed
-  anchor time strictly before witnessed thread-open time.
+- **PASS** — `PASS:origination` | `PASS:pre_existence`.
 - **FAIL** — `malformed_record`, `missing_anchor`, `malformed_anchor`, `missing_thread_open`,
-  `malformed_thread_open`, `missing_proposal`, `malformed_proposal`, `anchor_not_found`, `postdates_thread`.
+  `malformed_thread_open`, `missing_proposal`, `malformed_proposal`, `malformed_claim`, `malformed_binding`,
+  `binding_incoherent`, `anchor_not_found`, `anchor_not_bound`, `signer_mismatch`, `postdates_thread`.
 - **UNVERIFIABLE** — `no_publication_witness`, `witness_unresolved`, `witness_not_bound`,
-  `incoherent_resolution`, `thread_unwitnessed`, `thread_not_bound`, `pruned_history`, `rpc_unreachable`,
-  `source_unavailable`.
+  `incoherent_resolution`, `thread_unwitnessed`, `thread_not_bound`, `anchor_bound_unresolved`,
+  `pruned_history`, `rpc_unreachable`, `source_unavailable`.
 
-## Controls — 27 vectors: **3 PASS · 12 FAIL · 12 UNVERIFIABLE**
+## Controls — 35 vectors: **5 PASS · 17 FAIL · 13 UNVERIFIABLE**
 
-Each defect class has a control that must not pass, including `thread_not_bound` in three distinct shapes —
-an unrelated PR, a real amendment PR that only *modifies* the file (`ethereum/ERCs` #1933 modifies
-`erc-7730.md`), and a **spoof repository** (`attacker/spoof-repo` supplying `subject_bound=true`, rejected
-by the canonical-repo check) — plus `malformed_record`, `missing`/`malformed_proposal`, `bool chain_id`,
-and non-object resolution. Can-fail is shown by mutation (move the witnessed thread-open before the
-witnessed anchor → `FAIL:postdates_thread`).
+The headline negative is **`ctrl-8299-tx-in-8373-not-bound`**: the real 8299 transaction (commits
+`sha256("hello")`) placed in an *origination* record for erc-8373 → `FAIL:anchor_not_bound`. That is
+Faisal's exact attack, now closed: a pre-existing free-standing tx can no longer buy origination. Alongside
+it: `binding_incoherent`, `signer_mismatch`, `malformed_binding`, `malformed_claim`,
+`anchor_bound_unresolved`, plus the full pre-existence control set (postdates, thread spoof/amendment,
+witness binding, canonical repo, fail-closed inputs).
 
-**Real vs synthetic / fixture, stated plainly:**
-- **Real:** every row referencing `ethereum/ERCs` PRs **1810 / 1826 / 1932** carries that PR's **exact**
-  GitHub `created_at` (`1781183206` / `1781874038` / `1786012951`), each PR resolving live to that time and
-  binding to its proposal by the added-file rule; and only the on-chain **8299** (`0xc3aeb16d…`) and
-  **8373** (`0x04e1846f…`) anchors resolve live.
-- **Synthetic:** postdates ordering controls use proposal id `>= 90000` and PR `>= 990000` with fabricated
-  times — *not* presented as real PRs. The witnessed-**8309** PASS and all *witness* `tx` values
-  (`0x0000…`/`0x1111…`/`0x3333…`) are opaque model fixtures; the bare-commit 8309 is correctly
-  `UNVERIFIABLE:no_publication_witness` until a real on-chain commitment exists.
+**Real vs model/fixture, stated plainly:**
+- **Real:** the on-chain **8299** (`0xc3aeb16d…`) and **8373** (`0x04e1846f…`) anchors resolve live — as
+  **`pre_existence`**, because their calldata commits no anchor-binding digest; and PRs **1810/1826/1932**
+  resolve to their exact GitHub `created_at`.
+- **Model / pending real:** `origination-model-pass` and `origination-signer-pass` are model fixtures — a
+  genuine `PASS:origination` requires a real minted anchor whose calldata commits a real
+  `anchor-binding.v0` digest (originator = the Vértice gateway signer). That mint is the one act this suite
+  is waiting on; until it lands, no row claims a real origination positive.

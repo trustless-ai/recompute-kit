@@ -5,47 +5,62 @@ SCOPE — deterministic verdict logic. Resolution is a MODEL INPUT (companion re
 real one); the graded suite stays byte-deterministic. It proves a WITNESSED temporal + existence claim and
 nothing about semantics.
 
-FIVE facts, each independently established (extends @pipavlo82's contract — both SIDES of the comparison
-must be witnessed, and every witness must be BOUND to the subject it witnesses):
+A record DECLARES its `claim`: `origination` (the anchor tx must COMMIT the digest of a canonical
+anchor-binding.v0 object naming proposal+artifact) or `pre_existence` (only witnessed precedence). A PASS
+carries its claim — PASS:origination | PASS:pre_existence — so pre-existence can never read as origination
+(@zexoverz/Faisal: a free-standing anchor that merely exists before a thread proves pre-existence, not
+origination — moving the 8299 tx into an 8373 record must NOT pass).
+
+Facts, each independently established:
   1. content identity   — the object exists and its bytes/hash are stable.
   2. existence witness   — an INDEPENDENT observation of when the object was public; NOT its self-reported
                            time. On-chain tx: intrinsic (consensus block). Git commit: a SEPARATE witness.
-  3. anchor subject binding — the anchor witness must reference THIS anchor. An on-chain commitment of a
-                           commit must carry that commit hash in its calldata; a block timestamp from an
-                           unrelated tx is not a witness of the commit.
-  4. thread subject binding — the thread witness must be THIS proposal's opening boundary: a forge_event in
-                           the proposal's CANONICAL repository (erc->ethereum/ERCs, eip->ethereum/EIPs) that
-                           ADDs the proposal's EXACT-CASE spec path. A different repo, a modify, or a
-                           case-variant path is not the opening, or a caller could manufacture precedence.
-  5. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time;
-                           both sides are witnessed facts, never unverified record fields a caller can move.
+  3. anchor subject binding — the anchor witness references THIS anchor (git: commit hash in the commitment).
+  4. thread subject binding — the thread witness is THIS proposal's opening boundary: a forge_event in the
+                           proposal's CANONICAL repo (erc->ethereum/ERCs, eip->ethereum/EIPs, repo-native->
+                           its own repo) that ADDs the proposal's EXACT-CASE spec path.
+  5. anchor->proposal/artifact binding (ORIGINATION only) — the tx commits the anchor-binding digest, the
+                           binding is coherent with the scored proposal, and (if declared) signer==originator.
+  6. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time.
 
-The gate does not trust the resolution blindly: it checks the resolution is COHERENT with the declared
-anchor (a bare commit cannot claim a witness), fails closed on a non-object resolution, and rejects bool
-where an int is required. If any fact is unmet the verdict is UNVERIFIABLE or FAIL, never a silent PASS.
+The gate checks resolution/anchor coherence, fails closed on a non-object resolution, rejects bool where an
+int is required, and rejects an empty corpus. If any fact is unmet the verdict is UNVERIFIABLE or FAIL.
 
 Verdict (closed enumeration, never a silent green):
-  PASS
+  PASS:origination | PASS:pre_existence
   FAIL:malformed_record | missing_anchor | malformed_anchor | missing_thread_open | malformed_thread_open
-      | missing_proposal | malformed_proposal | anchor_not_found | postdates_thread
+      | missing_proposal | malformed_proposal | malformed_claim | malformed_binding | binding_incoherent
+      | anchor_not_found | anchor_not_bound | signer_mismatch | postdates_thread
   UNVERIFIABLE:no_publication_witness | witness_unresolved | witness_not_bound | incoherent_resolution
-      | thread_unwitnessed | thread_not_bound | pruned_history | rpc_unreachable | source_unavailable
+      | thread_unwitnessed | thread_not_bound | anchor_bound_unresolved | pruned_history | rpc_unreachable
+      | source_unavailable
 
 Usage: python3 provenance_gate.py provenance-anchor-v0.vectors.json
 Exit 0 iff every case reproduces its expected verdict, else 1.
 """
 from __future__ import annotations
 import json, os, re, sys
+import anchor_binding as ab  # the canonical proposal+artifact binding the anchor must commit
 
 TX_RE = re.compile(r"^0x[0-9a-fA-F]{64}$")
 SHA_RE = re.compile(r"^[0-9a-fA-F]{40}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 ANCHOR_WITNESS_KINDS = {"onchain_commitment", "transparency_log", "forge_event"}
 THREAD_WITNESS_KINDS = {"onchain_commitment", "forge_event"}
-PROPOSAL_KINDS = {"erc", "eip"}
+PROPOSAL_KINDS = {"erc", "eip", "repo"}
 # A proposal opens in exactly one canonical repository — a forge_event from any other repo that merely adds
 # the same path cannot be the opening boundary (repo names compared case-insensitively, as GitHub does).
+# erc/eip have fixed canonical repos; a generic `repo`-native standard IS defined by its own repo.
 CANONICAL_REPO = {"erc": "ethereum/ERCs", "eip": "ethereum/EIPs"}
+
+
+def canonical_repo(proposal):
+    kind = proposal.get("kind")
+    if kind in CANONICAL_REPO:
+        return CANONICAL_REPO[kind]
+    if kind == "repo":
+        return proposal.get("repo")   # a repo-native standard is self-defining: no external repo to spoof
+    return None
 CONTENT_UNAVAILABLE = {"unavailable_pruned": "pruned_history",
                        "unavailable_rpc": "rpc_unreachable",
                        "unavailable_source": "source_unavailable"}
@@ -103,6 +118,9 @@ def well_formed_proposal(proposal):
         return "kind"
     if not _is_int(proposal.get("id")):
         return "id"
+    if proposal.get("kind") == "repo":       # a repo-native proposal carries its own canonical repo
+        if not (isinstance(proposal.get("repo"), str) and REPO_RE.match(proposal["repo"])):
+            return "repo"
     return None
 
 
@@ -134,6 +152,22 @@ def verdict(record, resolution):
         return "FAIL:missing_proposal"
     if well_formed_proposal(proposal) is not None:
         return "FAIL:malformed_proposal"
+
+    # The claim being made. `origination` requires the anchor to COMMIT a canonical proposal+artifact
+    # binding; `pre_existence` requires only witnessed precedence. The record MUST say which, so a PASS
+    # never means more than was claimed — this is what structurally prevents the origination overclaim
+    # (@zexoverz/Faisal: a free-standing anchor proves pre-existence, not origination).
+    claim = record.get("claim")
+    if claim not in ("origination", "pre_existence"):
+        return "FAIL:malformed_claim"
+    if claim == "origination":
+        binding = anchor.get("binding")
+        if ab.validate(binding) is not None:
+            return "FAIL:malformed_binding"
+        # The binding's proposal must be exactly the proposal being scored, in its canonical repo.
+        canon = canonical_repo(proposal)
+        if binding["proposal"] != {"kind": proposal["kind"], "id": proposal["id"], "repo": canon}:
+            return "FAIL:binding_incoherent"
 
     # Fail closed on a non-object resolution (never crash, never pass).
     if not isinstance(resolution, dict):
@@ -179,21 +213,41 @@ def verdict(record, resolution):
     # claims. Enforce the repo binding here (deterministic coherence) as well as in the live resolver.
     tw = thread_open.get("witness", {})
     if tw.get("kind") == "forge_event":
-        canon = CANONICAL_REPO.get(proposal["kind"])
+        canon = canonical_repo(proposal)
         if not canon or str(tw.get("repo", "")).lower() != canon.lower():
             return "UNVERIFIABLE:thread_not_bound"
     if not tres.get("subject_bound"):
         return "UNVERIFIABLE:thread_not_bound"
 
-    # Witnessed precedence — both sides are now independently witnessed AND bound to their subjects.
+    # Fact 5 — anchor → proposal/artifact binding (ORIGINATION ONLY). The anchor transaction must commit
+    # the digest of the canonical binding object (proposal + implementation artifact). A free-standing tx
+    # that commits arbitrary bytes (e.g. sha256("hello")) is pre-existence, not origination.
+    if claim == "origination":
+        bound = ares.get("bound")
+        if bound is None:
+            return "UNVERIFIABLE:anchor_bound_unresolved"
+        if not bound:
+            return "FAIL:anchor_not_bound"
+        # If an originator is declared, the anchor signer must be that identity.
+        originator = anchor.get("originator")
+        if originator is not None:
+            signer = ares.get("signer")
+            if not isinstance(signer, str) or signer.lower() != str(originator).lower():
+                return "FAIL:signer_mismatch"
+
+    # Witnessed precedence — both sides are independently witnessed AND bound to their subjects.
     if awts >= twts:
         return "FAIL:postdates_thread"
-    return "PASS"
+    # A PASS carries the claim it satisfies — never bare "PASS", so pre-existence can't read as origination.
+    return f"PASS:{claim}"
 
 
 def run(path):
     fx = json.load(open(path, encoding="utf-8"))
     cases = fx["cases"]
+    if not isinstance(cases, list) or len(cases) == 0:
+        print("0 cases — an empty corpus is not a pass")   # reject: fails==0 must require cases>0
+        return False
     fails = 0
     for c in cases:
         got = verdict(c["record"], c.get("resolution"))

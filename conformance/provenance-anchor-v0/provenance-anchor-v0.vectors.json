@@ -1,60 +1,195 @@
 {
   "profile": "provenance-anchor.v0",
-  "description": "Build-first origination gate. FIVE facts (per @pipavlo82): (1) content identity, (2) existence witness, (3) anchor subject binding, (4) thread subject binding — the thread witness is THIS proposal's OPENING boundary: the resolved forge_event PR must ADD the proposal's spec file (status=='added'), so a later amendment that merely MODIFIES it does not bind, and all PR-file pages are read or the resolver fails closed, (5) witnessed precedence. `resolution` is a MODEL INPUT (companion resolve_anchor.py produces + enforces it): {anchor:{content,witness_declared,witnessed_ts,subject_bound}, thread:{witnessed,witnessed_ts,subject_bound}}. The thread witness must also sit in the proposal's CANONICAL repository (erc->ethereum/ERCs, eip->ethereum/EIPs) — enforced in BOTH the deterministic gate (a non-canonical repo returns thread_not_bound regardless of a resolution claiming subject_bound=true) and the live resolver — and the spec path is matched EXACT-CASE (ERCS/erc-<id>.md), so a spoof repo or a case-variant path cannot impersonate the opening. The record carries `proposal` {kind,id}. Gate checks coherence, fails closed on a non-object/non-dict record or resolution, rejects bool where int is required. REAL rows: every row referencing ethereum/ERCs PRs 1810/1826/1932 carries that PR's EXACT GitHub created_at (1781183206 / 1781874038 / 1786012951), and only the on-chain 8299 (0xc3aeb16d…) and 8373 (0x04e1846f…) anchors are real. SYNTHETIC rows: proposal id >= 90000 and PR >= 990000 are ordering controls (postdates) with fabricated times, not presented as real PRs; the witnessed-8309 PASS and all witness tx values (0x0000…/0x1111…/…) are opaque model fixtures. Counts: 3 PASS, 12 FAIL, 12 UNVERIFIABLE = 27. Proves witnessed temporal + existence only, never semantic origination.",
+  "description": "provenance-anchor.v0 \u2014 build-first ORIGINATION gate. A record declares its `claim`: `origination` (the anchor tx MUST commit the sha256 digest of a canonical anchor-binding.v0 object naming proposal{kind,id,repo}+artifact{repo,commit}) or `pre_existence` (only witnessed precedence). A PASS carries its claim \u2014 PASS:origination | PASS:pre_existence \u2014 so pre-existence can never read as origination (@zexoverz/Faisal). Facts: content identity; existence witness (independent, never self-reported); anchor subject binding; thread subject binding (forge_event in the proposal's CANONICAL repo that ADDs the exact-case ERCS/erc-<id>.md); anchor->proposal binding (origination only: resolver recomputes the binding digest and checks the tx calldata commits it; optional signer->originator); witnessed precedence. `resolution` is a MODEL INPUT. REAL & DEMOTED: the on-chain 8299 (0xc3aeb16d\u2026, calldata commits sha256('hello')) and 8373 (0x04e1846f\u2026) anchors carry NO proposal binding, so they are pre_existence only, not origination. `ctrl-8299-tx-in-8373-not-bound` is Faisal's exact attack \u2014 a free-standing pre-existing tx placed in an origination record \u2014 and it FAILs anchor_not_bound. `origination-model-pass`/`-signer-pass` are MODEL fixtures pending a real minted anchor. Synthetic ordering controls use proposal id>=90000 / PR>=990000. Counts: 5 PASS / 17 FAIL / 13 UNVERIFIABLE = 35. Origination is a committed binding, never a coincidence of timing.",
   "cases": [
     {
-      "name": "8299-onchain-pass",
-      "record": {"proposal": {"kind": "erc", "id": 8299},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1810}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1779231274, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781183206, "subject_bound": true}},
-      "expected": "PASS"
+      "name": "8299-pre-existence-pass",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8299
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1810
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1779231274,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781183206,
+          "subject_bound": true
+        }
+      },
+      "expected": "PASS:pre_existence"
     },
     {
-      "name": "8373-onchain-pass",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
-      "expected": "PASS"
+      "name": "8373-pre-existence-pass",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
+      "expected": "PASS:pre_existence"
     },
     {
       "name": "8309-witnessed-commit-pass",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
           "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
-          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
-            "tx": "0x0000000000000000000000000000000000000000000000000000000000000000"}}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
-      "expected": "PASS"
+          "witness": {
+            "kind": "onchain_commitment",
+            "chain_id": 84532,
+            "tx": "0x0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1780400000,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
+      "expected": "PASS:pre_existence"
     },
-
     {
       "name": "ctrl-onchain-postdates",
-      "record": {"proposal": {"kind": "erc", "id": 90001},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 990001}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1784073600, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 90001
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990001
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1784073600,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:postdates_thread"
     },
     {
       "name": "ctrl-witness-postdates",
-      "record": {"proposal": {"kind": "erc", "id": 90002},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 990002}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 90002
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990002
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
           "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
-          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
-            "tx": "0x1111111111111111111111111111111111111111111111111111111111111111"}}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785000000, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+          "witness": {
+            "kind": "onchain_commitment",
+            "chain_id": 84532,
+            "tx": "0x1111111111111111111111111111111111111111111111111111111111111111"
+          }
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785000000,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:postdates_thread"
     },
     {
@@ -65,213 +200,1131 @@
     },
     {
       "name": "ctrl-malformed-tx",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532, "tx": "0xNOThex"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xNOThex"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:malformed_anchor"
     },
     {
       "name": "ctrl-malformed-witness-locator",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
           "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
-          "witness": {"kind": "onchain_commitment", "chain_id": 84532, "tx": "0xNOThex"}}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+          "witness": {
+            "kind": "onchain_commitment",
+            "chain_id": 84532,
+            "tx": "0xNOThex"
+          }
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1780400000,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:malformed_anchor"
     },
     {
       "name": "ctrl-bool-chain-id",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": true,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": true,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:malformed_anchor"
     },
     {
       "name": "ctrl-missing-anchor",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": null},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": null,
+        "claim": "pre_existence"
+      },
       "resolution": null,
       "expected": "FAIL:missing_anchor"
     },
     {
       "name": "ctrl-missing-thread-open",
-      "record": {"proposal": {"kind": "erc", "id": 8373}, "thread_open": null,
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": null,
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:missing_thread_open"
     },
     {
       "name": "ctrl-malformed-thread-open",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "self_declared", "ts": 1786012951}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "self_declared",
+            "ts": 1786012951
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:malformed_thread_open"
     },
     {
       "name": "ctrl-missing-proposal",
-      "record": {"thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:missing_proposal"
     },
     {
       "name": "ctrl-malformed-proposal",
-      "record": {"proposal": {"kind": "erc", "id": "8373"},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": "8373"
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:malformed_proposal"
     },
     {
       "name": "ctrl-fake-anchor-not-found",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"}},
-      "resolution": {"anchor": {"content": "not_found", "witness_declared": true, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "not_found",
+          "witness_declared": true,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "FAIL:anchor_not_found"
     },
-
     {
       "name": "unv-thread-not-bound",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": false}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": false
+        }
+      },
       "expected": "UNVERIFIABLE:thread_not_bound"
     },
     {
       "name": "unv-thread-spoof-repository",
-      "_note": "spoof thread ts (1786147200) is LATER than the anchor (1785436448) ON PURPOSE: with the canonical-repo guard removed this row would PASS on ordering, so the repo guard is the only thing rejecting it — a load-bearing control for the repository-binding boundary, not masked by postdates.",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "attacker/spoof-repo", "pr": 1}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786147200, "subject_bound": true}},
+      "_note": "spoof thread ts (1786147200) is LATER than the anchor (1785436448) ON PURPOSE: with the canonical-repo guard removed this row would PASS on ordering, so the repo guard is the only thing rejecting it \u2014 a load-bearing control for the repository-binding boundary, not masked by postdates.",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "attacker/spoof-repo",
+            "pr": 1
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786147200,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:thread_not_bound"
     },
     {
       "name": "unv-thread-amendment-modified",
-      "record": {"proposal": {"kind": "erc", "id": 7730},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1933}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1786000000, "subject_bound": false}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 7730
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1933
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786000000,
+          "subject_bound": false
+        }
+      },
       "expected": "UNVERIFIABLE:thread_not_bound"
     },
     {
       "name": "8309-bare-commit-unverifiable",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
-          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": false, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": false,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:no_publication_witness"
     },
     {
       "name": "unv-incoherent-resolution",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
-          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1780400000,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:incoherent_resolution"
     },
     {
       "name": "unv-witness-not-bound",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
           "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
-          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
-            "tx": "0x3333333333333333333333333333333333333333333333333333333333333333"}}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+          "witness": {
+            "kind": "onchain_commitment",
+            "chain_id": 84532,
+            "tx": "0x3333333333333333333333333333333333333333333333333333333333333333"
+          }
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1780400000,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:witness_not_bound"
     },
     {
       "name": "unv-transparency-unresolved",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
           "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
-          "witness": {"kind": "transparency_log"}}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+          "witness": {
+            "kind": "transparency_log"
+          }
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:witness_unresolved"
     },
     {
       "name": "unv-thread-unwitnessed",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": false, "witnessed_ts": null, "subject_bound": false}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1785436448,
+          "subject_bound": true
+        },
+        "thread": {
+          "witnessed": false,
+          "witnessed_ts": null,
+          "subject_bound": false
+        }
+      },
       "expected": "UNVERIFIABLE:thread_unwitnessed"
     },
     {
       "name": "unv-nonobject-resolution",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
       "resolution": "not-an-object",
       "expected": "UNVERIFIABLE:no_publication_witness"
     },
     {
       "name": "unv-pruned-history",
-      "record": {"proposal": {"kind": "erc", "id": 8299},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1810}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"}},
-      "resolution": {"anchor": {"content": "unavailable_pruned", "witness_declared": true, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1781183206, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8299
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1810
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "unavailable_pruned",
+          "witness_declared": true,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781183206,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:pruned_history"
     },
     {
       "name": "unv-rpc-unreachable",
-      "record": {"proposal": {"kind": "erc", "id": 8373},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1932}},
-        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
-          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
-      "resolution": {"anchor": {"content": "unavailable_rpc", "witness_declared": true, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1786012951, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "unavailable_rpc",
+          "witness_declared": true,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:rpc_unreachable"
     },
     {
       "name": "unv-git-source-unavailable",
-      "record": {"proposal": {"kind": "erc", "id": 8309},
-        "thread_open": {"witness": {"kind": "forge_event", "repo": "ethereum/ERCs", "pr": 1826}},
-        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
-          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"}},
-      "resolution": {"anchor": {"content": "unavailable_source", "witness_declared": false, "witnessed_ts": null, "subject_bound": false},
-        "thread": {"witnessed": true, "witnessed_ts": 1781874038, "subject_bound": true}},
+      "record": {
+        "proposal": {
+          "kind": "erc",
+          "id": 8309
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1826
+          }
+        },
+        "anchor": {
+          "kind": "git_commit",
+          "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"
+        },
+        "claim": "pre_existence"
+      },
+      "resolution": {
+        "anchor": {
+          "content": "unavailable_source",
+          "witness_declared": false,
+          "witnessed_ts": null,
+          "subject_bound": false
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1781874038,
+          "subject_bound": true
+        }
+      },
       "expected": "UNVERIFIABLE:source_unavailable"
+    },
+    {
+      "name": "origination-model-pass",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90100
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990100
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 90100,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": null
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "PASS:origination"
+    },
+    {
+      "name": "origination-signer-pass",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90101
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990101
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 90101,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          },
+          "originator": "0x85Fa13511D170FBe173761b63D7f8DD4A6f6Bf1A"
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": "0x85fa13511d170fbe173761b63d7f8dd4a6f6bf1a"
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "PASS:origination"
+    },
+    {
+      "name": "ctrl-8299-tx-in-8373-not-bound",
+      "_note": "Faisal's exact attack: a free-standing pre-existing tx (the real 8299 anchor, calldata sha256('hello')) placed in an ORIGINATION record for erc-8373. It commits no binding digest, so the live resolver returns bound=false and the gate FAILS. Pre-existence no longer buys origination.",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 8373
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 1932
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 8373,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "TMerlini/hbs-attestation-poc",
+              "commit": "f4bf328000000000000000000000000000000000"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1779231274,
+          "subject_bound": true,
+          "bound": false,
+          "signer": "0x85fa13511d170fbe173761b63d7f8dd4a6f6bf1a"
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786012951,
+          "subject_bound": true
+        }
+      },
+      "expected": "FAIL:anchor_not_bound"
+    },
+    {
+      "name": "ctrl-signer-mismatch",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90102
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990102
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 90102,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          },
+          "originator": "0x85Fa13511D170FBe173761b63D7f8DD4A6f6Bf1A"
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": "0xdeadbeef"
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "FAIL:signer_mismatch"
+    },
+    {
+      "name": "ctrl-binding-incoherent",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90103
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990103
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 88888,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": null
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "FAIL:binding_incoherent"
+    },
+    {
+      "name": "ctrl-malformed-binding",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90104
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990104
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": null
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "FAIL:malformed_binding"
+    },
+    {
+      "name": "unv-anchor-bound-unresolved",
+      "record": {
+        "claim": "origination",
+        "proposal": {
+          "kind": "erc",
+          "id": 90105
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990105
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 90105,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": null,
+          "signer": null
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "UNVERIFIABLE:anchor_bound_unresolved"
+    },
+    {
+      "name": "ctrl-malformed-claim",
+      "record": {
+        "claim": "bogus",
+        "proposal": {
+          "kind": "erc",
+          "id": 90106
+        },
+        "thread_open": {
+          "witness": {
+            "kind": "forge_event",
+            "repo": "ethereum/ERCs",
+            "pr": 990106
+          }
+        },
+        "anchor": {
+          "kind": "onchain_tx",
+          "chain_id": 84532,
+          "tx": "0x1111111111111111111111111111111111111111111111111111111111111111",
+          "binding": {
+            "schema": "anchor-binding.v0",
+            "proposal": {
+              "kind": "erc",
+              "id": 90106,
+              "repo": "ethereum/ERCs"
+            },
+            "artifact": {
+              "repo": "trustless-ai/recompute-kit",
+              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+            }
+          }
+        }
+      },
+      "resolution": {
+        "anchor": {
+          "content": "confirmed",
+          "witness_declared": true,
+          "witnessed_ts": 1786200000,
+          "subject_bound": true,
+          "bound": true,
+          "signer": null
+        },
+        "thread": {
+          "witnessed": true,
+          "witnessed_ts": 1786300000,
+          "subject_bound": true
+        }
+      },
+      "expected": "FAIL:malformed_claim"
     }
   ]
 }

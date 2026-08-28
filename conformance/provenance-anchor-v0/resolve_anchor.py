@@ -28,6 +28,7 @@ Usage:
 """
 from __future__ import annotations
 import datetime, json, sys, urllib.error, urllib.request
+import anchor_binding as ab  # recompute the binding digest to check the anchor tx commits it
 
 DEFAULT_RPC = {84532: "https://base-sepolia-rpc.publicnode.com"}
 UA = "provenance-anchor-v0"
@@ -41,29 +42,34 @@ def _rpc(url, method, params):
 
 
 def _tx_block_and_input(tx_hash, chain, rpc=None):
-    """Return (status, block_ts, calldata). status in found|not_found|unavailable_pruned|unavailable_rpc."""
+    """Return (status, block_ts, calldata, signer). status in found|not_found|unavailable_pruned|unavailable_rpc."""
     url = rpc or DEFAULT_RPC.get(chain)
     if not url:
-        return ("unavailable_rpc", None, None)
+        return ("unavailable_rpc", None, None, None)
     try:
         tx = _rpc(url, "eth_getTransactionByHash", [tx_hash])
         if "error" in tx:
-            return ("unavailable_rpc", None, None)
+            return ("unavailable_rpc", None, None, None)
         result = tx.get("result")
-        if not result or not result.get("blockNumber"):
-            return ("not_found", None, None)
+        # A null response CANNOT prove absence — only that THIS node doesn't have it. Fail to
+        # unavailable_rpc, never not_found, unless an independently complete source establishes absence.
+        if result is None:
+            return ("unavailable_rpc", None, None, None)
         calldata = (result.get("input") or "").lower()
+        signer = result.get("from")
+        if not result.get("blockNumber"):
+            return ("not_found", None, calldata, signer)   # present but unmined = genuinely not anchored
         blk = _rpc(url, "eth_getBlockByNumber", [result["blockNumber"], False])
         if "error" in blk:
             msg = blk["error"].get("message", "").lower()
             return (("unavailable_pruned" if any(k in msg for k in ("pruned", "unavailable", "missing"))
-                     else "unavailable_rpc"), None, calldata)
+                     else "unavailable_rpc"), None, calldata, signer)
         b = blk.get("result")
         if not b or not b.get("timestamp"):
-            return ("unavailable_pruned", None, calldata)
-        return ("found", int(b["timestamp"], 16), calldata)
+            return ("unavailable_pruned", None, calldata, signer)
+        return ("found", int(b["timestamp"], 16), calldata, signer)
     except (urllib.error.URLError, TimeoutError, ValueError):
-        return ("unavailable_rpc", None, None)
+        return ("unavailable_rpc", None, None, None)
 
 
 def _github_json(path):
@@ -76,12 +82,24 @@ def _github_json(path):
 def resolve_anchor_fact(anchor, rpc=None):
     kind = anchor.get("kind")
     if kind == "onchain_tx":
-        status, ts, _ = _tx_block_and_input(anchor["tx"], anchor["chain_id"], rpc)
+        status, ts, calldata, signer = _tx_block_and_input(anchor["tx"], anchor["chain_id"], rpc)
+        # anchor→proposal binding (origination): the tx must commit the digest of the canonical binding.
+        bound = None
+        b = anchor.get("binding")
+        if isinstance(b, dict) and calldata:
+            try:
+                d = ab.digest(b)[2:].lower()      # 32-byte digest, no 0x
+                bound = d in calldata
+            except ValueError:
+                bound = False
         if status == "found":
-            return {"content": "confirmed", "witness_declared": True, "witnessed_ts": ts, "subject_bound": True}
+            return {"content": "confirmed", "witness_declared": True, "witnessed_ts": ts,
+                    "subject_bound": True, "bound": bound, "signer": signer}
         if status == "not_found":
-            return {"content": "not_found", "witness_declared": True, "witnessed_ts": None, "subject_bound": False}
-        return {"content": status, "witness_declared": True, "witnessed_ts": None, "subject_bound": False}
+            return {"content": "not_found", "witness_declared": True, "witnessed_ts": None,
+                    "subject_bound": False, "bound": None, "signer": signer}
+        return {"content": status, "witness_declared": True, "witnessed_ts": None,
+                "subject_bound": False, "bound": None, "signer": signer}
 
     if kind == "git_commit":
         # Fact 1 — content identity (bytes stable). committer date deliberately ignored.
@@ -100,7 +118,7 @@ def resolve_anchor_fact(anchor, rpc=None):
             return base                                   # bare commit -> no witness
         base["witness_declared"] = True
         if w.get("kind") == "onchain_commitment":
-            status, ts, calldata = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
+            status, ts, calldata, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
             sha = anchor["commit"].lower()
             # Fact 3 — the commitment must actually carry this commit hash (40-hex, or raw 20 bytes).
             bound = bool(calldata) and (sha in calldata)
@@ -174,7 +192,7 @@ def resolve_thread_fact(thread_open, proposal, rpc=None):
             fn in wanted and st == "added" for fn, st in files)
         return {"witnessed": True, "witnessed_ts": ts, "subject_bound": bound}
     if w.get("kind") == "onchain_commitment":
-        status, ts, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
+        status, ts, _, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
         # An on-chain thread commitment would carry the proposal id; not wired here, so unbound.
         return {"witnessed": status == "found", "witnessed_ts": ts if status == "found" else None,
                 "subject_bound": False}

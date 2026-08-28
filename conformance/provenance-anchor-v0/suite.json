@@ -5,7 +5,7 @@
       "name": "origination-gate",
       "vectors": {
         "path": "provenance-anchor-v0.vectors.json",
-        "sha256": "8c8962d3c437453d8a85c48e2ba13dd01befc1b949eeca2f9ed6c25bd46cc70d"
+        "sha256": "0e6815bb4311f3f384d44a2cf8b11f64359a89820e07ab5c582d9b8acf061068"
       },
       "adapter": {
         "kind": "stdio",
@@ -16,11 +16,11 @@
   "companion": {
     "name": "live-resolver",
     "cmd": "python3 resolve_anchor.py",
-    "note": "non-deterministic (network); enforces canonical-repo + exact-case added-file thread binding, anchor subject binding, no self-reported time. Not graded."
+    "note": "non-deterministic (network); recomputes the anchor-binding digest and checks the tx commits it, enforces canonical-repo + added-file thread binding, null-tx=unavailable_rpc. Not graded."
   },
   "laneHint": "recomputable",
   "spec": {
     "path": "provenance-anchor-v0.spec.md",
-    "sha256": "f2bf91f750da20e5010349a8c19850ce48add0be15d4128b73aee9ce6fcbbe01"
+    "sha256": "528adff80003446b66249daf0b485bb42b628e541d55eeff0558bf5a1b38bd3e"
   }
 }

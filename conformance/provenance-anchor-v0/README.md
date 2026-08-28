@@ -4,16 +4,18 @@ The build-first origination gate: a proposal brought with a pre-built implementa
 (commit / on-chain tx) that existed **before** its discussion thread, and this lane verifies that claim by
 recomputation. **Witnessed** temporal + existence only — never semantic identity.
 
-Five facts, each independently established: **content identity**, **existence witness** (independent of the
-object's self-reported time), **anchor subject binding** (the anchor witness references this anchor),
-**thread subject binding** (the thread witness is this proposal's *opening* PR — it ADDs the proposal's spec
-file), and **witnessed precedence** (witnessed anchor time precedes witnessed *thread-open* time, both
-witnessed facts). Three-state verdict (PASS / FAIL:reason / UNVERIFIABLE:reason); no silent green.
+A record declares its **`claim`**: `origination` (the anchor tx must COMMIT the digest of a canonical
+`anchor-binding.v0` object naming proposal + implementation artifact) or `pre_existence` (only witnessed
+precedence). A PASS carries its claim — **`PASS:origination`** vs **`PASS:pre_existence`** — so pre-existence
+can never read as origination. Facts: content identity, existence witness (never self-reported), anchor
+subject binding, thread subject binding (opening PR in the canonical repo that ADDs the exact-case spec
+path), **anchor→proposal/artifact binding** (origination), and witnessed precedence. Three-state verdict;
+no silent green; empty corpus rejected.
 
 ## Run
 
 ```
-# deterministic verdict logic (graded suite — CI-safe, no network). 27 vectors: 3 PASS / 12 FAIL / 12 UNVERIFIABLE
+# deterministic verdict logic (graded suite — CI-safe, no network). 35 vectors: 5 PASS / 17 FAIL / 13 UNVERIFIABLE
 python3 provenance_gate.py provenance-anchor-v0.vectors.json
 
 # live resolution of a declared record → the resolution the gate consumes (fetches + ENFORCES the facts)
