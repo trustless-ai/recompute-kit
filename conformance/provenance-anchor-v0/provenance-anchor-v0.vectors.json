@@ -1,0 +1,122 @@
+{
+  "profile": "provenance-anchor.v0",
+  "description": "Build-first origination gate, reworked to @pipavlo82's three-fact contract: content identity / existence witness / precedence. Timestamp authority is NOT uniform across anchor kinds. An on-chain tx/deploy carries its own witness (the block timestamp is consensus-set); a bare git commit does not (author/committer dates are backdatable fields inside the object). So a git anchor PASSES only with a SEPARATE independent witness (on-chain commitment of the commit hash, transparency-log entry, or forge event); with none it is UNVERIFIABLE:no_publication_witness, never PASS. `record.anchor` carries NO self-reported time. `resolution` is a MODEL INPUT (companion resolve_anchor.py produces the real one): content in {confirmed, not_found, unavailable_pruned, unavailable_rpc, unavailable_source}; witness_declared bool; witnessed_ts the INDEPENDENTLY-witnessed time (or null). Precedence compares witnessed_ts, never a declared value. Positive controls: the two on-chain anchors (8299, 8373) PASS on their consensus witness; the bare-commit 8309 is UNVERIFIABLE until witnessed, and PASSES only when accompanied by an on-chain commitment witness. The witness `tx` values in the git-witnessed cases (0x0000…, 0x1111…, 0x2222…) are OPAQUE MODEL FIXTURES — no such on-chain commitment exists yet for 8309; the resolution's witnessed_ts is the model input (exactly as pq-key-binding.v1/manifest models membership), so no real witness is claimed here. The two on-chain positive controls, by contrast, carry REAL Base Sepolia txs whose block timestamps resolve live. Proves temporal witness + existence only, never semantic origination.",
+  "cases": [
+    {
+      "name": "8299-wyriwe-onchain-pass",
+      "record": {"erc": "8299", "thread_opened_ts": 1779926400,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1779231274},
+      "expected": "PASS"
+    },
+    {
+      "name": "8373-pq-binding-onchain-pass",
+      "record": {"erc": "8373", "thread_opened_ts": 1785888000,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448},
+      "expected": "PASS"
+    },
+    {
+      "name": "8309-bare-commit-unverifiable",
+      "record": {"erc": "8309", "thread_opened_ts": 1781308800,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"}},
+      "resolution": {"content": "confirmed", "witness_declared": false, "witnessed_ts": null},
+      "expected": "UNVERIFIABLE:no_publication_witness"
+    },
+    {
+      "name": "8309-witnessed-commit-pass",
+      "record": {"erc": "8309", "thread_opened_ts": 1781308800,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
+          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
+            "tx": "0x0000000000000000000000000000000000000000000000000000000000000000"}}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000},
+      "expected": "PASS"
+    },
+    {
+      "name": "ctrl-onchain-postdates-thread",
+      "record": {"erc": "8373-postdated", "thread_opened_ts": 1784073600,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448},
+      "expected": "FAIL:postdates_thread"
+    },
+    {
+      "name": "ctrl-witness-postdates-thread",
+      "record": {"erc": "8309-late-witness", "thread_opened_ts": 1781308800,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
+          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
+            "tx": "0x1111111111111111111111111111111111111111111111111111111111111111"}}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785000000},
+      "expected": "FAIL:postdates_thread"
+    },
+    {
+      "name": "ctrl-malformed-tx",
+      "record": {"erc": "x", "thread_opened_ts": 1785888000,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532, "tx": "0xNOThex"}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448},
+      "expected": "FAIL:malformed_anchor"
+    },
+    {
+      "name": "ctrl-malformed-witness-locator",
+      "record": {"erc": "x", "thread_opened_ts": 1785888000,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
+          "witness": {"kind": "onchain_commitment", "chain_id": 84532, "tx": "0xNOThex"}}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1780400000},
+      "expected": "FAIL:malformed_anchor"
+    },
+    {
+      "name": "ctrl-missing-anchor",
+      "record": {"erc": "x", "thread_opened_ts": 1785888000, "anchor": null},
+      "resolution": null,
+      "expected": "FAIL:missing_anchor"
+    },
+    {
+      "name": "ctrl-fake-anchor-not-found",
+      "record": {"erc": "x", "thread_opened_ts": 1785888000,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"}},
+      "resolution": {"content": "not_found", "witness_declared": true, "witnessed_ts": null},
+      "expected": "FAIL:anchor_not_found"
+    },
+    {
+      "name": "unv-witness-unresolved",
+      "record": {"erc": "8309", "thread_opened_ts": 1781308800,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52",
+          "witness": {"kind": "onchain_commitment", "chain_id": 84532,
+            "tx": "0x2222222222222222222222222222222222222222222222222222222222222222"}}},
+      "resolution": {"content": "confirmed", "witness_declared": true, "witnessed_ts": null},
+      "expected": "UNVERIFIABLE:witness_unresolved"
+    },
+    {
+      "name": "unv-pruned-history",
+      "record": {"erc": "8299", "thread_opened_ts": 1779926400,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0xc3aeb16d0aef167e2ebc6d4afc9333fcd13a71b8c02e5485bc6be7491e393319"}},
+      "resolution": {"content": "unavailable_pruned", "witness_declared": true, "witnessed_ts": null},
+      "expected": "UNVERIFIABLE:pruned_history"
+    },
+    {
+      "name": "unv-rpc-unreachable",
+      "record": {"erc": "8373", "thread_opened_ts": 1785888000,
+        "anchor": {"kind": "onchain_tx", "chain_id": 84532,
+          "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
+      "resolution": {"content": "unavailable_rpc", "witness_declared": true, "witnessed_ts": null},
+      "expected": "UNVERIFIABLE:rpc_unreachable"
+    },
+    {
+      "name": "unv-git-source-unavailable",
+      "record": {"erc": "8309", "thread_opened_ts": 1781308800,
+        "anchor": {"kind": "git_commit", "repo": "trustless-ai/ccip-router",
+          "commit": "211c8ba1d49fae75457e135252e4d1c4fd4e0f52"}},
+      "resolution": {"content": "unavailable_source", "witness_declared": false, "witnessed_ts": null},
+      "expected": "UNVERIFIABLE:source_unavailable"
+    }
+  ]
+}

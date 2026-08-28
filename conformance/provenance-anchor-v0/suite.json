@@ -1,0 +1,26 @@
+{
+  "profile": "provenance-anchor.v0",
+  "checks": [
+    {
+      "name": "origination-gate",
+      "vectors": {
+        "path": "provenance-anchor-v0.vectors.json",
+        "sha256": "f1e26a3aec0bac0f7bc78b07355728857b4abeaccf4b1089d714386697a261f9"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 provenance_gate.py provenance-anchor-v0.vectors.json"
+      }
+    }
+  ],
+  "companion": {
+    "name": "live-resolver",
+    "cmd": "python3 resolve_anchor.py",
+    "note": "non-deterministic (network); produces the resolution the gate consumes. Not graded."
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "provenance-anchor-v0.spec.md",
+    "sha256": "c53fe0bac2b8a856251b777adac4ea933106ee1431c6f6943b3ca5f4dd4d286c"
+  }
+}
