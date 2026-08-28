@@ -5,10 +5,18 @@ schema to one **versioned** serializer contract, prospective from an explicit co
 no company and privileges no party — any producer, any binding subject uses the same record
 shape (`binding-record.schema.json`).
 
-This directory ships the **shape and its check**, not yet a record. There is no `records/`
-directory: a real binding record lands later, and **its authority begins only when it actually
-lands** — the schema deliberately does not encode "this PR activates a binding". The registry is
-the frozen shape a future record must take.
+This directory ships the **shape and its check**, plus the first real record. **its authority
+begins only when it actually lands** — the schema deliberately does not encode "this PR activates
+a binding". The registry is the frozen shape every record must take.
+
+`records/tsei.frozen-artifact.json` is the first landed record: `tsei.frozen-artifact` bound to
+`encode-json-utf8-lf.v0`, effective at `github.com/pipavlo82/crystal-receipt@45b46bf7` (PR #218's
+merge commit). Independently recomputed before landing here — the vendored spec/vectors at that
+commit are byte-identical to `trustless-ai/recompute-kit@f1d75a53`'s canonical pre-images, the
+adopted encoder resolves to the pinned `sha256`, and the real 48-vector suite reproduces (`bun
+test tests/receiptos/tsei-encode-json-utf8-lf-v0.test.ts` in crystal-receipt: 6 pass, 0 fail, 203
+assertions). It validates clean against `binding-record.schema.json` via `validate_binding_record.py`'s
+own `verdict()` function.
 
 ## What a record is, and is not
 
