@@ -930,34 +930,35 @@
       "expected": "UNVERIFIABLE:source_unavailable"
     },
     {
-      "name": "origination-model-pass",
+      "name": "origination-real-anchor-pass",
       "record": {
         "claim": "origination",
         "proposal": {
-          "kind": "erc",
-          "id": 90100
+          "kind": "repo",
+          "id": 1,
+          "repo": "trustless-ai/recompute-kit"
         },
         "thread_open": {
           "witness": {
             "kind": "forge_event",
-            "repo": "ethereum/ERCs",
-            "pr": 990100
+            "repo": "trustless-ai/recompute-kit",
+            "pr": 1
           }
         },
         "anchor": {
           "kind": "onchain_tx",
           "chain_id": 84532,
-          "tx": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tx": "0x039e0e8da5ff4b0f73c648930d41a0549cd9b28eb5660f6c22a0209f8771f032",
           "binding": {
             "schema": "anchor-binding.v0",
             "proposal": {
-              "kind": "erc",
-              "id": 90100,
-              "repo": "ethereum/ERCs"
+              "kind": "repo",
+              "id": 1,
+              "repo": "trustless-ai/recompute-kit"
             },
             "artifact": {
               "repo": "trustless-ai/recompute-kit",
-              "commit": "c1ea227aa286828817d60814f0c10a70617b8066"
+              "commit": "1da22d4026c0b27ecc6f0013cb9696072b8578cf"
             }
           }
         }
@@ -966,18 +967,19 @@
         "anchor": {
           "content": "confirmed",
           "witness_declared": true,
-          "witnessed_ts": 1786200000,
+          "witnessed_ts": 1787938798,
           "subject_bound": true,
           "bound": true,
-          "signer": null
+          "signer": "0x85fa13511d170fbe173761b63d7f8dd4a6f6bf1a"
         },
         "thread": {
           "witnessed": true,
-          "witnessed_ts": 1786300000,
+          "witnessed_ts": 1788000000,
           "subject_bound": true
         }
       },
-      "expected": "PASS:origination"
+      "expected": "PASS:origination",
+      "_note": "REAL positive: anchor tx 0x039e0e8da5ff4b0f73c648930d41a0549cd9b28eb5660f6c22a0209f8771f032 on Base Sepolia commits sha256(anchor-binding.v0{proposal:repo/trustless-ai-recompute-kit#1, artifact:trustless-ai/recompute-kit@1da22d4026c0b27ecc6f0013cb9696072b8578cf})=0xdc892599cf26a2bed06c53c4d069bcf5d9b50a70eb6853d86abe91891137c0f3, block 46085255 ts 1787938798. The anchor side is live-recomputable (resolve_anchor.py returns bound=true, signer 0x85fa\u2026bf1a); the thread side is a MODEL input pending the standard's formal opening PR (a genuine build-first: the anchor exists first). No originator declared \u2014 no authorship claim; the org's own artifact, neutral."
     },
     {
       "name": "origination-signer-pass",

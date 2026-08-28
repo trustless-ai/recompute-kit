@@ -5,7 +5,7 @@
       "name": "origination-gate",
       "vectors": {
         "path": "provenance-anchor-v0.vectors.json",
-        "sha256": "0e6815bb4311f3f384d44a2cf8b11f64359a89820e07ab5c582d9b8acf061068"
+        "sha256": "b5417c3225edb7e2a587abcf290be8ca9c8f3e259efa03569853dff5661a1946"
       },
       "adapter": {
         "kind": "stdio",
