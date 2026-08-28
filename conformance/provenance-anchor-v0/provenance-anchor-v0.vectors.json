@@ -162,12 +162,13 @@
     },
     {
       "name": "unv-thread-spoof-repository",
+      "_note": "spoof thread ts (1786147200) is LATER than the anchor (1785436448) ON PURPOSE: with the canonical-repo guard removed this row would PASS on ordering, so the repo guard is the only thing rejecting it — a load-bearing control for the repository-binding boundary, not masked by postdates.",
       "record": {"proposal": {"kind": "erc", "id": 8373},
         "thread_open": {"witness": {"kind": "forge_event", "repo": "attacker/spoof-repo", "pr": 1}},
         "anchor": {"kind": "onchain_tx", "chain_id": 84532,
           "tx": "0x04e1846fe1c6491584d4f58e630851e92663db7ef0453c649d7d019dfdc6349c"}},
       "resolution": {"anchor": {"content": "confirmed", "witness_declared": true, "witnessed_ts": 1785436448, "subject_bound": true},
-        "thread": {"witnessed": true, "witnessed_ts": 1700000000, "subject_bound": true}},
+        "thread": {"witnessed": true, "witnessed_ts": 1786147200, "subject_bound": true}},
       "expected": "UNVERIFIABLE:thread_not_bound"
     },
     {
