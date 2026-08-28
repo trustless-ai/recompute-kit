@@ -19,7 +19,8 @@ Enforcement that lives HERE:
       - transparency_log / forge_event: NO backend is wired, so witnessed_ts = None (UNVERIFIABLE:
         witness_unresolved). We never read a caller-supplied time — that would be self-reported.
   * thread-open — a witnessed boundary, not a record field: forge_event resolves the ERC PR's GitHub-stamped
-    created_at; onchain_commitment resolves a tx block timestamp.
+    created_at, AND binds it to the scored proposal by requiring the PR to touch that proposal's spec file
+    (subject_bound) — otherwise a caller could point at a later, unrelated PR.
 
 Usage:
   python3 resolve_anchor.py '<record-json>'          # prints {"anchor":{...},"thread":{...}}
@@ -113,24 +114,45 @@ def resolve_anchor_fact(anchor, rpc=None):
         return base
 
 
-def resolve_thread_fact(thread_open, rpc=None):
+def _proposal_files(proposal):
+    """The spec file(s) whose presence in a PR proves that PR opens THIS proposal."""
+    if not isinstance(proposal, dict) or not isinstance(proposal.get("id"), int):
+        return ()
+    n = proposal["id"]
+    if proposal.get("kind") == "erc":
+        return (f"ercs/erc-{n}.md",)
+    if proposal.get("kind") == "eip":
+        return (f"eips/eip-{n}.md",)
+    return ()
+
+
+def resolve_thread_fact(thread_open, proposal, rpc=None):
     w = (thread_open or {}).get("witness") or {}
     if w.get("kind") == "forge_event":
         try:
             data = _github_json(f"repos/{w['repo']}/pulls/{w['pr']}")
             iso = data["created_at"].replace("Z", "+00:00")   # GitHub-stamped, not author-controlled
-            return {"witnessed": True, "witnessed_ts": int(datetime.datetime.fromisoformat(iso).timestamp())}
+            ts = int(datetime.datetime.fromisoformat(iso).timestamp())
+            # Fact 4 — thread subject binding: the PR must be the one that OPENS this proposal, i.e. it
+            # touches the proposal's spec file. Otherwise a caller could point at any later PR.
+            wanted = _proposal_files(proposal)
+            files = _github_json(f"repos/{w['repo']}/pulls/{w['pr']}/files")
+            paths = {f.get("filename", "").lower() for f in files}
+            bound = bool(wanted) and any(p in paths for p in wanted)
+            return {"witnessed": True, "witnessed_ts": ts, "subject_bound": bound}
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, KeyError):
-            return {"witnessed": False, "witnessed_ts": None}
+            return {"witnessed": False, "witnessed_ts": None, "subject_bound": False}
     if w.get("kind") == "onchain_commitment":
         status, ts, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
-        return {"witnessed": status == "found", "witnessed_ts": ts if status == "found" else None}
-    return {"witnessed": False, "witnessed_ts": None}
+        # An on-chain thread commitment would carry the proposal id; not wired here, so unbound.
+        return {"witnessed": status == "found", "witnessed_ts": ts if status == "found" else None,
+                "subject_bound": False}
+    return {"witnessed": False, "witnessed_ts": None, "subject_bound": False}
 
 
 def resolve(record, rpc=None):
     return {"anchor": resolve_anchor_fact(record["anchor"], rpc),
-            "thread": resolve_thread_fact(record.get("thread_open"), rpc)}
+            "thread": resolve_thread_fact(record.get("thread_open"), record.get("proposal"), rpc)}
 
 
 if __name__ == "__main__":

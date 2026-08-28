@@ -5,7 +5,7 @@
       "name": "origination-gate",
       "vectors": {
         "path": "provenance-anchor-v0.vectors.json",
-        "sha256": "ab0b91ae514f17ac2e084bc2d129f2f01f4a7d07ce5575c554d287edd1cb97c7"
+        "sha256": "a130ce2ecbb52625516a8c65f11688368d07242f34548df397af4e1b6c2c43ca"
       },
       "adapter": {
         "kind": "stdio",
@@ -16,7 +16,7 @@
   "companion": {
     "name": "live-resolver",
     "cmd": "python3 resolve_anchor.py",
-    "note": "non-deterministic (network); fetches AND enforces the facts (subject binding, no self-reported time, witnessed thread-open). Not graded."
+    "note": "non-deterministic (network); fetches AND enforces the facts (anchor+thread subject binding, no self-reported time, witnessed thread-open). Not graded."
   },
   "laneHint": "recomputable",
   "spec": {

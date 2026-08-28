@@ -5,17 +5,20 @@ SCOPE — deterministic verdict logic. Resolution is a MODEL INPUT (companion re
 real one); the graded suite stays byte-deterministic. It proves a WITNESSED temporal + existence claim and
 nothing about semantics.
 
-FOUR facts, each independently established (extends @pipavlo82's three-fact contract — both SIDES of the
-comparison must be witnessed, and the witness must be BOUND to the thing it witnesses):
+FIVE facts, each independently established (extends @pipavlo82's contract — both SIDES of the comparison
+must be witnessed, and every witness must be BOUND to the subject it witnesses):
   1. content identity   — the object exists and its bytes/hash are stable.
   2. existence witness   — an INDEPENDENT observation of when the object was public; NOT its self-reported
                            time. On-chain tx: intrinsic (consensus block). Git commit: a SEPARATE witness.
-  3. subject binding     — the witness must reference THIS subject. An on-chain commitment of a commit must
-                           actually carry that commit hash in its calldata; a block timestamp from an
+  3. anchor subject binding — the anchor witness must reference THIS anchor. An on-chain commitment of a
+                           commit must carry that commit hash in its calldata; a block timestamp from an
                            unrelated tx is not a witness of the commit.
-  4. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time.
-                           thread-open is itself a witnessed fact (e.g. the ERC PR's forge-stamped
-                           creation), never an unverified record field a caller can move.
+  4. thread subject binding — the thread witness must be THIS proposal's opening boundary. A forge_event
+                           proves when *a* PR opened; the gate requires that PR to be the one opening the
+                           scored proposal (its file), or a caller could select a later PR to manufacture
+                           precedence.
+  5. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time;
+                           both sides are witnessed facts, never unverified record fields a caller can move.
 
 The gate does not trust the resolution blindly: it checks the resolution is COHERENT with the declared
 anchor (a bare commit cannot claim a witness), fails closed on a non-object resolution, and rejects bool
@@ -24,9 +27,9 @@ where an int is required. If any fact is unmet the verdict is UNVERIFIABLE or FA
 Verdict (closed enumeration, never a silent green):
   PASS
   FAIL:missing_anchor | malformed_anchor | missing_thread_open | malformed_thread_open
-      | anchor_not_found | postdates_thread
+      | missing_proposal | malformed_proposal | anchor_not_found | postdates_thread
   UNVERIFIABLE:no_publication_witness | witness_unresolved | witness_not_bound | incoherent_resolution
-      | thread_unwitnessed | pruned_history | rpc_unreachable | source_unavailable
+      | thread_unwitnessed | thread_not_bound | pruned_history | rpc_unreachable | source_unavailable
 
 Usage: python3 provenance_gate.py provenance-anchor-v0.vectors.json
 Exit 0 iff every case reproduces its expected verdict, else 1.
@@ -39,6 +42,7 @@ SHA_RE = re.compile(r"^[0-9a-fA-F]{40}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 ANCHOR_WITNESS_KINDS = {"onchain_commitment", "transparency_log", "forge_event"}
 THREAD_WITNESS_KINDS = {"onchain_commitment", "forge_event"}
+PROPOSAL_KINDS = {"erc", "eip"}
 CONTENT_UNAVAILABLE = {"unavailable_pruned": "pruned_history",
                        "unavailable_rpc": "rpc_unreachable",
                        "unavailable_source": "source_unavailable"}
@@ -89,6 +93,16 @@ def well_formed_thread(thread_open):
     return _well_formed_witness(thread_open.get("witness"), THREAD_WITNESS_KINDS)
 
 
+def well_formed_proposal(proposal):
+    if not isinstance(proposal, dict):
+        return "not_an_object"
+    if proposal.get("kind") not in PROPOSAL_KINDS:
+        return "kind"
+    if not _is_int(proposal.get("id")):
+        return "id"
+    return None
+
+
 def anchor_expects_witness(anchor):
     if anchor.get("kind") == "onchain_tx":
         return True                       # intrinsic — the block is the witness
@@ -110,6 +124,13 @@ def verdict(record, resolution):
         return "FAIL:missing_thread_open"
     if well_formed_thread(thread_open) is not None:
         return "FAIL:malformed_thread_open"
+    # The subject being scored — the thread witness must bind to THIS proposal, or a caller could
+    # point at a later, unrelated PR and manufacture precedence.
+    proposal = record.get("proposal")
+    if proposal is None:
+        return "FAIL:missing_proposal"
+    if well_formed_proposal(proposal) is not None:
+        return "FAIL:malformed_proposal"
 
     # Fail closed on a non-object resolution (never crash, never pass).
     if not isinstance(resolution, dict):
@@ -150,7 +171,12 @@ def verdict(record, resolution):
     if not _is_int(twts):
         return "UNVERIFIABLE:thread_unwitnessed"
 
-    # Witnessed precedence — both sides are now independently witnessed.
+    # Fact 5 — thread subject binding: the resolved forge event must be THIS proposal's opening boundary,
+    # not any later PR a caller selected. (Symmetric with anchor subject binding.)
+    if not tres.get("subject_bound"):
+        return "UNVERIFIABLE:thread_not_bound"
+
+    # Witnessed precedence — both sides are now independently witnessed AND bound to their subjects.
     if awts >= twts:
         return "FAIL:postdates_thread"
     return "PASS"
