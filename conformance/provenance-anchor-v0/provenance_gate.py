@@ -13,10 +13,10 @@ must be witnessed, and every witness must be BOUND to the subject it witnesses):
   3. anchor subject binding — the anchor witness must reference THIS anchor. An on-chain commitment of a
                            commit must carry that commit hash in its calldata; a block timestamp from an
                            unrelated tx is not a witness of the commit.
-  4. thread subject binding — the thread witness must be THIS proposal's opening boundary. A forge_event
-                           proves when *a* PR opened; the gate requires that PR to be the one opening the
-                           scored proposal (its file), or a caller could select a later PR to manufacture
-                           precedence.
+  4. thread subject binding — the thread witness must be THIS proposal's opening boundary: a forge_event in
+                           the proposal's CANONICAL repository (erc->ethereum/ERCs, eip->ethereum/EIPs) that
+                           ADDs the proposal's EXACT-CASE spec path. A different repo, a modify, or a
+                           case-variant path is not the opening, or a caller could manufacture precedence.
   5. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time;
                            both sides are witnessed facts, never unverified record fields a caller can move.
 
@@ -43,6 +43,9 @@ REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 ANCHOR_WITNESS_KINDS = {"onchain_commitment", "transparency_log", "forge_event"}
 THREAD_WITNESS_KINDS = {"onchain_commitment", "forge_event"}
 PROPOSAL_KINDS = {"erc", "eip"}
+# A proposal opens in exactly one canonical repository — a forge_event from any other repo that merely adds
+# the same path cannot be the opening boundary (repo names compared case-insensitively, as GitHub does).
+CANONICAL_REPO = {"erc": "ethereum/ERCs", "eip": "ethereum/EIPs"}
 CONTENT_UNAVAILABLE = {"unavailable_pruned": "pruned_history",
                        "unavailable_rpc": "rpc_unreachable",
                        "unavailable_source": "source_unavailable"}
@@ -171,8 +174,14 @@ def verdict(record, resolution):
     if not _is_int(twts):
         return "UNVERIFIABLE:thread_unwitnessed"
 
-    # Fact 5 — thread subject binding: the resolved forge event must be THIS proposal's opening boundary,
-    # not any later PR a caller selected. (Symmetric with anchor subject binding.)
+    # Fact 4 — thread subject binding. The witness must sit in the proposal's CANONICAL repository, or a
+    # spoof repo that adds the same path could impersonate the opening — regardless of what the resolution
+    # claims. Enforce the repo binding here (deterministic coherence) as well as in the live resolver.
+    tw = thread_open.get("witness", {})
+    if tw.get("kind") == "forge_event":
+        canon = CANONICAL_REPO.get(proposal["kind"])
+        if not canon or str(tw.get("repo", "")).lower() != canon.lower():
+            return "UNVERIFIABLE:thread_not_bound"
     if not tres.get("subject_bound"):
         return "UNVERIFIABLE:thread_not_bound"
 

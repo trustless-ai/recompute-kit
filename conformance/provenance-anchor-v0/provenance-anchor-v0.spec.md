@@ -33,10 +33,13 @@ witnesses:
    commit must carry that commit hash in its calldata; the block timestamp of an unrelated transaction is
    not a witness of the commit.
 4. **thread subject binding** — the thread witness must be *this proposal's* **opening** boundary. A
-   `forge_event` PR binds only if it **ADDs** the proposal's spec file (`ERCS/erc-<id>.md`,
-   `status == "added"`) — a later amendment that merely *modifies* the file does not bind, so a caller
-   cannot substitute a later PR to manufacture a later thread-open. All PR-file pages are read, or the
-   resolver fails closed.
+   `forge_event` PR binds only if **(a)** it is in the proposal's **canonical repository** (erc →
+   `ethereum/ERCs`, eip → `ethereum/EIPs`; repo compared case-insensitively) **and (b)** it **ADDs** the
+   proposal's spec file at its **exact-case** path (`ERCS/erc-<id>.md`, `status == "added"`). A spoof
+   repository that adds the same path, a later amendment that merely *modifies* the file, or a case-variant
+   path is **not** the opening. Both conditions are enforced in the deterministic gate (a non-canonical repo
+   returns `thread_not_bound` regardless of a resolution claiming `subject_bound=true`) and the live
+   resolver. All PR-file pages are read, or the resolver fails closed.
 5. **witnessed precedence** — the witnessed anchor time strictly precedes the witnessed **thread-open**
    time; both sides are witnessed facts, never unverified record fields.
 
@@ -68,12 +71,14 @@ ERC PR's GitHub-stamped `created_at`, bound via the added-file rule above) or `o
   `incoherent_resolution`, `thread_unwitnessed`, `thread_not_bound`, `pruned_history`, `rpc_unreachable`,
   `source_unavailable`.
 
-## Controls — 26 vectors: **3 PASS · 12 FAIL · 11 UNVERIFIABLE**
+## Controls — 27 vectors: **3 PASS · 12 FAIL · 12 UNVERIFIABLE**
 
-Each defect class has a control that must not pass, including `thread_not_bound` (unrelated PR **and** a
-real amendment PR that only modifies the file — `ethereum/ERCs` #1933 modifies `erc-7730.md`), `malformed_
-record`, `missing`/`malformed_proposal`, `bool chain_id`, and non-object resolution. Can-fail is shown by
-mutation (move the witnessed thread-open before the witnessed anchor → `FAIL:postdates_thread`).
+Each defect class has a control that must not pass, including `thread_not_bound` in three distinct shapes —
+an unrelated PR, a real amendment PR that only *modifies* the file (`ethereum/ERCs` #1933 modifies
+`erc-7730.md`), and a **spoof repository** (`attacker/spoof-repo` supplying `subject_bound=true`, rejected
+by the canonical-repo check) — plus `malformed_record`, `missing`/`malformed_proposal`, `bool chain_id`,
+and non-object resolution. Can-fail is shown by mutation (move the witnessed thread-open before the
+witnessed anchor → `FAIL:postdates_thread`).
 
 **Real vs synthetic / fixture, stated plainly:**
 - **Real:** every row referencing `ethereum/ERCs` PRs **1810 / 1826 / 1932** carries that PR's **exact**

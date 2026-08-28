@@ -114,15 +114,19 @@ def resolve_anchor_fact(anchor, rpc=None):
         return base
 
 
+# A proposal opens in exactly one canonical repository, at one exact-case path.
+CANONICAL_REPO = {"erc": "ethereum/ERCs", "eip": "ethereum/EIPs"}
+
+
 def _proposal_files(proposal):
-    """The spec file(s) whose presence in a PR proves that PR opens THIS proposal."""
+    """The EXACT-CASE canonical spec path whose 'added' status proves a PR opens THIS proposal."""
     if not isinstance(proposal, dict) or not isinstance(proposal.get("id"), int):
         return ()
     n = proposal["id"]
     if proposal.get("kind") == "erc":
-        return (f"ercs/erc-{n}.md",)
+        return (f"ERCS/erc-{n}.md",)
     if proposal.get("kind") == "eip":
-        return (f"eips/eip-{n}.md",)
+        return (f"EIPS/eip-{n}.md",)
     return ()
 
 
@@ -138,7 +142,7 @@ def _github_pr_files(repo, pr):
             return None
         if not isinstance(data, list):
             return None
-        out += [((f.get("filename") or "").lower(), f.get("status")) for f in data]
+        out += [(f.get("filename") or "", f.get("status")) for f in data]  # EXACT case — paths are case-sensitive
         if len(data) < 100:
             return out
         page += 1
@@ -155,10 +159,15 @@ def resolve_thread_fact(thread_open, proposal, rpc=None):
             ts = int(datetime.datetime.fromisoformat(iso).timestamp())
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, KeyError):
             return {"witnessed": False, "witnessed_ts": None, "subject_bound": False}
-        # Fact 4 — thread subject binding: the PR must be the one that OPENS this proposal, i.e. it ADDS
-        # the proposal's spec file. A later amendment that merely MODIFIES the same file would otherwise
-        # bind and manufacture a later thread-open. Require status == "added"; fail closed if files can't
-        # be fully read.
+        # Fact 4 — thread subject binding. Two conditions, both required:
+        #  (a) the witness repo is the proposal's CANONICAL repo (a spoof repo adding the same path is not
+        #      the opening), compared case-insensitively as GitHub treats repo names;
+        #  (b) the PR ADDs the proposal's EXACT-CASE spec path (a modify, or a case-variant path, is not the
+        #      opening). All file pages read, or fail closed.
+        kind = proposal.get("kind") if isinstance(proposal, dict) else None
+        canon = CANONICAL_REPO.get(kind)
+        if not canon or str(w.get("repo", "")).lower() != canon.lower():
+            return {"witnessed": True, "witnessed_ts": ts, "subject_bound": False}
         wanted = _proposal_files(proposal)
         files = _github_pr_files(w["repo"], w["pr"])
         bound = bool(wanted) and files is not None and any(

@@ -13,7 +13,7 @@ witnessed facts). Three-state verdict (PASS / FAIL:reason / UNVERIFIABLE:reason)
 ## Run
 
 ```
-# deterministic verdict logic (graded suite — CI-safe, no network). 26 vectors: 3 PASS / 12 FAIL / 11 UNVERIFIABLE
+# deterministic verdict logic (graded suite — CI-safe, no network). 27 vectors: 3 PASS / 12 FAIL / 12 UNVERIFIABLE
 python3 provenance_gate.py provenance-anchor-v0.vectors.json
 
 # live resolution of a declared record → the resolution the gate consumes (fetches + ENFORCES the facts)
