@@ -126,6 +126,26 @@ def _proposal_files(proposal):
     return ()
 
 
+def _github_pr_files(repo, pr):
+    """Every changed file (filename, status) across ALL pages, or None if it couldn't be fully fetched.
+    GitHub returns 30 files by default; relying on that could miss the proposal file on a later page, so
+    we paginate at 100/page and fail closed (None) on any error rather than under-reading."""
+    out, page = [], 1
+    while True:
+        try:
+            data = _github_json(f"repos/{repo}/pulls/{pr}/files?per_page=100&page={page}")
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError):
+            return None
+        if not isinstance(data, list):
+            return None
+        out += [((f.get("filename") or "").lower(), f.get("status")) for f in data]
+        if len(data) < 100:
+            return out
+        page += 1
+        if page > 50:            # safety bound; fail closed rather than loop
+            return None
+
+
 def resolve_thread_fact(thread_open, proposal, rpc=None):
     w = (thread_open or {}).get("witness") or {}
     if w.get("kind") == "forge_event":
@@ -133,15 +153,17 @@ def resolve_thread_fact(thread_open, proposal, rpc=None):
             data = _github_json(f"repos/{w['repo']}/pulls/{w['pr']}")
             iso = data["created_at"].replace("Z", "+00:00")   # GitHub-stamped, not author-controlled
             ts = int(datetime.datetime.fromisoformat(iso).timestamp())
-            # Fact 4 — thread subject binding: the PR must be the one that OPENS this proposal, i.e. it
-            # touches the proposal's spec file. Otherwise a caller could point at any later PR.
-            wanted = _proposal_files(proposal)
-            files = _github_json(f"repos/{w['repo']}/pulls/{w['pr']}/files")
-            paths = {f.get("filename", "").lower() for f in files}
-            bound = bool(wanted) and any(p in paths for p in wanted)
-            return {"witnessed": True, "witnessed_ts": ts, "subject_bound": bound}
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, KeyError):
             return {"witnessed": False, "witnessed_ts": None, "subject_bound": False}
+        # Fact 4 — thread subject binding: the PR must be the one that OPENS this proposal, i.e. it ADDS
+        # the proposal's spec file. A later amendment that merely MODIFIES the same file would otherwise
+        # bind and manufacture a later thread-open. Require status == "added"; fail closed if files can't
+        # be fully read.
+        wanted = _proposal_files(proposal)
+        files = _github_pr_files(w["repo"], w["pr"])
+        bound = bool(wanted) and files is not None and any(
+            fn in wanted and st == "added" for fn, st in files)
+        return {"witnessed": True, "witnessed_ts": ts, "subject_bound": bound}
     if w.get("kind") == "onchain_commitment":
         status, ts, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
         # An on-chain thread commitment would carry the proposal id; not wired here, so unbound.

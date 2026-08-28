@@ -26,7 +26,7 @@ where an int is required. If any fact is unmet the verdict is UNVERIFIABLE or FA
 
 Verdict (closed enumeration, never a silent green):
   PASS
-  FAIL:missing_anchor | malformed_anchor | missing_thread_open | malformed_thread_open
+  FAIL:malformed_record | missing_anchor | malformed_anchor | missing_thread_open | malformed_thread_open
       | missing_proposal | malformed_proposal | anchor_not_found | postdates_thread
   UNVERIFIABLE:no_publication_witness | witness_unresolved | witness_not_bound | incoherent_resolution
       | thread_unwitnessed | thread_not_bound | pruned_history | rpc_unreachable | source_unavailable
