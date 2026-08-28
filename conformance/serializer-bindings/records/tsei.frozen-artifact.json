@@ -1,0 +1,45 @@
+{
+  "binding_subject": "tsei.frozen-artifact",
+  "serializer_contract": {
+    "id": "encode-json-utf8-lf.v0",
+    "spec": {
+      "repository": "github.com/trustless-ai/recompute-kit",
+      "revision": "f1d75a530761c983e8b6900f036935ac7758538c",
+      "path": "conformance/encode-json-utf8-lf-v0/encode-json-utf8-lf-v0.spec.md",
+      "sha256": "22207f8c4047044414da98b5497a2c9683aea14a7a498fc1819a9094c920a1f9"
+    },
+    "vectors": {
+      "repository": "github.com/trustless-ai/recompute-kit",
+      "revision": "f1d75a530761c983e8b6900f036935ac7758538c",
+      "path": "conformance/encode-json-utf8-lf-v0/encode-json-utf8-lf-v0.vectors.json",
+      "sha256": "8d53ab1d3dfb2de1ba9db23ed06d6864b08b516451938a4b1f6db6bcdcf1950f"
+    }
+  },
+  "effective_commit": {
+    "repository": "github.com/pipavlo82/crystal-receipt",
+    "commit": "45b46bf7df3a60b32583291f577a36bf19d22f00"
+  },
+  "producer_conformance": {
+    "implementation": {
+      "repository": "github.com/pipavlo82/crystal-receipt",
+      "revision": "45b46bf7df3a60b32583291f577a36bf19d22f00",
+      "path": "conformance/tsei-invariant-discrimination-v0/encode-json-utf8-lf-v0.ts",
+      "sha256": "a82587be42aa3d2e382f02e3ae633efe67b94b5831cb043131b3bc174e4fe3f9"
+    },
+    "qualification": {
+      "method": "passes-pinned-serializer-vectors",
+      "vectors": {
+        "repository": "github.com/trustless-ai/recompute-kit",
+        "revision": "f1d75a530761c983e8b6900f036935ac7758538c",
+        "path": "conformance/encode-json-utf8-lf-v0/encode-json-utf8-lf-v0.vectors.json",
+        "sha256": "8d53ab1d3dfb2de1ba9db23ed06d6864b08b516451938a4b1f6db6bcdcf1950f"
+      },
+      "vector_count": 48
+    }
+  },
+  "non_retroactivity": {
+    "prospective_only": true,
+    "byte_reproduction_is_not_binding": true,
+    "historical_binding_requires_separate_record": true
+  }
+}
