@@ -3,94 +3,79 @@
 ## Purpose
 
 Make the build-first pattern *checkable*. When a proposal is brought with a pre-built implementation, it
-declares an **origination anchor** — the commit, deploy, or on-chain transaction that existed before the
-discussion thread opened. This profile verifies that the anchor is present, well-formed, resolvable, and
-that its timestamp **strictly precedes** the thread. It is the recompute-don't-trust discipline applied to
-provenance at thread-open, so origination never has to be reconstructed later under pressure.
+declares an **origination anchor** — the commit or on-chain transaction that existed before the discussion
+opened — and this profile verifies, by recomputation, that the anchor was **independently witnessed** to
+exist before the thread. Recompute-don't-trust, applied to provenance at thread-open.
 
 ## Scope — what it proves, and what it does not
 
-This profile proves a **witnessed temporal + existence** claim: *this artifact was independently observed
-to exist before the thread opened.* It proves nothing about **semantics** — whether the anchored artifact
-IS the primitive the spec describes. That is a human judgement (e.g. distinguishing a same-day spec repo
-from the implementation it was written from) and is deliberately left to reviewers. A gate that claimed to
-settle semantics would be a written rule with no failure mode.
+It proves a **witnessed temporal + existence** claim: *this artifact was independently observed to exist
+before the thread opened.* It proves nothing about **semantics** — whether the anchored artifact IS the
+primitive the spec describes (human review; e.g. distinguishing a same-day spec repo from the
+implementation it was written from). A gate that claimed to settle semantics would be a written rule with
+no failure mode.
 
 Resolution is split, matching `pq-key-binding.v1/manifest`:
-- **`provenance_gate.py`** — the deterministic verdict logic. Resolution is a MODEL INPUT, so the graded
-  vector suite is byte-deterministic and CI-runnable.
-- **`resolve_anchor.py`** — the live companion that actually fetches the chain / git host and PRODUCES a
-  resolution. Feeding its output into the gate closes the loop from declaration to on-chain truth.
+- **`provenance_gate.py`** — deterministic verdict logic. Resolution is a MODEL INPUT, so the graded suite
+  is byte-deterministic.
+- **`resolve_anchor.py`** — the live companion that fetches AND enforces the facts (subject binding, no
+  self-reported time, witnessed thread-open), producing the resolution the gate consumes.
 
-## The three-fact contract (per @pipavlo82) — timestamp authority is not uniform
+## Four facts, each independently established
 
-Precedence is decided against an **independent witness**, never a self-reported time. Each anchor is
-judged on three separate facts:
+Precedence is decided between two **witnessed** times, and every witness must be **bound** to the thing it
+witnesses:
 
-1. **content identity** — recompute the object; confirm it exists and its bytes are stable.
-2. **existence witness** — establish, from a source the author does NOT control, *when the object was
-   publicly observed*.
-3. **precedence** — compare that **witnessed** time against thread-open.
+1. **content identity** — recompute the object; confirm it exists and its bytes/hash are stable.
+2. **existence witness** — an observation of publication time from a source the author does **not**
+   control. Never the object's own self-reported time.
+3. **subject binding** — the witness must reference *this* subject. An on-chain commitment of a commit must
+   actually carry that commit hash in its calldata; the block timestamp of an unrelated transaction is not
+   a witness of the commit.
+4. **witnessed precedence** — the witnessed anchor time strictly precedes the witnessed **thread-open**
+   time, where thread-open is itself a witnessed fact (the ERC PR's forge-stamped creation), never an
+   unverified record field a caller can move later.
 
-The reason the facts must be separate: an on-chain tx/deploy carries its own witness — the block timestamp
-is set by consensus. A **bare git commit does not**: author/committer dates are fields inside the commit
-object and can be backdated. Recomputing the commit hash proves the bytes and the *claimed* time are
-stable, not that the commit existed then. **If no independently-witnessed publication time exists, the
-verdict is `UNVERIFIABLE:no_publication_witness`, not PASS** — a self-reported time is not a recomputable
-fact.
+The gate additionally refuses to trust the resolution blindly: it checks the resolution is **coherent**
+with the declared anchor (a bare commit cannot claim a witness → `incoherent_resolution`), **fails closed**
+on a non-object resolution, and **rejects `bool`** where an integer is required.
 
 ## Anchor kinds & witness authority
 
-| kind | content identity | existence witness |
-|---|---|---|
-| `onchain_tx` | tx `0x`+64hex is mined | **intrinsic** — block timestamp (consensus) |
-| `onchain_deploy` | deploy tx is mined | **intrinsic** — block timestamp (consensus) |
-| `git_commit` | commit `40hex` resolves in `repo` | **separate & required** — a `witness`: `onchain_commitment` of the commit hash, a `transparency_log` entry, or a `forge_event`. A bare commit → UNVERIFIABLE. |
+| kind | content identity | existence witness | subject binding |
+|---|---|---|---|
+| `onchain_tx` | tx (`0x`+64hex) is mined | **intrinsic** — block timestamp (consensus) | the tx is its own subject |
+| `git_commit` | commit (`40hex`) resolves in `repo` | **separate & required** — a `witness`: `onchain_commitment` \| `transparency_log` \| `forge_event`. Bare commit → UNVERIFIABLE. | `onchain_commitment` MUST carry the commit hash in calldata; unwired `transparency_log`/`forge_event` → `witness_unresolved` |
 
-Anchors carry **no self-reported timestamp field** — precedence comes only from the witness.
+`onchain_deploy` is **not** in v0 (it was declared-but-unexecutable — a KeyError on a missing creation tx;
+removed rather than shipped broken). Add it back only with a real creation-tx resolution. Anchors carry
+**no self-reported timestamp field** — precedence comes only from witnesses.
 
-## Verdict — three states, never a silent green
+Thread-open is a `thread_open.witness` of kind `forge_event` (resolves the ERC PR's GitHub-stamped
+`created_at`) or `onchain_commitment`. It is the *proposal-opening* boundary; if an earlier witnessed
+discussion event exists, use that. Unwitnessed thread-open → `thread_unwitnessed`, never PASS.
 
-- **PASS** — content confirmed, an independent witness exists, and the witnessed time strictly precedes
-  `thread_opened_ts`.
-- **FAIL:`reason`** — a real defect. Closed enumeration:
-  - `missing_anchor` — no anchor declared.
-  - `malformed_anchor` — anchor (or its witness locator) does not parse.
-  - `postdates_thread` — the **witnessed** time is at/after the thread. **The core negative: a
-    "build-first" claim whose independent witness is not older than the discussion.**
-  - `anchor_not_found` — content resolved to null (a fake reference).
-- **UNVERIFIABLE:`reason`** — cannot decide now; MUST NOT pass. Closed enumeration:
-  - `no_publication_witness` — content is real but no independent witness of its publication time exists
-    (a bare git commit — the case @pipavlo82 flagged). Self-reported time ≠ witness.
-  - `witness_unresolved` — a witness is declared but could not be independently resolved now.
-  - `pruned_history` — the node pruned the block (real: WYRIWE's May 2026 block is pruned on the public
-    Base Sepolia node; an archive node serves it). Why a naive one-RPC check is unsafe.
-  - `rpc_unreachable` — RPC down, blocked, or malformed response.
-  - `source_unavailable` — git host or commit unreachable.
+## Verdict — three states, closed enumerations, never a silent green
 
-## Failure modes are proven, not asserted
+- **PASS** — content confirmed, witness present & bound, thread-open witnessed, witnessed anchor time
+  strictly before witnessed thread-open time.
+- **FAIL** — `missing_anchor`, `malformed_anchor`, `missing_thread_open`, `malformed_thread_open`,
+  `anchor_not_found`, `postdates_thread`.
+- **UNVERIFIABLE** — `no_publication_witness`, `witness_unresolved`, `witness_not_bound`,
+  `incoherent_resolution`, `thread_unwitnessed`, `pruned_history`, `rpc_unreachable`, `source_unavailable`.
 
-The vector suite carries five FAIL controls and three UNVERIFIABLE controls alongside the three real
-positive anchors, and the can-fail property is shown by mutation: moving a passing anchor's thread earlier
-than its origination turns PASS into `FAIL:postdates_thread`. The `pruned_history` state is demonstrated
-live — the same real WYRIWE tx returns `pruned` on the public node and `found` on an archive node.
+## Controls — 21 vectors: **3 PASS · 9 FAIL · 9 UNVERIFIABLE**
 
-## Controls (the three real anchors + the witness distinction)
+Each defect class has a control that must not pass: postdates (anchor and witness variants), malformed
+(anchor / witness locator / thread-open / bool chain_id), missing (anchor / thread-open), fake anchor,
+bare-commit-no-witness, incoherent resolution, unbound witness, unresolved transparency backend,
+unwitnessed thread, non-object resolution, and the three content-unavailability states. Can-fail is shown
+by mutation (move the witnessed thread-open before the witnessed anchor → `FAIL:postdates_thread`).
 
-| ERC | anchor | witness | thread | verdict |
-|---|---|---|---|---|
-| 8299 WYRIWE | onchain_tx `0xc3aeb16d…c3319` | block 2026-05-19T22:54:34Z (consensus) | 2026-05-28 | PASS |
-| 8373 PQ Binding | onchain_tx `0x04e1846f…c6349c` | block 2026-07-30T18:34:08Z (consensus) | 2026-08-05 | PASS |
-| 8309 Mesh Sync | git_commit `…/ccip-router@211c8ba1` | **none (bare commit)** | 2026-06-13 | **UNVERIFIABLE:no_publication_witness** |
-| 8309 Mesh Sync (witnessed) | same commit **+ on-chain commitment** | commitment block < thread | 2026-06-13 | PASS |
-
-The bare-commit 8309 row is deliberate: under the three-fact contract, the git anchor that *looked* like a
-PASS on a committer date is correctly **UNVERIFIABLE** until an independent witness is supplied. That is the
-gate enforcing @pipavlo82's rule against its own author's control, not around it.
-
-## Non-goals
-
-Not a semantic-identity checker; not a contribution-measurement scheme (that is a separate, complementary
-surface — a build-first proposal that PASSES this gate can be given weight by a metrics scheme, but the two
-are decoupled: this gate answers only "did it exist first?"). Adoption is opt-in per proposal — a change
-with no origination claim simply carries no anchor and is out of this gate's scope.
+**Real vs fixture, stated plainly:** only the on-chain **8299** (`0xc3aeb16d…`) and **8373**
+(`0x04e1846f…`) anchors resolve live to the timestamps carried here, and the thread-open PR numbers
+(1810 / 1826 / 1932) are real `ethereum/ERCs` PRs whose `created_at` resolves live. The witnessed-**8309**
+PASS row and every *witness* `tx` value (`0x0000…`, `0x1111…`, `0x2222…`, `0x3333…`) are **opaque model
+fixtures** — no on-chain commitment for the ccip-router commit exists yet; the bare-commit 8309 is
+correctly `UNVERIFIABLE:no_publication_witness` until one does. That row is the gate enforcing the witness
+rule against its own author's control, not around it.

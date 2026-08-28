@@ -1,122 +1,144 @@
 #!/usr/bin/env python3
-"""provenance-anchor.v0 — LIVE anchor resolver (companion to provenance_gate.py).
+"""provenance-anchor.v0 — LIVE resolver (companion to provenance_gate.py).
 
-This is the non-deterministic half: it actually fetches. Given a declared anchor it returns a `resolution`
-object of the exact shape the gate consumes as a model input — so `resolve_anchor.py <record> | provenance_gate`
-closes the loop from declaration to on-chain/git truth. It is NOT part of the graded vector suite (network),
-which is why the gate models resolution as an input.
+The non-deterministic half: it actually fetches, and it ENFORCES the facts the gate checks so the model
+inputs the gate consumes are honest. NOT part of the graded suite (network).
 
-It separates the two facts @pipavlo82 required (they are NOT the same fetch for a git anchor):
-  content  — does the object exist / are its bytes stable? {confirmed, not_found, unavailable_*}
-  witness  — an INDEPENDENT, externally-witnessed publication time. For on-chain anchors this IS the block
-             timestamp (consensus-set). For a git commit the committer date is NOT a witness — a witness
-             must be a separate observation (on-chain commitment of the commit hash / transparency log /
-             forge event). A bare commit resolves content=confirmed, witness_declared=false — and the gate
-             returns UNVERIFIABLE:no_publication_witness, never PASS.
+For each side it returns the facts, never a self-reported time:
+  anchor: {content, witness_declared, witnessed_ts, subject_bound}
+  thread: {witnessed, witnessed_ts}
 
-Output: {"content": "...", "witness_declared": bool, "witnessed_ts": int|null}
-A resolver that let a pruned block, an unreachable host, OR a missing witness pass would reintroduce the
-silent-skip class; that is the one thing this file exists to prevent.
+Enforcement that lives HERE:
+  * on-chain tx anchor — content = the tx is mined; witness = its block timestamp (consensus); the tx IS
+    its own subject, so subject_bound = True.
+  * git commit anchor — content = the commit hash resolves (bytes stable; the committer date is IGNORED).
+    A witness is a SEPARATE object and must BIND to this commit:
+      - onchain_commitment: fetch the commitment tx; witnessed_ts = its block timestamp ONLY IF the commit
+        hash (40-hex, and its raw 20-byte form) appears in the tx calldata. Otherwise subject_bound = False
+        and the block time is discarded — an unrelated tx is not a witness of the commit.
+      - transparency_log / forge_event: NO backend is wired, so witnessed_ts = None (UNVERIFIABLE:
+        witness_unresolved). We never read a caller-supplied time — that would be self-reported.
+  * thread-open — a witnessed boundary, not a record field: forge_event resolves the ERC PR's GitHub-stamped
+    created_at; onchain_commitment resolves a tx block timestamp.
 
 Usage:
-  python3 resolve_anchor.py '<record-json>'          # prints the resolution object
-  python3 resolve_anchor.py --rpc <url> '<record>'   # override the onchain RPC (use an archive node for old blocks)
+  python3 resolve_anchor.py '<record-json>'          # prints {"anchor":{...},"thread":{...}}
+  python3 resolve_anchor.py --rpc <url> '<record>'   # override the onchain RPC (archive node for old blocks)
 """
 from __future__ import annotations
-import json, sys, urllib.request, urllib.error
+import datetime, json, sys, urllib.error, urllib.request
 
-DEFAULT_RPC = {84532: "https://base-sepolia-rpc.publicnode.com"}  # archive node; public sepolia.base.org prunes
+DEFAULT_RPC = {84532: "https://base-sepolia-rpc.publicnode.com"}
+UA = "provenance-anchor-v0"
 
 
 def _rpc(url, method, params):
     body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode()
-    req = urllib.request.Request(url, data=body, headers={"content-type": "application/json",
-                                                          "user-agent": "provenance-anchor-v0"})
+    req = urllib.request.Request(url, data=body, headers={"content-type": "application/json", "user-agent": UA})
     with urllib.request.urlopen(req, timeout=20) as r:
         return json.loads(r.read())
 
 
-def _block_ts_of_tx(tx_hash, chain, rpc=None):
-    """Return ('found', ts) | ('not_found', None) | ('unavailable_pruned'|'unavailable_rpc', None)."""
+def _tx_block_and_input(tx_hash, chain, rpc=None):
+    """Return (status, block_ts, calldata). status in found|not_found|unavailable_pruned|unavailable_rpc."""
     url = rpc or DEFAULT_RPC.get(chain)
     if not url:
-        return ("unavailable_rpc", None)
+        return ("unavailable_rpc", None, None)
     try:
         tx = _rpc(url, "eth_getTransactionByHash", [tx_hash])
         if "error" in tx:
-            return ("unavailable_rpc", None)
+            return ("unavailable_rpc", None, None)
         result = tx.get("result")
         if not result or not result.get("blockNumber"):
-            return ("not_found", None)
+            return ("not_found", None, None)
+        calldata = (result.get("input") or "").lower()
         blk = _rpc(url, "eth_getBlockByNumber", [result["blockNumber"], False])
         if "error" in blk:
             msg = blk["error"].get("message", "").lower()
-            if "pruned" in msg or "unavailable" in msg or "missing" in msg:
-                return ("unavailable_pruned", None)
-            return ("unavailable_rpc", None)
+            return (("unavailable_pruned" if any(k in msg for k in ("pruned", "unavailable", "missing"))
+                     else "unavailable_rpc"), None, calldata)
         b = blk.get("result")
         if not b or not b.get("timestamp"):
-            return ("unavailable_pruned", None)
-        return ("found", int(b["timestamp"], 16))
+            return ("unavailable_pruned", None, calldata)
+        return ("found", int(b["timestamp"], 16), calldata)
     except (urllib.error.URLError, TimeoutError, ValueError):
-        return ("unavailable_rpc", None)
+        return ("unavailable_rpc", None, None)
 
 
-def resolve_onchain(anchor, rpc=None):
-    # For an on-chain anchor content-identity and the witness are the SAME fact: the block.
-    status, ts = _block_ts_of_tx(anchor["tx"], anchor["chain_id"], rpc)
-    if status == "found":
-        return {"content": "confirmed", "witness_declared": True, "witnessed_ts": ts}
-    if status == "not_found":
-        return {"content": "not_found", "witness_declared": True, "witnessed_ts": None}
-    return {"content": status, "witness_declared": True, "witnessed_ts": None}
+def _github_json(path):
+    req = urllib.request.Request(f"https://api.github.com/{path}",
+                                 headers={"accept": "application/vnd.github+json", "user-agent": UA})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.loads(r.read())
 
 
-def resolve_git_commit(anchor, rpc=None):
-    # Fact 1 — content identity: does the commit exist (bytes stable)? GitHub commit API. NOTE the committer
-    # date returned here is deliberately IGNORED for precedence — it is a field inside the object.
-    repo, sha = anchor["repo"], anchor["commit"]
-    try:
-        req = urllib.request.Request(f"https://api.github.com/repos/{repo}/commits/{sha}",
-                                     headers={"accept": "application/vnd.github+json",
-                                              "user-agent": "provenance-anchor-v0"})
-        with urllib.request.urlopen(req, timeout=20) as r:
-            json.loads(r.read())  # 200 => the object exists and its hash is stable
-        content = "confirmed"
-    except urllib.error.HTTPError as e:
-        return {"content": "not_found" if e.code == 404 else "unavailable_source",
-                "witness_declared": bool(anchor.get("witness")), "witnessed_ts": None}
-    except (urllib.error.URLError, TimeoutError, ValueError):
-        return {"content": "unavailable_source",
-                "witness_declared": bool(anchor.get("witness")), "witnessed_ts": None}
-
-    # Fact 2 — existence witness: INDEPENDENT of the commit object. A bare commit has none.
-    w = anchor.get("witness")
-    if not w:
-        return {"content": content, "witness_declared": False, "witnessed_ts": None}
-    if w.get("kind") == "onchain_commitment":
-        st, ts = _block_ts_of_tx(w["tx"], w["chain_id"], rpc)  # the commitment tx's block IS the witness
-        return {"content": content, "witness_declared": True,
-                "witnessed_ts": ts if st == "found" else None}
-    # transparency_log / forge_event: a real backend (Rekor inclusion time, forge event time) goes here.
-    # Until wired, the witness is declared but unresolved -> UNVERIFIABLE:witness_unresolved (never PASS).
-    return {"content": content, "witness_declared": True, "witnessed_ts": w.get("witnessed_ts")}
-
-
-def resolve(anchor, rpc=None):
+def resolve_anchor_fact(anchor, rpc=None):
     kind = anchor.get("kind")
-    if kind in ("onchain_tx", "onchain_deploy"):
-        return resolve_onchain(anchor, rpc)
+    if kind == "onchain_tx":
+        status, ts, _ = _tx_block_and_input(anchor["tx"], anchor["chain_id"], rpc)
+        if status == "found":
+            return {"content": "confirmed", "witness_declared": True, "witnessed_ts": ts, "subject_bound": True}
+        if status == "not_found":
+            return {"content": "not_found", "witness_declared": True, "witnessed_ts": None, "subject_bound": False}
+        return {"content": status, "witness_declared": True, "witnessed_ts": None, "subject_bound": False}
+
     if kind == "git_commit":
-        return resolve_git_commit(anchor, rpc)
-    return {"content": "unavailable_rpc", "witness_declared": False, "witnessed_ts": None}
+        # Fact 1 — content identity (bytes stable). committer date deliberately ignored.
+        try:
+            _github_json(f"repos/{anchor['repo']}/commits/{anchor['commit']}")
+            content = "confirmed"
+        except urllib.error.HTTPError as e:
+            content = "not_found" if e.code == 404 else "unavailable_source"
+        except (urllib.error.URLError, TimeoutError, ValueError):
+            content = "unavailable_source"
+        base = {"content": content, "witness_declared": False, "witnessed_ts": None, "subject_bound": False}
+        if content != "confirmed":
+            return base
+        w = anchor.get("witness")
+        if not w:
+            return base                                   # bare commit -> no witness
+        base["witness_declared"] = True
+        if w.get("kind") == "onchain_commitment":
+            status, ts, calldata = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
+            sha = anchor["commit"].lower()
+            # Fact 3 — the commitment must actually carry this commit hash (40-hex, or raw 20 bytes).
+            bound = bool(calldata) and (sha in calldata)
+            if status == "found":
+                # Report the resolved block time either way, but only bind it if the commitment tx
+                # actually carries the commit hash. subject_bound=False -> gate: witness_not_bound
+                # (distinct from witness_unresolved, which is a witness that didn't resolve at all).
+                base.update(witnessed_ts=ts, subject_bound=bound)
+            return base
+        # transparency_log / forge_event — no backend wired: unresolved, never a self-reported time.
+        return base
+
+
+def resolve_thread_fact(thread_open, rpc=None):
+    w = (thread_open or {}).get("witness") or {}
+    if w.get("kind") == "forge_event":
+        try:
+            data = _github_json(f"repos/{w['repo']}/pulls/{w['pr']}")
+            iso = data["created_at"].replace("Z", "+00:00")   # GitHub-stamped, not author-controlled
+            return {"witnessed": True, "witnessed_ts": int(datetime.datetime.fromisoformat(iso).timestamp())}
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, ValueError, KeyError):
+            return {"witnessed": False, "witnessed_ts": None}
+    if w.get("kind") == "onchain_commitment":
+        status, ts, _ = _tx_block_and_input(w["tx"], w["chain_id"], rpc)
+        return {"witnessed": status == "found", "witnessed_ts": ts if status == "found" else None}
+    return {"witnessed": False, "witnessed_ts": None}
+
+
+def resolve(record, rpc=None):
+    return {"anchor": resolve_anchor_fact(record["anchor"], rpc),
+            "thread": resolve_thread_fact(record.get("thread_open"), rpc)}
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     rpc = None
     if args and args[0] == "--rpc":
-        rpc = args[1]; args = args[2:]
+        rpc, args = args[1], args[2:]
     record = json.loads(args[0])
-    anchor = record.get("anchor", record)  # accept a bare anchor too
-    print(json.dumps(resolve(anchor, rpc)))
+    if "anchor" not in record:            # accept a bare anchor for quick checks
+        record = {"anchor": record, "thread_open": None}
+    print(json.dumps(resolve(record, rpc)))

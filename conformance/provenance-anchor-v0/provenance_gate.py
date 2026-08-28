@@ -1,41 +1,32 @@
 #!/usr/bin/env python3
 """provenance-anchor.v0 — build-first origination gate (verdict logic).
 
-SCOPE — this is the DETERMINISTIC verdict logic of the provenance gate, NOT a chain fetcher. It verifies,
-over the bytes it is given, that a proposal's origination anchor is present, well-formed, and that the
-artifact was independently WITNESSED to exist before the discussion thread opened. Resolution is a MODEL
-INPUT (`resolution`), matching pq-key-binding.v1/manifest — the companion `resolve_anchor.py` performs the
-real fetch and PRODUCES a resolution; the graded suite stays byte-deterministic.
+SCOPE — deterministic verdict logic. Resolution is a MODEL INPUT (companion resolve_anchor.py produces the
+real one); the graded suite stays byte-deterministic. It proves a WITNESSED temporal + existence claim and
+nothing about semantics.
 
-THREE SEPARATE FACTS (per @pipavlo82's review — timestamp authority is not uniform across anchor kinds):
-  1. content identity   — the object exists and its bytes/hash are stable (recompute the tx / commit).
-  2. existence witness  — an INDEPENDENT, externally-witnessed observation of WHEN the object was public.
-                          NOT the object's own self-reported time.
-  3. precedence         — the WITNESSED time is strictly before thread-open.
+FOUR facts, each independently established (extends @pipavlo82's three-fact contract — both SIDES of the
+comparison must be witnessed, and the witness must be BOUND to the thing it witnesses):
+  1. content identity   — the object exists and its bytes/hash are stable.
+  2. existence witness   — an INDEPENDENT observation of when the object was public; NOT its self-reported
+                           time. On-chain tx: intrinsic (consensus block). Git commit: a SEPARATE witness.
+  3. subject binding     — the witness must reference THIS subject. An on-chain commitment of a commit must
+                           actually carry that commit hash in its calldata; a block timestamp from an
+                           unrelated tx is not a witness of the commit.
+  4. witnessed precedence — the witnessed anchor time strictly precedes the witnessed THREAD-OPEN time.
+                           thread-open is itself a witnessed fact (e.g. the ERC PR's forge-stamped
+                           creation), never an unverified record field a caller can move.
 
-Why the split matters: an on-chain tx/deploy carries its own witness — the block timestamp is set by
-consensus, not by the author. A bare git commit does NOT: author/committer dates are fields inside the
-commit object and can be backdated; recomputing the commit hash proves the bytes and the CLAIMED time are
-stable, never that the commit existed at that time. So a git anchor needs a SEPARATE witnessed-publication
-fact — an on-chain commitment of the commit hash, a transparency-log entry, or a forge event that
-references it. With no independent witness, precedence is self-reported provenance, which is
-UNVERIFIABLE, not PASS.
+The gate does not trust the resolution blindly: it checks the resolution is COHERENT with the declared
+anchor (a bare commit cannot claim a witness), fails closed on a non-object resolution, and rejects bool
+where an int is required. If any fact is unmet the verdict is UNVERIFIABLE or FAIL, never a silent PASS.
 
-What the gate still cannot prove, by construction: that the anchor is SEMANTICALLY the spec's primitive.
-That is human review. The gate proves temporal witness + existence, nothing about semantics.
-
-Verdict — three states, never a silent green:
-  PASS                              content confirmed, an independent witness exists, witnessed time < thread.
-  FAIL:missing_anchor               no anchor declared.
-  FAIL:malformed_anchor             anchor does not parse for its kind.
-  FAIL:anchor_not_found             content resolved to null (a fake reference).
-  FAIL:postdates_thread             the WITNESSED time is at/after thread-open.
-  UNVERIFIABLE:no_publication_witness   content is real but no independent witness of its publication time
-                                        exists — a self-reported time is not a witness. (Bare git commit.)
-  UNVERIFIABLE:witness_unresolved   a witness is declared but could not be independently resolved now.
-  UNVERIFIABLE:pruned_history       the node pruned the block (real: WYRIWE's May block on the public node).
-  UNVERIFIABLE:rpc_unreachable      RPC down / blocked / malformed response.
-  UNVERIFIABLE:source_unavailable   git host / commit host unreachable.
+Verdict (closed enumeration, never a silent green):
+  PASS
+  FAIL:missing_anchor | malformed_anchor | missing_thread_open | malformed_thread_open
+      | anchor_not_found | postdates_thread
+  UNVERIFIABLE:no_publication_witness | witness_unresolved | witness_not_bound | incoherent_resolution
+      | thread_unwitnessed | pruned_history | rpc_unreachable | source_unavailable
 
 Usage: python3 provenance_gate.py provenance-anchor-v0.vectors.json
 Exit 0 iff every case reproduces its expected verdict, else 1.
@@ -44,82 +35,123 @@ from __future__ import annotations
 import json, os, re, sys
 
 TX_RE = re.compile(r"^0x[0-9a-fA-F]{64}$")
-ADDR_RE = re.compile(r"^0x[0-9a-fA-F]{40}$")
 SHA_RE = re.compile(r"^[0-9a-fA-F]{40}$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-WITNESS_KINDS = {"onchain_commitment", "transparency_log", "forge_event"}
-
-# content-unavailability status -> UNVERIFIABLE reason
+ANCHOR_WITNESS_KINDS = {"onchain_commitment", "transparency_log", "forge_event"}
+THREAD_WITNESS_KINDS = {"onchain_commitment", "forge_event"}
 CONTENT_UNAVAILABLE = {"unavailable_pruned": "pruned_history",
                        "unavailable_rpc": "rpc_unreachable",
                        "unavailable_source": "source_unavailable"}
 
 
-def well_formed(anchor):
-    """Return None if well-formed, else a malformed-reason string. Anchors carry NO self-reported time:
-    precedence comes from the independent witness, never from a field the author controls."""
+def _is_int(x):
+    # bool is a subclass of int — reject it, or True/False would satisfy chain_id / timestamps.
+    return isinstance(x, int) and not isinstance(x, bool)
+
+
+def _well_formed_witness(w, kinds):
+    if not isinstance(w, dict) or w.get("kind") not in kinds:
+        return "witness_kind"
+    if w["kind"] == "onchain_commitment":
+        if not (_is_int(w.get("chain_id")) and isinstance(w.get("tx"), str) and TX_RE.match(w["tx"])):
+            return "witness_locator"
+    if w["kind"] == "forge_event":
+        if not (isinstance(w.get("repo"), str) and REPO_RE.match(w["repo"]) and _is_int(w.get("pr"))):
+            return "witness_locator"
+    return None
+
+
+def well_formed_anchor(anchor):
     if not isinstance(anchor, dict):
         return "not_an_object"
     kind = anchor.get("kind")
     if kind == "onchain_tx":
-        if not isinstance(anchor.get("chain_id"), int):
+        if not _is_int(anchor.get("chain_id")):
             return "chain_id"
         if not (isinstance(anchor.get("tx"), str) and TX_RE.match(anchor["tx"])):
             return "tx"
-        return None
-    if kind == "onchain_deploy":
-        if not isinstance(anchor.get("chain_id"), int):
-            return "chain_id"
-        if not (isinstance(anchor.get("address"), str) and ADDR_RE.match(anchor["address"])):
-            return "address"
         return None
     if kind == "git_commit":
         if not (isinstance(anchor.get("repo"), str) and REPO_RE.match(anchor["repo"])):
             return "repo"
         if not (isinstance(anchor.get("commit"), str) and SHA_RE.match(anchor["commit"])):
             return "commit"
-        w = anchor.get("witness")  # optional; a bare commit is well-formed but will be UNVERIFIABLE
+        w = anchor.get("witness")
         if w is not None:
-            if not isinstance(w, dict) or w.get("kind") not in WITNESS_KINDS:
-                return "witness_kind"
-            if w["kind"] == "onchain_commitment" and not (
-                    isinstance(w.get("chain_id"), int) and isinstance(w.get("tx"), str) and TX_RE.match(w["tx"])):
-                return "witness_locator"
+            return _well_formed_witness(w, ANCHOR_WITNESS_KINDS)
         return None
     return "kind"
 
 
+def well_formed_thread(thread_open):
+    if not isinstance(thread_open, dict):
+        return "not_an_object"
+    return _well_formed_witness(thread_open.get("witness"), THREAD_WITNESS_KINDS)
+
+
+def anchor_expects_witness(anchor):
+    if anchor.get("kind") == "onchain_tx":
+        return True                       # intrinsic — the block is the witness
+    if anchor.get("kind") == "git_commit":
+        return bool(anchor.get("witness"))  # only if a separate witness is declared
+    return False
+
+
 def verdict(record, resolution):
-    """Pure three-state verdict over a declared record + a modelled resolution (content/witness facts)."""
-    thread = record.get("thread_opened_ts")
-    if not isinstance(thread, int):
+    if not isinstance(record, dict):
         return "FAIL:malformed_record"
     anchor = record.get("anchor")
     if anchor is None:
         return "FAIL:missing_anchor"
-    if well_formed(anchor) is not None:
+    if well_formed_anchor(anchor) is not None:
         return "FAIL:malformed_anchor"
-    if resolution is None:
-        return "UNVERIFIABLE:no_publication_witness"  # no evidence at all => fail-closed
+    thread_open = record.get("thread_open")
+    if thread_open is None:
+        return "FAIL:missing_thread_open"
+    if well_formed_thread(thread_open) is not None:
+        return "FAIL:malformed_thread_open"
+
+    # Fail closed on a non-object resolution (never crash, never pass).
+    if not isinstance(resolution, dict):
+        return "UNVERIFIABLE:no_publication_witness"
+    ares = resolution.get("anchor")
+    tres = resolution.get("thread")
+    if not isinstance(ares, dict):
+        return "UNVERIFIABLE:no_publication_witness"
 
     # Fact 1 — content identity.
-    content = resolution.get("content")
+    content = ares.get("content")
     if content == "not_found":
         return "FAIL:anchor_not_found"
     if content in CONTENT_UNAVAILABLE:
         return f"UNVERIFIABLE:{CONTENT_UNAVAILABLE[content]}"
     if content != "confirmed":
-        return "UNVERIFIABLE:rpc_unreachable"  # unknown status => never green
+        return "UNVERIFIABLE:rpc_unreachable"
 
-    # Fact 2 — existence witness (independent of the object's self-reported time).
-    if not resolution.get("witness_declared"):
+    # Coherence — the resolution must not claim more than the anchor declares.
+    if bool(ares.get("witness_declared")) != anchor_expects_witness(anchor):
+        return "UNVERIFIABLE:incoherent_resolution"
+
+    # Fact 2 — existence witness.
+    if not ares.get("witness_declared"):
         return "UNVERIFIABLE:no_publication_witness"
-    wts = resolution.get("witnessed_ts")
-    if not isinstance(wts, int):
+    awts = ares.get("witnessed_ts")
+    if not _is_int(awts):
         return "UNVERIFIABLE:witness_unresolved"
 
-    # Fact 3 — precedence, against the WITNESSED time.
-    if wts >= thread:
+    # Fact 3 — subject binding: the witness must reference THIS subject.
+    if not ares.get("subject_bound"):
+        return "UNVERIFIABLE:witness_not_bound"
+
+    # Fact 4 — the thread-open boundary must itself be witnessed.
+    if not isinstance(tres, dict) or not tres.get("witnessed"):
+        return "UNVERIFIABLE:thread_unwitnessed"
+    twts = tres.get("witnessed_ts")
+    if not _is_int(twts):
+        return "UNVERIFIABLE:thread_unwitnessed"
+
+    # Witnessed precedence — both sides are now independently witnessed.
+    if awts >= twts:
         return "FAIL:postdates_thread"
     return "PASS"
 
@@ -133,7 +165,7 @@ def run(path):
         exp = c["expected"]
         ok = got == exp
         fails += not ok
-        print(f"{'OK ' if ok else 'BAD'} {c['name']:<34} -> {got:<36} (want {exp})")
+        print(f"{'OK ' if ok else 'BAD'} {c['name']:<34} -> {got:<38} (want {exp})")
     print(f"{len(cases) - fails}/{len(cases)} cases reproduced")
     return fails == 0
 

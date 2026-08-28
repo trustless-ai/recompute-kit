@@ -5,7 +5,7 @@
       "name": "origination-gate",
       "vectors": {
         "path": "provenance-anchor-v0.vectors.json",
-        "sha256": "f1e26a3aec0bac0f7bc78b07355728857b4abeaccf4b1089d714386697a261f9"
+        "sha256": "ab0b91ae514f17ac2e084bc2d129f2f01f4a7d07ce5575c554d287edd1cb97c7"
       },
       "adapter": {
         "kind": "stdio",
@@ -16,11 +16,11 @@
   "companion": {
     "name": "live-resolver",
     "cmd": "python3 resolve_anchor.py",
-    "note": "non-deterministic (network); produces the resolution the gate consumes. Not graded."
+    "note": "non-deterministic (network); fetches AND enforces the facts (subject binding, no self-reported time, witnessed thread-open). Not graded."
   },
   "laneHint": "recomputable",
   "spec": {
     "path": "provenance-anchor-v0.spec.md",
-    "sha256": "c53fe0bac2b8a856251b777adac4ea933106ee1431c6f6943b3ca5f4dd4d286c"
+    "sha256": "33f2582e1ed74a67226793fd244b57e7f7c6b4f37c351235f7ae2660ff9fe140"
   }
 }
