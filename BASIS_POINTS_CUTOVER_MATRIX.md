@@ -78,11 +78,15 @@ preimage while retaining either old hash.
 
 - The live reputation axis publishes `winRateBps` and the exact `0x0501…`
   convention hash.
+- The live reputation axis is computed at request time. The `/ledger` response
+  is not itself a persisted snapshot artifact.
 - The same response retains a decimal `inputs.winRate` view.
 - `track_record.win_rate_pct` is a separate presentation statistic with a
   different documented population/denominator. It MUST NOT be silently treated
   as the ERC-8275 decisive-only `winRateBps` value.
-- The convention pointer belongs on each persisted artifact that contains a
+- No current persisted snapshot artifact on this surface carries a derived
+  win-rate value, so there is no missing pointer to backfill. Prospectively, the
+  convention pointer belongs on each newly persisted artifact that contains a
   derived convention-governed value. Raw outcome/evidence entries that contain
   no such derived value do not acquire a meaningless pointer.
 
@@ -109,8 +113,8 @@ must acknowledge their row before a completion date is announced.
 | BPS-2 | `trustless-ai/agent-sdk` | JimmyShi22 / agent-sdk maintainers | Replace float testkit expectations and test-side `×10000` conversions with exact BPS vectors; correct Go/Python/TS documentation; either resolve all supported legacy identities or explicitly delegate legacy verification to the pinned recompute-kit resolver | BPS-0 identity decision | Go/Python/Rust/TS reproduce the same exact vectors with no representation adapter; legacy policy is tested and documented |
 | BPS-3 | `trustless-ai/recompute-lens` | TMerlini / recompute-lens maintainers | Make BPS the identity-bearing output (`valueBps` plus `governing_convention_hash`); keep decimal rendering presentation-only; resolve a supplied legacy hash instead of assuming the current rule | BPS-0, BPS-1 vectors | UI vectors show BPS identity, legacy resolution, unknown-hash `unverifiable`, and no bare ambiguous output |
 | BPS-4 | `trustless-ai/trustless-agent-substrate` | JimmyShi22 / TAS maintainers | Expose the pin-aware SDK operation rather than bare `computeWinRate → number`; output `{value, governing_convention_hash}`; regenerate the manifest and package digests against the released SDK containing BPS-2 | BPS-2 release | Generated schema requires both fields; manifest/package integrity regenerated; tool conformance passes |
-| BPS-5 | Baby Blue Viper/Fede live ledger and persisted derived artifacts | Baby Blue Viper/Fede | Keep the already-live BPS value/hash pair; add the pointer to every newly issued persisted artifact that actually carries the derived win-rate value; do not backfill or rewrite signed history; keep `track_record.win_rate_pct` explicitly separate | BPS-0 semantics, BPS-1 verifier ready | Fresh artifact independently recomputes to its pinned hash/value; historical artifacts are unchanged; missing-pointer legacy case fails closed or is bound by an immutable enclosing package |
-| BPS-6 | coordinated completion record | Pavlo coordinates; all row owners acknowledge | Select one merge/deploy window only after BPS-0 through BPS-5 are ready; record exact merged commits, released package integrity, deployment observation, and rollback/fail-closed procedure | BPS-0..BPS-5 ready | Cross-component smoke vector passes from one exact input through SDK issuance, persisted artifact, resolver, lens, and TAS; `BUILD_QUEUE.md` changes from unscheduled to completed with exact identities |
+| BPS-5 | Baby Blue Viper/Fede live ledger and any future persisted derived artifact | Baby Blue Viper/Fede — acknowledged 2026-08-28 | Keep the already-live request-time BPS value/hash pair; record a prospective issuance rule that any future persisted artifact carrying the derived win-rate value also carries the pointer; do not manufacture or backfill an artifact that does not currently exist; keep `track_record.win_rate_pct` explicitly separate | BPS-0 semantics; BPS-1 verifier ready before such an artifact is issued | Current disposition is `PROSPECTIVE_NO_PERSISTED_ARTIFACT`; if a persisted artifact is later introduced, it independently recomputes to its pinned hash/value and no signed history is rewritten |
+| BPS-6 | coordinated completion record | Pavlo coordinates; all blocking row owners acknowledge | Select one merge/deploy window only after BPS-0 through BPS-4 are ready and the acknowledged BPS-5 prospective disposition is recorded; record exact merged commits, released package integrity, deployment observation, and rollback/fail-closed procedure | BPS-0..BPS-4 ready; BPS-5 disposition recorded | Cross-component smoke vector passes from one exact input through SDK issuance, resolver, lens, and TAS; `BUILD_QUEUE.md` changes from unscheduled to completed with exact identities; no fictitious persisted-artifact leg is claimed |
 | BPS-7 | `trustless-ai/agent-ercs` documentation | agent-ercs maintainers | Clarify that any concrete persisted win-rate representation must declare its unit/convention; do not make a specific off-chain implementation authoritative | non-blocking after BPS-0 | Documentation change only; no contract/interface change required |
 
 ## Merge and deployment order
@@ -118,13 +122,16 @@ must acknowledge their row before a completion date is announced.
 1. **Resolver closure first — BPS-0.** No completion window may be scheduled
    until every real historical identity is resolvable or explicitly classified
    as unavailable without guessing.
-2. **Prepare BPS-1 through BPS-5 without independent completion claims.** Each
-   PR uses the exact hashes above and carries its own negative controls.
+2. **Prepare BPS-1 through BPS-4 without independent completion claims.** Each
+   PR uses the exact hashes above and carries its own negative controls. BPS-5
+   remains an acknowledged prospective issuance rule unless and until a
+   persisted derived artifact is introduced.
 3. **Release the corrected SDK before regenerating TAS.** BPS-2 produces one
    immutable package identity; BPS-4 pins that exact package.
-4. **Merge consumers before the final live-artifact pointer rollout.** The
-   family must be able to read both historical and target artifacts before the
-   completion declaration.
+4. **Merge consumers before declaring completion.** The family must be able to
+   read both historical and target identities. There is no current persisted
+   live-artifact pointer rollout to schedule; a future persisted derived
+   artifact is issued under BPS-5 only after the verifier is ready.
 5. **Run one cross-component smoke vector.** Recommended edge:
    `wins=1, losses=31`, where the target result is `313` BPS and the historical
    four-decimal result is `0.0313`. The values can look related while remaining
@@ -151,6 +158,9 @@ must acknowledge their row before a completion date is announced.
 - [ ] The `0xe4…` legacy preimage is preserved exactly and is not recast as the
       `0xf080…` schema.
 - [ ] BPS vectors contain integer expected values and no adapter multiplication.
+- [x] BPS-5 owner confirmed that `/ledger` is a request-time view and that no
+      current persisted derived win-rate artifact requires a pointer or
+      backfill; the future issuance rule is acknowledged.
 - [ ] Every newly persisted derived win-rate value carries its convention hash.
 - [ ] Every consumer reads the artifact-declared identity before recomputation.
 - [ ] Missing/unknown identity fails closed.
