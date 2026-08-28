@@ -35,8 +35,14 @@ Pure recomputes — the bytes every SDK must reproduce identically:
 | `wyriwe-pipeline` | wyriwe/pipeline | `keccak256(utf8(cid) ‖ raw_input_hash)` |
 | `scope-binding` | scope/binding | `keccak256(abi.encode(root, N))` (Guarantee 4) |
 | `8301-task-hash` | 8301/task-hash | `keccak256(abi.encode(…7 fields…))` |
-| `8275-reputation` | 8275/reputation | `winRate·min(closed,cap)/cap` |
+| `8275-reputation` | 8275/reputation | historical `ROUND_HALF_UP(wins/(wins+losses), 4dp)` |
+| `erc8275-win-rate-bps.v0` | 8275/reputation-bps | integer `round_half_up(wins·10000/(wins+losses))`; each vector pins `governing_convention_hash` |
 | `receiptos-c14n-v0` | receiptos/canonicalize | `0x·sha256(C(strip_anchor(E)))` — profile receiptos-c14n-v0 (JCS + anchor-strip), RAILS/ReceiptOS §2.8; the π case exercises literal-UTF-8 |
+
+The `erc8275-win-rate-bps.v0` lane is prospective. It does not rewrite or
+relabel the historical unversioned `8275/reputation` vectors. A verifier must
+resolve the convention hash carried by the artifact; a missing or unknown
+pointer is unverifiable, never an invitation to apply the current convention.
 
 The on-chain **8274 verify** (`WyriweProofVerifier.verify`) is a contract call — identical
 for every SDK — so it is not a pure-recompute vector; check it via

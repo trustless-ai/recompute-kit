@@ -1,0 +1,36 @@
+{
+  "profile": "erc8275-win-rate-bps.v0",
+  "spec": {
+    "path": "erc8275-win-rate-bps-v0.spec.md",
+    "sha256": "ba71b0787a80abed00d12bf3a5ad54ce08b162b3c104d3b9a947284e36c65fe6"
+  },
+  "checks": [
+    {
+      "name": "conformance",
+      "vectors": {
+        "path": "erc8275-win-rate-bps-v0.vectors.json",
+        "sha256": "01d354ec0cf5f1b5de88526fdb22461c72ed296ae5d289efbb26ba4ec7c88c49"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 gate.py"
+      }
+    },
+    {
+      "name": "mutation-coverage",
+      "vectors": {
+        "path": "erc8275-win-rate-bps-v0.vectors.json",
+        "sha256": "01d354ec0cf5f1b5de88526fdb22461c72ed296ae5d289efbb26ba4ec7c88c49"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 gate.py --prove-mutations"
+      }
+    }
+  ],
+  "checker": {
+    "path": "gate.py",
+    "sha256": "8c6596cfa0e672423d1bc11ea06f13f64625b852db0ed700315b0604c4b4786c"
+  },
+  "laneHint": "recomputable"
+}
