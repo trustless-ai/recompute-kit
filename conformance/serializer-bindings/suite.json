@@ -1,13 +1,29 @@
 {
   "profile": "serializer_binding_record.v0",
-  "vectors": {
-    "path": "binding-record.vectors.json",
-    "sha256": "7beaabc7166816ae984eb1c5fffc55dc457ca4f86743f1f14e8795841626485e"
-  },
-  "adapter": {
-    "kind": "stdio",
-    "cmd": "python3 validate_binding_record.py binding-record.vectors.json"
-  },
+  "checks": [
+    {
+      "name": "shape",
+      "vectors": {
+        "path": "binding-record.vectors.json",
+        "sha256": "7beaabc7166816ae984eb1c5fffc55dc457ca4f86743f1f14e8795841626485e"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 validate_binding_record.py binding-record.vectors.json"
+      }
+    },
+    {
+      "name": "tsei-frozen-artifact",
+      "vectors": {
+        "path": "records/tsei.frozen-artifact.json",
+        "sha256": "f45e3e99f3e31dc4884d92e8b1622b6c8497ecf295424442698db9d9aeb14ec6"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 check_real_record.py"
+      }
+    }
+  ],
   "laneHint": "recomputable",
   "spec": {
     "path": "binding-record.schema.json",
