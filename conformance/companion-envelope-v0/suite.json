@@ -11,6 +11,17 @@
         "kind": "stdio",
         "cmd": "python3 envelope_gate.py companion-envelope-v0.vectors.json"
       }
+    },
+    {
+      "name": "envelope-reference-ts",
+      "vectors": {
+        "path": "companion-envelope-v0.vectors.json",
+        "sha256": "b285ce5091cfe806c238b2b657422b283ddb69c6d0ba0c5501579f34593b57b1"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "bun companion-envelope-v0.reference.mjs companion-envelope-v0.vectors.json"
+      }
     }
   ],
   "laneHint": "recomputable",
