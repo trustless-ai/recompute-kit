@@ -172,11 +172,15 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
     spec = m.get("spec")
     if isinstance(spec, dict) and spec.get("path") and spec.get("sha256"):
         sf = d / spec["path"]
-        if sf.is_file():
-            actual = sha256(sf)
-            if actual != spec["sha256"]:
-                return Result(label, False, "DRIFT",
-                              f"{spec['path']} sha256 {actual[:16]}… != pinned {spec['sha256'][:16]}…")
+        if not sf.is_file():
+            # A declared + pinned spec that is absent cannot have its pin verified — the same silent
+            # skip the vectors branch above already guards. Rule 1 of this runner is NO SILENT SKIPS:
+            # report it as its own verdict, never fall through and run the adapter as if the pin held.
+            return Result(label, False, "NOT COVERED", f"spec declared but missing: {spec['path']}")
+        actual = sha256(sf)
+        if actual != spec["sha256"]:
+            return Result(label, False, "DRIFT",
+                          f"{spec['path']} sha256 {actual[:16]}… != pinned {spec['sha256'][:16]}…")
 
     if kind and kind != "stdio":
         return Result(label, False, "NOT COVERED", f"adapter.kind '{kind}' not implemented by this runner")

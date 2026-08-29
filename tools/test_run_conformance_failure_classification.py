@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -171,6 +172,56 @@ class FinalExitSemanticsTests(unittest.TestCase):
         self.assertEqual(2, runner.exit_code_for_failures([runner_failure]))
         self.assertEqual(1, runner.exit_code_for_failures([suite_failure, runner_failure]))
         self.assertEqual(1, runner.exit_code_for_failures([drift_failure]))
+
+
+class DeclaredMissingSpecTests(unittest.TestCase):
+    """A declared + pinned spec whose file is absent must be its own verdict (NOT COVERED), never a
+    silent fall-through that lets the adapter run and pass. Regression for the _run_one spec branch,
+    which previously checked the digest only `if sf.is_file()` and did nothing when it was missing."""
+
+    def test_missing_pinned_spec_is_not_covered_and_adapter_does_not_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            d = pathlib.Path(temporary)
+            (d / "vec.json").write_text("{}\n", encoding="utf-8", newline="\n")
+            vec_sha = hashlib.sha256((d / "vec.json").read_bytes()).hexdigest()
+            sentinel = d / "adapter-ran"
+            # an adapter that WOULD exit 0 (pass) and leave a sentinel, so if it ever runs we can tell
+            (d / "run.py").write_text(
+                "import pathlib, sys\n"
+                f"pathlib.Path({str(sentinel)!r}).write_text('ran')\n"
+                "print('ok'); sys.exit(0)\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            manifest = {
+                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py")},
+                "vectors": {"path": "vec.json", "sha256": vec_sha},
+                "spec": {"path": "nonexistent-spec.md", "sha256": "de" * 32},  # declared + pinned + ABSENT
+            }
+            result = runner._run_one(d, manifest, "missing-spec")
+            self.assertFalse(result.ok)
+            self.assertEqual("NOT COVERED", result.kind)
+            self.assertIn("spec declared but missing", result.detail)
+            self.assertFalse(
+                sentinel.exists(),
+                "the adapter executed despite a declared-but-missing pinned spec",
+            )
+
+    def test_present_correct_spec_still_runs_the_adapter(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            d = pathlib.Path(temporary)
+            (d / "vec.json").write_text("{}\n", encoding="utf-8", newline="\n")
+            vec_sha = hashlib.sha256((d / "vec.json").read_bytes()).hexdigest()
+            (d / "spec.md").write_text("# spec\n", encoding="utf-8", newline="\n")
+            spec_sha = hashlib.sha256((d / "spec.md").read_bytes()).hexdigest()
+            (d / "run.py").write_text("print('ok')\n", encoding="utf-8", newline="\n")
+            manifest = {
+                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py")},
+                "vectors": {"path": "vec.json", "sha256": vec_sha},
+                "spec": {"path": "spec.md", "sha256": spec_sha},
+            }
+            result = runner._run_one(d, manifest, "present-spec")
+            self.assertTrue(result.ok)
 
 
 if __name__ == "__main__":
