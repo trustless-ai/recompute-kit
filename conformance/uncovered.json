@@ -63,16 +63,6 @@
   ],
   "undeclared_vectors": [
     {
-      "suite": "pq-key-binding-v0",
-      "files": [
-        "pq-key-binding-v0.per-agent-anchor.json",
-        "pq-key-binding-v0.revocation.json",
-        "pq-key-binding-v0.rotation.json"
-      ],
-      "reason": "suite.json now declares 4 checks (grade/cutoff/rotation/revocation) covering all 3 real *-vectors.json fixture files -- these 3 remaining files are reference EXAMPLE binding documents (a real signed statement + its predecessor/revocation), not test-vector fixtures with a `cases` array, so no runner can execute them as a suite. They're referenced by the spec/docs as worked examples, not left unrun by omission.",
-      "owner": "unassigned"
-    },
-    {
       "suite": "chronicle-checkpoint-continuity-v0",
       "files": [
         "chronicle-root-golden-vectors.json",
