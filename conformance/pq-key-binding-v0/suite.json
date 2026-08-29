@@ -44,6 +44,39 @@
         "kind": "stdio",
         "cmd": "python3 cutoff_enforce.py pq-key-binding-v0.revocation-vectors.json"
       }
+    },
+    {
+      "name": "per-agent-anchor-recompute",
+      "vectors": {
+        "path": "pq-key-binding-v0.per-agent-anchor.json",
+        "sha256": "4b15f56105fe5cb04b1d43c47cc78bf7346f402ab04df2aa82250f404d05803a"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 deep_recompute.py pq-key-binding-v0.per-agent-anchor.json"
+      }
+    },
+    {
+      "name": "rotation-deep-recompute",
+      "vectors": {
+        "path": "pq-key-binding-v0.rotation.json",
+        "sha256": "150817aef5862ef601f487ef2f038917bfe78fa302bdf546607a40a7215adee6"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 deep_recompute.py pq-key-binding-v0.rotation.json"
+      }
+    },
+    {
+      "name": "revocation-deep-recompute",
+      "vectors": {
+        "path": "pq-key-binding-v0.revocation.json",
+        "sha256": "b97752168fd1071a7a00c72cd584f2e14f24a7314719bdbabc0b089e630151bc"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 deep_recompute.py pq-key-binding-v0.revocation.json"
+      }
     }
   ],
   "laneHint": "recomputable",
