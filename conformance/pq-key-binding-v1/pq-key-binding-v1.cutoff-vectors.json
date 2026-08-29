@@ -69,6 +69,54 @@
       ],
       "artifact": { "anchor_time": 1786500000, "anchored": true, "pq_companion": null },
       "expected": { "resolved": null, "resolution_reason": "no_in_force_binding", "rule": "no_in_force_binding", "evidence": "refuted", "decision": "REJECT" }
+    },
+    {
+      "name": "boundary — artifact anchored at EXACTLY the activation anchor is in_force (t == B, activation-inclusive)",
+      "bindings": [
+        {
+          "name": "kya-l4-genesis",
+          "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+          "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+          "binding_anchor_time": 1785423299,
+          "activated_at": 1785500000
+        }
+      ],
+      "artifact": {
+        "anchor_time": 1785500000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": "kya-l4-genesis",
+        "resolution_reason": "resolved_at_anchor_time",
+        "rule": "anchored_before_cutoff",
+        "evidence": "verified",
+        "decision": "ADMIT"
+      }
+    },
+    {
+      "name": "boundary — artifact anchored at EXACTLY the revocation anchor is authority_revoked (t == R, inclusive on the revoked side)",
+      "bindings": [
+        {
+          "name": "kya-l4-genesis",
+          "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+          "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+          "binding_anchor_time": 1785423299,
+          "revoked_at": 1786000000
+        }
+      ],
+      "artifact": {
+        "anchor_time": 1786000000,
+        "anchored": true,
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": null,
+        "resolution_reason": "no_in_force_binding",
+        "rule": "no_in_force_binding",
+        "evidence": "refuted",
+        "decision": "REJECT"
+      }
     }
   ]
 }
