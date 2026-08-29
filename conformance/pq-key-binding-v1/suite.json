@@ -1,31 +1,31 @@
 {
-  "profile": "pq_key_binding.v1",
-  "checks": [
-    {
-      "name": "cutoff",
-      "vectors": {
-        "path": "pq-key-binding-v1.cutoff-vectors.json",
-        "sha256": "b7921ca411229963c115c1a2c04f32dc08cd8b97a8726a0d71fc6989de0475df"
-      },
-      "adapter": {
-        "kind": "stdio",
-        "cmd": "python3 cutoff_enforce.py pq-key-binding-v1.cutoff-vectors.json"
-      }
-    },
-    {
-      "name": "manifest",
-      "vectors": {
-        "path": "pq-key-binding-v1.manifest-vectors.json",
-        "sha256": "e245249692329407a021af5bcc6dc1158b704ba8804451d71f4237975110bde5"
-      },
-      "adapter": {
-        "kind": "stdio",
-        "cmd": "python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json"
-      }
-    }
-  ],
-  "laneHint": "recomputable",
-  "spec": {
-    "path": "README.md"
+ "profile": "pq_key_binding.v1",
+ "checks": [
+  {
+   "name": "cutoff",
+   "vectors": {
+    "path": "pq-key-binding-v1.cutoff-vectors.json",
+    "sha256": "618475f90e05118f2f367d2b0de34633e38203b3fc4da559487d3235b51d9ad4"
+   },
+   "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 cutoff_enforce.py pq-key-binding-v1.cutoff-vectors.json"
+   }
+  },
+  {
+   "name": "manifest",
+   "vectors": {
+    "path": "pq-key-binding-v1.manifest-vectors.json",
+    "sha256": "e245249692329407a021af5bcc6dc1158b704ba8804451d71f4237975110bde5"
+   },
+   "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json"
+   }
   }
+ ],
+ "laneHint": "recomputable",
+ "spec": {
+  "path": "README.md"
+ }
 }
