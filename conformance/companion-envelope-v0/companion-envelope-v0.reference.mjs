@@ -1,11 +1,16 @@
-// companion-envelope.v0 — TS/JS reference producer, extracted VERBATIM from the gateway
-// (vertice-gateway src/lib/pqAgent.ts: jcs, attestationContentAddress, companionEnvelope).
-// Same canonicalization and construction the gateway runs; run with plain `node` (no build, no deps
-// beyond node:crypto). Reproduces this suite's pinned vectors byte-for-byte, cross-language with the
-// Python gate (envelope_gate.py). This is the gateway's own function as a clonable, runnable Git identity.
+// companion-envelope.v0 — executable reference for the HASHING-RELEVANT logic of the gateway's
+// companionEnvelope (vertice-gateway src/lib/pqAgent.ts: jcs, attestationContentAddress, companionEnvelope).
 //
-// Provenance: byte-identical to the merged Python gate (companion_cc 01e2d5fc…, envelope_cc b9d7c291…
-// for the committed case) and to the deployed-pending gateway companionEnvelope.
+// This is a SEMANTICALLY-EQUIVALENT EXTRACTION, not a character-for-character copy: the TypeScript types,
+// the gateway's fuller return metadata, and the gateway runtime context are intentionally not included —
+// only the byte-producing construction. Run with bun (the gateway's runtime) or node; no deps beyond
+// node:crypto.
+//
+// What it establishes: the Half B BYTE CONSTRUCTION. It reproduces this suite's pinned vectors byte-for-byte
+// (committed case companion_cc 01e2d5fc…, envelope_cc b9d7c291…), cross-language with the Python gate
+// (envelope_gate.py), and its hashing-relevant construction matches the reviewed gateway patch
+// (sha256 97a2d1dc…). It is NOT an independent build of the private gateway, nor a deployed-code identity —
+// that is the gateway operator's full private build/tests. (Scope per @pipavlo82's #33 review.)
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
