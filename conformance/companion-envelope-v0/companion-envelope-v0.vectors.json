@@ -1,6 +1,6 @@
 {
   "profile": "companion-envelope.v0",
-  "description": "Half B \u2014 the verdict commits to its companion. verdict_core_cc=sha256(JCS(core)); companion={signed_digest:verdict_core_cc,pq_pubkey,ml_dsa_signature}; companion_cc=sha256(JCS(companion)); envelope={schema,verdict_core_cc,companion_cc}. A companion not signing this core, or absent, is UNRESOLVED (companion_cc null), never false.",
+  "description": "Half B \u2014 the verdict commits to its companion. verdict_core_cc=sha256(JCS(core)); companion={signed_digest:verdict_core_cc,pq_pubkey,ml_dsa_signature}; companion_cc=sha256(JCS(companion)); envelope={schema,verdict_core_cc,companion_cc}. A companion not signing this core, or absent, is UNRESOLVED (companion_cc null), never false. A committed result proves the envelope binds the EXACT companion object; it does NOT assert the ML-DSA signature verifies (that is a separate lane). content_address MUST be present and == verdict_core_cc to be committed.",
   "vectors": [
     {
       "name": "committed",
@@ -63,6 +63,28 @@
         "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         "signature_hex": "dededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededede",
         "content_address": "13030039c664e1f61c4c1c9574dac9b0eace6ad754bff90d228c728cdfa44c61"
+      },
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": null,
+        "companion_status": "unresolved",
+        "envelope_cc": "a970cd8dd4cba7cb4240d2b27c8eb008ed3f189f9cc3db128f60043eba025a66"
+      }
+    },
+    {
+      "name": "missing-content-address-unresolved",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": {
+        "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "signature_hex": "dededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededede"
       },
       "expect": {
         "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",

@@ -3,10 +3,19 @@
   "checks": [
     {
       "name": "envelope",
-      "vectors": { "path": "companion-envelope-v0.vectors.json", "sha256": "d2b089cc546525d1fa05fe979ddc119ba13d5656581381364ec8e1b819af210e" },
-      "adapter": { "kind": "stdio", "cmd": "python3 envelope_gate.py companion-envelope-v0.vectors.json" }
+      "vectors": {
+        "path": "companion-envelope-v0.vectors.json",
+        "sha256": "b285ce5091cfe806c238b2b657422b283ddb69c6d0ba0c5501579f34593b57b1"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 envelope_gate.py companion-envelope-v0.vectors.json"
+      }
     }
   ],
   "laneHint": "recomputable",
-  "spec": { "path": "companion-envelope-v0.spec.md", "sha256": "d67f1694c21a783bc522ac955f7c2b2ceb819f1f715800500290e04d5c57cac7" }
+  "spec": {
+    "path": "companion-envelope-v0.spec.md",
+    "sha256": "9ba69fb49e55be03de5749117b004464f0f8f4b12f052b063461c7030f1ee4c4"
+  }
 }

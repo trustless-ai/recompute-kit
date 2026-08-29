@@ -23,11 +23,24 @@ the companion, not the other way around, and the graph builds one direction only
 
 ## Resolution
 
-- A companion whose recorded `content_address` is **not** this `verdict_core_cc` did not sign this verdict:
-  it is **not committed**. `companion_cc` is `null`, `companion_status` is `"unresolved"`.
+To be **committed**, a companion MUST carry a **present** `content_address` that is **exactly**
+`verdict_core_cc`. This is what proves the companion named *this* core.
+
+- `content_address` **absent** → `"unresolved"`, `companion_cc` `null`. An absent content-address MUST NOT
+  be accepted and back-filled with `signed_digest = verdict_core_cc`: that would manufacture the binding for
+  a companion that never named this core, and it would read as committed.
+- `content_address` **present but ≠ `verdict_core_cc`** → `"unresolved"`, `companion_cc` `null` (it signed a
+  different core).
 - An **absent** companion is likewise `"unresolved"`, `companion_cc` `null`.
 - An unresolvable companion MUST be **UNRESOLVED**, **never `false`** — "no companion here" and "the
   companion does not verify" are different claims a boolean cannot carry.
+
+## Scope of `committed`
+
+`committed` proves the envelope binds the **exact companion object** (this `pq_pubkey` + this
+`ml_dsa_signature` over this `verdict_core_cc`). It does **NOT** assert that the ML-DSA signature
+*verifies* — signature validity is a separate lane (the gateway's `signature_valid` / four-fact split),
+not part of this profile unless signature verification is explicitly added to it.
 
 ## Conformance
 

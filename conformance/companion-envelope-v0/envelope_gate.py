@@ -25,8 +25,11 @@ def attestation_cc(f):
 def companion_envelope(core, companion):
     vcc = attestation_cc(core)
     cc, status = None, "unresolved"
+    # A committed companion MUST record the exact core it signed: content_address PRESENT and == verdict_core_cc.
+    # Accepting an absent content_address (and manufacturing signed_digest = verdict_core_cc) would fabricate the
+    # binding without evidence — a companion that never named this core would read as committed. (Pavlo, #32.)
     belongs = bool(companion and companion.get("pq_pubkey") and companion.get("signature_hex") and
-                   (not companion.get("content_address") or companion["content_address"] == vcc))
+                   companion.get("content_address") and companion["content_address"] == vcc)
     if belongs:
         obj = {"signed_digest": vcc, "pq_pubkey": companion["pq_pubkey"], "ml_dsa_signature": companion["signature_hex"]}
         cc, status = sha(jcs(obj)), "committed"
