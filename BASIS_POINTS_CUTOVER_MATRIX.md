@@ -14,8 +14,9 @@ greenfield switch and not a rollback:
   Python, Rust, and TypeScript;
 - the live `api.babyblueviper.com/ledger` reputation axis already publishes
   `winRateBps` with the target convention hash;
-- `recompute-kit` still runs its primary ERC-8275 `agent-flow` vectors and live
-  recipe through the legacy four-decimal representation;
+- `recompute-kit` now carries a prospective, hash-pinned BPS conformance lane,
+  while its primary ERC-8275 `agent-flow` vectors and live recipe still run
+  through the legacy four-decimal representation;
 - `recompute-lens` and `trustless-agent-substrate` expose convention-unbound
   numeric results.
 
@@ -41,7 +42,7 @@ preimage while retaining either old hash.
 
 | Surface | Exact audited head |
 | --- | --- |
-| `trustless-ai/recompute-kit` | `1dfc527d8f9b3561d32ca510f8fefd8d290391f6` |
+| `trustless-ai/recompute-kit` | `9461bf3f881484725f9730c5711fb1ff657356e4` (includes prospective BPS issuance lane from PR #28) |
 | `trustless-ai/agent-sdk` | `aa76a2fe96c227ea67af11a1ff0d7e4bc7e682d3` |
 | `trustless-ai/recompute-lens` | `70b44d854a32c867b756fa1272b194d4ae8f1ce0` |
 | `trustless-ai/trustless-agent-substrate` | `a344ef80f7c52c03b9183814d1874b8054639c3e` (`feature/tas-poc`) |
@@ -62,6 +63,10 @@ preimage while retaining either old hash.
 - `bin/recompute-step 8275/reputation` still reads and compares the decimal
   `inputs.winRate`; it does not resolve the published
   `winRateBpsGoverningConventionHash`.
+- PR #28 added `conformance/erc8275-win-rate-bps-v0` as a prospective issuance
+  lane: 10 exact integer vectors, a derived `0x0501…` convention identity,
+  distinct legacy-float mutation coverage, and fail-closed missing/unknown
+  pointer controls. It did not change the legacy vectors or runtime recipe.
 
 ### `agent-sdk`
 
@@ -109,7 +114,7 @@ must acknowledge their row before a completion date is announced.
 | ID | Repository / deployment | Proposed owner | Required change | Depends on | Completion evidence |
 | --- | --- | --- | --- | --- | --- |
 | BPS-0 | `trustless-ai/recompute-kit` | recompute-kit maintainers; Pavlo and Baby Blue Viper/Fede review the identity boundary | Add an explicit resolver path for the exact `0xe4…` legacy rule without reinterpreting its preimage; retain `0xf080…` and `0x0501…`; prove all three remain distinct; unknown/missing identity stays `unverifiable` | none | Three positive resolution vectors, cross-convention negative controls, unknown-hash control, exact hash reproduction |
-| BPS-1 | `trustless-ai/recompute-kit` | recompute-kit maintainers | Add a dedicated BPS conformance lane using integer expectations and per-artifact convention identity; update the live ERC-8275 recipe to resolve the declared hash before evaluation; preserve the legacy lane unchanged or as an exact immutable package | BPS-0 | BPS goldens pass; legacy goldens still pass; missing/unknown pointer cannot use a default; no float tolerance in the BPS lane |
+| BPS-1 | `trustless-ai/recompute-kit` | recompute-kit maintainers | **Partially landed:** PR #28 / `9461bf3…` added the dedicated prospective BPS conformance lane with integer expectations and per-vector convention identity while leaving the legacy lane unchanged. **Remaining:** update the live ERC-8275 recipe to resolve the artifact-declared hash before evaluation and bind that path to BPS-0 resolver closure | BPS-0 for remaining runtime work | Landed evidence: 10/10 BPS goldens and 10/10 mutation controls, including missing/unknown pointer failure and legacy-float distinction. Completion still requires the live recipe plus retained legacy goldens |
 | BPS-2 | `trustless-ai/agent-sdk` | JimmyShi22 / agent-sdk maintainers | Replace float testkit expectations and test-side `×10000` conversions with exact BPS vectors; correct Go/Python/TS documentation; either resolve all supported legacy identities or explicitly delegate legacy verification to the pinned recompute-kit resolver | BPS-0 identity decision | Go/Python/Rust/TS reproduce the same exact vectors with no representation adapter; legacy policy is tested and documented |
 | BPS-3 | `trustless-ai/recompute-lens` | TMerlini / recompute-lens maintainers | Make BPS the identity-bearing output (`valueBps` plus `governing_convention_hash`); keep decimal rendering presentation-only; resolve a supplied legacy hash instead of assuming the current rule | BPS-0, BPS-1 vectors | UI vectors show BPS identity, legacy resolution, unknown-hash `unverifiable`, and no bare ambiguous output |
 | BPS-4 | `trustless-ai/trustless-agent-substrate` | JimmyShi22 / TAS maintainers | Expose the pin-aware SDK operation rather than bare `computeWinRate → number`; output `{value, governing_convention_hash}`; regenerate the manifest and package digests against the released SDK containing BPS-2 | BPS-2 release | Generated schema requires both fields; manifest/package integrity regenerated; tool conformance passes |
@@ -157,7 +162,8 @@ must acknowledge their row before a completion date is announced.
 - [ ] BPS-0 independently reproduces and resolves all three exact identities.
 - [ ] The `0xe4…` legacy preimage is preserved exactly and is not recast as the
       `0xf080…` schema.
-- [ ] BPS vectors contain integer expected values and no adapter multiplication.
+- [x] The prospective BPS lane contains integer expected values and no adapter
+      multiplication (PR #28 / `9461bf3…`).
 - [x] BPS-5 owner confirmed that `/ledger` is a request-time view and that no
       current persisted derived win-rate artifact requires a pointer or
       backfill; the future issuance rule is acknowledged.
