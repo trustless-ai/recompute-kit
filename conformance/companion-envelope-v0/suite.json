@@ -1,0 +1,12 @@
+{
+  "profile": "companion-envelope.v0",
+  "checks": [
+    {
+      "name": "envelope",
+      "vectors": { "path": "companion-envelope-v0.vectors.json", "sha256": "d2b089cc546525d1fa05fe979ddc119ba13d5656581381364ec8e1b819af210e" },
+      "adapter": { "kind": "stdio", "cmd": "python3 envelope_gate.py companion-envelope-v0.vectors.json" }
+    }
+  ],
+  "laneHint": "recomputable",
+  "spec": { "path": "companion-envelope-v0.spec.md", "sha256": "d67f1694c21a783bc522ac955f7c2b2ceb819f1f715800500290e04d5c57cac7" }
+}
