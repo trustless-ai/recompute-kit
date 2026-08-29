@@ -1,0 +1,116 @@
+{
+  "profile": "companion-envelope.v0",
+  "description": "Half B \u2014 the verdict commits to its companion. verdict_core_cc=sha256(JCS(core)); companion={signed_digest:verdict_core_cc,pq_pubkey,ml_dsa_signature}; companion_cc=sha256(JCS(companion)); envelope={schema,verdict_core_cc,companion_cc}. A companion not signing this core, or absent, is UNRESOLVED (companion_cc null), never false. A committed result proves the envelope binds the EXACT companion object; it does NOT assert the ML-DSA signature verifies (that is a separate lane). content_address MUST be present and == verdict_core_cc to be committed.",
+  "vectors": [
+    {
+      "name": "committed",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": {
+        "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "signature_hex": "dededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededede",
+        "content_address": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca"
+      },
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": "01e2d5fc0958a60918070d44adca2110a4e7e2320649cc60aa890b64a8ca2b41",
+        "companion_status": "committed",
+        "envelope_cc": "b9d7c291cfe89ae0e60cda31568da6ad7ea85c1004a7e39591db26da95adf148"
+      }
+    },
+    {
+      "name": "committed-distinct-signature",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": {
+        "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "signature_hex": "abababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab",
+        "content_address": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca"
+      },
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": "a19178827a7a8217d221668669d5b3fc5d2e0af1030b1549850245bf98020651",
+        "companion_status": "committed",
+        "envelope_cc": "679d2337c85e8ced92e69f647b98d366c9480949d0f908274d365f9bb6980a28"
+      }
+    },
+    {
+      "name": "wrong-core-not-committed",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": {
+        "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "signature_hex": "dededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededede",
+        "content_address": "13030039c664e1f61c4c1c9574dac9b0eace6ad754bff90d228c728cdfa44c61"
+      },
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": null,
+        "companion_status": "unresolved",
+        "envelope_cc": "a970cd8dd4cba7cb4240d2b27c8eb008ed3f189f9cc3db128f60043eba025a66"
+      }
+    },
+    {
+      "name": "missing-content-address-unresolved",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": {
+        "pq_pubkey": "af6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "signature_hex": "dededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededededede"
+      },
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": null,
+        "companion_status": "unresolved",
+        "envelope_cc": "a970cd8dd4cba7cb4240d2b27c8eb008ed3f189f9cc3db128f60043eba025a66"
+      }
+    },
+    {
+      "name": "absence-unresolved",
+      "core": {
+        "raw_input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "sanitization_pipeline_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "input_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "output_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "manifest_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "agent_id": "8",
+        "registry": "0x8b5AF3A59f81c7e16617E8Eb824BC6FfB792A2C3"
+      },
+      "companion": null,
+      "expect": {
+        "verdict_core_cc": "e3116f42569a91f2d006774cf964b61f5852de8ef649a987d290b0a8417beaca",
+        "companion_cc": null,
+        "companion_status": "unresolved",
+        "envelope_cc": "a970cd8dd4cba7cb4240d2b27c8eb008ed3f189f9cc3db128f60043eba025a66"
+      }
+    }
+  ]
+}
