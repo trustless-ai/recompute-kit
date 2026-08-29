@@ -5,7 +5,7 @@
    "name": "cutoff",
    "vectors": {
     "path": "pq-key-binding-v1.cutoff-vectors.json",
-    "sha256": "8e5f2c5639757c13453c1ff620daa497bcb6f4a2e2480f5777df17da01779c5b"
+    "sha256": "ada9e154fa5d2307dac72504e7e0d878723de332b38e2ebb9079a05b9295a27d"
    },
    "adapter": {
     "kind": "stdio",
