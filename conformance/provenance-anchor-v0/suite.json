@@ -1,0 +1,26 @@
+{
+  "profile": "provenance-anchor.v0",
+  "checks": [
+    {
+      "name": "origination-gate",
+      "vectors": {
+        "path": "provenance-anchor-v0.vectors.json",
+        "sha256": "b5417c3225edb7e2a587abcf290be8ca9c8f3e259efa03569853dff5661a1946"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 provenance_gate.py provenance-anchor-v0.vectors.json"
+      }
+    }
+  ],
+  "companion": {
+    "name": "live-resolver",
+    "cmd": "python3 resolve_anchor.py",
+    "note": "non-deterministic (network); recomputes the anchor-binding digest and checks the tx commits it, enforces canonical-repo + added-file thread binding, null-tx=unavailable_rpc. Not graded."
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "provenance-anchor-v0.spec.md",
+    "sha256": "528adff80003446b66249daf0b485bb42b628e541d55eeff0558bf5a1b38bd3e"
+  }
+}
