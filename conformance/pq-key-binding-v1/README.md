@@ -5,12 +5,16 @@ v1 cutoff enforcement for ERC-8373. A faithful port of the live gateway enforcer
 [pq-key-binding-v0](../pq-key-binding-v0/), both to stop the back catalogue being retroactively
 invalidated:
 
-1. **Baseline activation.** The baseline binding (earliest, key_epoch 0) governs from time **0**, not
-   from its anchor time. Anchoring gives a binding a provable time, not a birthday — an artifact
-   anchored *before* the baseline's own registration is still governed by it, and admits classical-only
-   pre-cutoff. Successors keep `activated_at = their anchor time`, so a rotation still cannot claim
+1. **Baseline activation (effective boundary B).** The baseline binding (earliest, key_epoch 0) governs
+   from its **effective activation boundary B** — its own anchor, or a later `activated_at`, clamped to
+   `≥ binding_anchor_time` — **not** from time 0. Anchoring gives a binding a provable time, not a
+   birthday. An artifact anchored *before* B is **admitted classical-only but NOT governed**
+   (`resolved=null`, `pre_baseline_legacy_admit`): innocent back catalogue, not retro-invalidated, but no
+   binding claims retroactive authority over it. Absence of an anchor proving the baseline at time *t* is
+   not evidence the baseline lacked authority at *t* — yet the verdict is admit-not-govern, never a
+   retroactive grant. Successors keep `activated_at = their anchor time`, so a rotation cannot claim
    retroactive coverage. This turns v0's `no_in_force_binding → REJECT` for a pre-baseline artifact
-   (which retro-invalidated the oldest back catalogue) into `anchored_before_cutoff → ADMIT`.
+   (which retro-invalidated the oldest back catalogue) into `pre_baseline_legacy_admit → ADMIT`.
 
 2. **Tri-state evidence.** The verdict carries `evidence ∈ {verified, refuted, unverifiable}`; the
    boolean `decision` (ADMIT/REJECT) is a *derived projection*. "checked and failed" (refuted) and
@@ -22,7 +26,7 @@ v0's single `no_in_force_binding` reason covered two cases that deserve opposite
 
 | case | anchored | governing binding | v0 | **v1** |
 |---|---|---|---|---|
-| **pre-baseline** — before the first binding registered | before cutoff | none yet | REJECT | **ADMIT** (`anchored_before_cutoff`) |
+| **pre-baseline** — before the baseline's boundary B | before cutoff | none yet (not governed) | REJECT | **ADMIT** (`pre_baseline_legacy_admit`, `resolved=null`) |
 | **post-revocation** — after a binding's authority ended | before cutoff | none (revoked) | REJECT | **REJECT** (`no_in_force_binding`) |
 
 A pre-baseline artifact is innocent back catalogue → admit. A post-revocation artifact is governed by
@@ -92,7 +96,7 @@ manifest all break the right case).
 ## Run
 ```
 python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 26/26 reproduced
-python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 6/6 reproduced
+python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 7/7 reproduced
 ```
 
 Provenance: zexoverz's ERC-8373 review (magicians #7) surfaced the v0 pre-cutoff rejection; the fix
