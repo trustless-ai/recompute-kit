@@ -43,6 +43,29 @@ than an implementation artefact.
   Work paragraph (Lean Consensus PQ registry: expiry-from-statefulness vs explicit anchored
   authority-termination).
 
+## Schema namespace is opaque to the enforcer (spec, normative)
+
+A binding statement carries two independent version identifiers, and they govern different things:
+
+- **`profile`** — the cutoff-enforcement profile (`pq_key_binding.v1`). This is the operative, versioned
+  side; it is the *only* identifier that governs enforcement behavior.
+- **`schema`** — the binding-statement schema. This is **implementation-namespaced**: our KYA-L4 production
+  binding carries `kya.pq_key_binding.v0`, and another deployment carries its own namespace — e.g. Fede's
+  (babyblueviper1) first live binding at `api.babyblueviper.com` carries `invinoveritas.pq_key_binding.v1`.
+  Both coexist in the v0 vectors and enforce identically. (The `.v0`/`.v1` suffixes are per-namespace schema
+  versions, not a global ordering.)
+
+> The cutoff enforcer **MUST NOT** condition its verdict on the `schema` value. Enforcement keys only on the
+> anchored times (`binding_anchor_time` / `activated_at` / `revoked_at`), the content address, and the
+> `pq_pubkey`. A conformant enforcer treats `schema` as opaque, so a binding under any namespace — known or
+> unknown — yields the same verdict as the equivalent `kya.` binding.
+
+True-by-construction in the reference enforcer (it never reads `schema`), and now a **failing witness** in the
+suite: the *namespace opacity* case duplicates the first pre-cutoff case with only the binding's `schema`
+swapped for a foreign, unregistered namespace and asserts an identical `ADMIT`. An enforcer that pattern-matches
+the namespace (e.g. rejecting anything outside `kya.pq_key_binding.*`) reds exactly that case and nothing else.
+Surfaced by zexoverz reading the v1 head (magicians #19).
+
 ## Manifest-chain `governs_from` resolution (spec §10.2.1)
 
 `manifest_resolve.py` is the chain-completeness half of `governs_from`: the earliest manifest that
@@ -68,7 +91,7 @@ manifest all break the right case).
 
 ## Run
 ```
-python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 9/9 reproduced
+python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 26/26 reproduced
 python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 6/6 reproduced
 ```
 

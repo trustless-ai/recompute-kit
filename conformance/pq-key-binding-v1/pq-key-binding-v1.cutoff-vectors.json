@@ -30,6 +30,31 @@
    }
   },
   {
+   "name": "namespace opacity — binding under a FOREIGN schema namespace enforces IDENTICALLY (schema is opaque to the enforcer)",
+   "bindings": [
+    {
+     "name": "kya-l4-genesis",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 1785423299,
+     "schema": "unknown-vendor.pq_key_binding.v99"
+    }
+   ],
+   "artifact": {
+    "anchor_time": 1785500000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-genesis",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "anchored_before_cutoff",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   },
+   "note": "Identical to the first pre-cutoff case except the binding carries a foreign, unregistered `schema` namespace. Deployments namespace their binding statements independently (e.g. Fede's live `invinoveritas.pq_key_binding.v1` at api.babyblueviper.com vs our KYA-L4 `kya.pq_key_binding.v0`). The verdict MUST NOT change: the cutoff enforcer keys only on anchored times, content address, and pq_pubkey — never on `schema`. An enforcer that branches on the schema namespace reds exactly this case."
+  },
+  {
    "name": "post-cutoff, valid companion under in-force key",
    "artifact": {
     "anchor_time": 1790500000,
