@@ -1,0 +1,470 @@
+{
+  "profile": "predicate_conformance.v0",
+  "vectors": [
+    {
+      "name": "clean-disjoint-pass",
+      "note": "mutant and predicate authored by different, disjoint DECLARED identities; the gate's observed attribution matches A_i exactly -- PASS, and the declared-identity-inequality floor holds at its real (checkable) strength -- not git-verified repository attribution.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m1",
+        "content": {
+          "diff": "swap fee-cap constant 25 -> 40"
+        },
+        "author_commit": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+        "author_identity": "alice"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED_expected_if_uneconomical"
+        },
+        "oracle_author_commit": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5",
+        "oracle_author_identity": "bob"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "CONFORMANCE_FAILED_expected_if_uneconomical"
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "c13d9d1a2182e19e81a970e11b00867c7d4b7220b64a1375f57e7c58f109b0fc",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ed88c28ecdea03f59157361e09f59a54db69fa98531b30e7b83f665113bc266b"
+      }
+    },
+    {
+      "name": "same-author-disjointness-violation",
+      "note": "mutant and predicate authored by the SAME declared identity -- disjointness_holds is false (a real, mechanically-caught floor violation), reported as its own fact, separate from the conformance verdict (which still computes normally on its own inputs).",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m2",
+        "content": {
+          "diff": "swap fee-cap constant 25 -> 999"
+        },
+        "author_commit": "1111111111111111111111111111111111111a",
+        "author_identity": "carol"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
+        "oracle_author_commit": "222222222222222222222222222222222222b2",
+        "oracle_author_identity": "carol"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "CONFORMANCE_FAILED"
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": false,
+        "precommit_hash": "e2e560e38207f0a51dcf1970d076f0c4213f1255bb581b8355a9815c4916828e",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
+      }
+    },
+    {
+      "name": "set-valued-attribution-order-independence",
+      "note": "A_i is a declared canon.set.v0 (member order not semantic). The gate's observed set is the SAME members in a DIFFERENT order -- canonical(A_i) must still match, so this is PASS, proving the sort-then-JCS fix actually normalizes order (a naive per-array JCS would wrongly report CONFORMANCE_FAILED here).",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m3",
+        "content": {
+          "diff": "remove bounds check on withdraw()"
+        },
+        "author_commit": "3333333333333333333333333333333333333c",
+        "author_identity": "dave"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "reentrancy",
+            "unchecked_transfer",
+            "integer_overflow"
+          ]
+        },
+        "oracle_author_commit": "4444444444444444444444444444444444444d",
+        "oracle_author_identity": "erin"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.set.v0",
+        "value": [
+          "integer_overflow",
+          "reentrancy",
+          "unchecked_transfer"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "0efdb54262cb00a26776f2b65a25a279d5e998ef92728876eb3d9224f8835846",
+        "conformance_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "404e6bfb44465c378c00139e6ad81630c6e59fc0aaf1dc670aeceb1298819bbc"
+      }
+    },
+    {
+      "name": "declared-set-with-duplicate-is-rejected-not-deduped",
+      "note": "A_i is declared canon.set.v0 but its own value carries a duplicate member -- MALFORMED, fails closed as UNRESOLVED/malformed_predicate (the PREDICATE side, since A_i itself is the malformed one). The obvious first draft silently dedupes a duplicate-bearing 'set', which hides the exact defect (whoever fed this isn't actually emitting a set) the same way folding distinct causes into one marker string does. A gate that dedupes here would wrongly report a verdict at all.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m3b",
+        "content": {
+          "diff": "remove bounds check on withdraw(), variant"
+        },
+        "author_commit": "3333333333333333333333333333333333333d",
+        "author_identity": "dave"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "reentrancy",
+            "reentrancy",
+            "integer_overflow"
+          ]
+        },
+        "oracle_author_commit": "4444444444444444444444444444444444444e",
+        "oracle_author_identity": "erin"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.set.v0",
+        "value": [
+          "reentrancy",
+          "integer_overflow"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": null,
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "malformed_predicate"
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "e6a8a7594673be93d5517edb960f76aeeb339789b7615b692a4258b5ab374e4b"
+      }
+    },
+    {
+      "name": "canon-mismatch-same-value-different-declared-canon",
+      "note": "The SAME array value ['integer_overflow','reentrancy'] (already duplicate-free and already JCS-byte-sorted, so canon.set.v0's own sort is a no-op here) is declared canon.set.v0 in A_i and canon.sequence.v0 in observed_attribution -- literally identical canonicalValue either way, yet the verdict is CONFORMANCE_FAILED because canon_id sits inside the hash preimage. A gate that hashed only the canonicalized value (dropping canon_id from the preimage) would wrongly PASS this vector.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m7",
+        "content": {
+          "diff": "remove reentrancy guard on claim()"
+        },
+        "author_commit": "5555555555555555555555555555555555555f",
+        "author_identity": "trent"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "integer_overflow",
+            "reentrancy"
+          ]
+        },
+        "oracle_author_commit": "6666666666666666666666666666666666666a",
+        "oracle_author_identity": "sybil"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.sequence.v0",
+        "value": [
+          "integer_overflow",
+          "reentrancy"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "678ec7bc2f97477ae07bd21ec577cfd7ef4b7d61782d54ab89d4b857d669ded2",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "2e55d860205e666860b9b89825757cb17d473828915017e0dc42cc03a6e194ec"
+      }
+    },
+    {
+      "name": "unresolved-no-observation",
+      "note": "The gate under test never produced an observation (crashed, timed out, or genuinely could not run) -- UNRESOLVED/no_observation, NOT silently treated as a pass, NOT collapsed into CONFORMANCE_FAILED (which would falsely claim a determinate disagreement that never happened).",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m4",
+        "content": {
+          "diff": "reorder two independent statements"
+        },
+        "author_commit": "5555555555555555555555555555555555555e",
+        "author_identity": "frank"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "PASS_expected_no_real_change"
+        },
+        "oracle_author_commit": "6666666666666666666666666666666666666f",
+        "oracle_author_identity": "grace"
+      },
+      "observed_attribution": null,
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "7898b0b89eb78f9e7d160790b7b41a094f4953941031d373da1ce20d922633dd",
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "no_observation"
+        },
+        "repair_verdict": null
+      }
+    },
+    {
+      "name": "conformance-failed-real-disagreement",
+      "note": "The gate under test genuinely disagrees with A_i (both exist, both determinate, both differ) -- CONFORMANCE_FAILED, the honest determinate-disagreement state, distinct from UNRESOLVED.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m5",
+        "content": {
+          "diff": "widen slippage tolerance 0.5% -> 5%"
+        },
+        "author_commit": "7777777777777777777777777777777777777a",
+        "author_identity": "heidi"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
+        "oracle_author_commit": "8888888888888888888888888888888888888b",
+        "oracle_author_identity": "ivan"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "PASS"
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "161ae6555357025dfd85d7ef90056db7cb370bd16dd77057e4195dfaf40efe3d",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "0329c63de294e0fc82d437aa65e8d3e1e67bd4fedba64e4a6b0761f0ec2938b9"
+      }
+    },
+    {
+      "name": "repair-run-restores-pass",
+      "note": "The original run mismatched (CONFORMANCE_FAILED); a repair to the mutant is applied and RE-RUN through the SAME bound-run path (a bound recomputing run per C5, not a stored boolean) -- the repair-run's own observed_attribution now matches A_i, so repair_verdict is PASS while the ORIGINAL conformance_verdict on this vector stays whatever it genuinely was.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m6",
+        "content": {
+          "diff": "cap raised without a matching liquidity check"
+        },
+        "author_commit": "9999999999999999999999999999999999999c",
+        "author_identity": "judy"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
+        "oracle_author_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad",
+        "oracle_author_identity": "mallory"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "PASS"
+      },
+      "repair": {
+        "observed_attribution_after_repair": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        }
+      },
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "7410777a3ac825ddf8ec7a28de29e93ba45b982aeaedd0bd69e722f60345f92e",
+        "conformance_verdict": {
+          "state": "CONFORMANCE_FAILED",
+          "reason": null
+        },
+        "repair_verdict": {
+          "state": "PASS",
+          "reason": null
+        },
+        "conformance_run_observed_hash": "0329c63de294e0fc82d437aa65e8d3e1e67bd4fedba64e4a6b0761f0ec2938b9",
+        "repair_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
+      }
+    },
+    {
+      "name": "malformed-observation-well-formed-predicate",
+      "note": "FIXED 2026-08-18 (Pavlo, PR #14 review): A_i is well-formed (canon.set.v0, no duplicates) but the OBSERVED attribution is the malformed one (duplicate-bearing). Prior code returned malformed_predicate for both a malformed predicate AND a malformed observed attribution, the exact collapsed-marker defect this thread's own rule exists to catch -- now UNRESOLVED/malformed_observation, a distinct reason for the observation-side failure.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m8",
+        "content": {
+          "diff": "skip nonce check on relay()"
+        },
+        "author_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "author_identity": "oscar"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.set.v0",
+          "value": [
+            "replay"
+          ]
+        },
+        "oracle_author_commit": "cccccccccccccccccccccccccccccccccccccccc",
+        "oracle_author_identity": "peggy"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.set.v0",
+        "value": [
+          "replay",
+          "replay"
+        ]
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "8ef865e57841b9a8ff6de9fcf03d809e45f6df6420c5ecadebf7f3957aa1189e",
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "malformed_observation"
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": null
+      }
+    },
+    {
+      "name": "canon-scalar-rejects-array-value",
+      "note": "FIXED 2026-08-18 (Pavlo, PR #14 review): A_i declares canon.scalar.v0 but hands an array value -- the spec always said non-array, but the implementation previously fell through and silently accepted it. Now rejected as UNRESOLVED/malformed_predicate, same fail-closed discipline as set.v0/sequence.v0's own shape checks.",
+      "invariant_definition": {
+        "rule": "flagged_invariant_violations",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m9",
+        "content": {
+          "diff": "widen access-control role check"
+        },
+        "author_commit": "dddddddddddddddddddddddddddddddddddddddd",
+        "author_identity": "quentin"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": [
+            "privilege_escalation"
+          ]
+        },
+        "oracle_author_commit": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "oracle_author_identity": "ruth"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "privilege_escalation"
+      },
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": null,
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "malformed_predicate"
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "44b7c1432f1d33f62b37468dcc3ae6967b13e4abeadf309b2bdfb8212a61db4d"
+      }
+    },
+    {
+      "name": "precommit-not-consumed-stale-binding",
+      "note": "FIXED 2026-08-18 (Pavlo, PR #14 review: 'the run objects are specified but not mechanically exercised'). A_i and observed_attribution are both well-formed and WOULD match -- but the run's own consumes_precommit is deliberately bound to a different (wrong) hash, not the one just recomputed from this precommit. The binding check fires BEFORE the attribution comparison ever runs: UNRESOLVED/precommit_not_consumed, proving a run that isn't correctly bound to its precommit cannot produce a meaningful verdict even when the underlying attributions would otherwise agree.",
+      "invariant_definition": {
+        "rule": "no_uneconomical_change",
+        "version": 1
+      },
+      "mutant": {
+        "id": "m10",
+        "content": {
+          "diff": "raise withdrawal cap without a matching reserve check"
+        },
+        "author_commit": "ffffffffffffffffffffffffffffffffffffffff",
+        "author_identity": "sybil2"
+      },
+      "predicate": {
+        "attribution": {
+          "canon_id": "canon.scalar.v0",
+          "value": "CONFORMANCE_FAILED"
+        },
+        "oracle_author_commit": "0101010101010101010101010101010101010101",
+        "oracle_author_identity": "trent2"
+      },
+      "observed_attribution": {
+        "canon_id": "canon.scalar.v0",
+        "value": "CONFORMANCE_FAILED"
+      },
+      "run_consumes_precommit_override": "0000000000000000000000000000000000000000000000000000000000000000",
+      "repair": null,
+      "expected": {
+        "disjointness_holds": true,
+        "precommit_hash": "9d5a5097b32571fb19d6f3ba169da70ea6159cbe69b0858241b73aaa7a54907b",
+        "conformance_verdict": {
+          "state": "UNRESOLVED",
+          "reason": "precommit_not_consumed"
+        },
+        "repair_verdict": null,
+        "conformance_run_observed_hash": "ab7943b56648c196b10b7c35cfa75123fb81a55316255c5431ad2014da575960"
+      }
+    }
+  ],
+  "description": "Recomputes a PIN-RECORD flow (precommit -> conformance-run -> optional repair-run) from raw inputs: declared-identity disjointness (C2, a checkable floor over the vector-supplied author_identity strings -- proves the two DECLARED strings differ, NOT git-resolved repository attribution; a real authorship check needs the same real-repo CI step C1 is deferred to), precommit_hash as sha256(JCS(the whole predicate-precommit.v0 record)) (C3, closes the delimiter-free-concatenation collision surface -- naive sha256(hash_a + hash_b + hash_c + variable_length_commit_id) is ambiguous at variable-length boundaries, and --tamper genuinely exercises that exact boundary by including oracle_author_commit in its concatenation), declared+versioned attribution canonicalization (A_i carries its own canon_id -- canon.set.v0/canon.sequence.v0/canon.scalar.v0 -- which is itself part of the hash preimage; canon.set.v0 REJECTS a duplicate-bearing value as malformed rather than silently deduping it; canon.scalar.v0 REJECTS an array value rather than silently accepting it; canon_id is really part of the hash preimage, not just documentation alongside it: an identical value declared under two different canon_ids mismatches by hash even though its canonicalized form is the same either way), a real bound predicate-conformance-run.v0/predicate-repair-run.v0 object whose consumes_precommit field is checked against the freshly recomputed precommit_hash BEFORE any attribution comparison happens (a run that is not correctly bound to the precommit it claims to consume cannot produce a meaningful verdict -- reason precommit_not_consumed), and a verdict enum {PASS, CONFORMANCE_FAILED, UNRESOLVED} where disagreement, inability-to-determine, a malformed PREDICATE attribution, and a malformed OBSERVED attribution are four distinct terminal states with no merge path (malformed_predicate and malformed_observation are never collapsed into one reason). Repair is a bound recomputing run (C5), never a stored boolean. Deliberately out of scope: C1 (git ancestry of precommit-introducing-commit before run_identity, AND resolving author_commit to a real git author) -- facts about repository history a vectors-based gate cannot check, belong in a real CI step against a real repo.",
+  "recompute": "disjointness_holds = mutant.author_identity != predicate.oracle_author_identity (declared strings, not git-resolved) ; precommit_hash = sha256(JCS(predicate-precommit.v0 record)), null if the declared attribution is malformed ; a conformance/repair run is a bound object whose consumes_precommit MUST equal the freshly recomputed precommit_hash or the verdict is UNRESOLVED/precommit_not_consumed ; verdict = PASS if canonicalize(A_i)==canonicalize(observed), CONFORMANCE_FAILED if both well-formed and differ, UNRESOLVED (with reason -- no_predicate/malformed_predicate/no_observation/malformed_observation/precommit_not_consumed/other) otherwise"
+}
