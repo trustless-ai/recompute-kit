@@ -1,0 +1,21 @@
+{
+  "profile": "tee-attested-leaf.v0",
+  "checks": [
+    {
+      "name": "attested-leaf-class-preservation",
+      "vectors": {
+        "path": "tee-attested-leaf-v0.vectors.json",
+        "sha256": "612de00f92e8af61c7b5a08113362c047dc19927ef08affed12fc7b67b33d567"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "node tee-attested-leaf-v0.reference.mjs tee-attested-leaf-v0.vectors.json"
+      }
+    }
+  ],
+  "laneHint": "attested",
+  "spec": {
+    "path": "tee-attested-leaf-v0.spec.md",
+    "sha256": "eb080e9241bb3d3f5094e6aaddad1b1b3d00fe12ddcd764729af905017db5885"
+  }
+}
