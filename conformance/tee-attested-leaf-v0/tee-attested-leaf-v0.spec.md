@@ -54,11 +54,37 @@ freshness**:
 The schema keeps all three explicit. Asserting `image_authorized`/`pcs_fresh` = `true` **requires** an
 accompanying evidence field; asserting it bare conflates authenticity with authorization/freshness and fails.
 
-## What this leaf may / may not assert
-- **May:** the model call ran inside a genuine, measured enclave whose quote is hardware-rooted and bound to
-  the recovered response signer (execution integrity).
-- **May not:** that the model's *judgment* was correct, or that any part of the model call was independently
-  *recomputed*. Those are Fede's review-boundary half and the recompute lane respectively.
+## Review boundary — execution-integrity vs judgment
+*This section by @babyblueviper1 (from the PR review) — the review-boundary half of the joint note.*
+
+**What an `ENCLAVE_ATTESTED` leaf may assert:** the model call executed inside a genuine, measured TEE, and the
+response is cryptographically bound to that execution (`hardware_authentic`, recomputed from real dcap/RTMR
+evidence in the companion `tee-inference-enclave.v0` bundle). This is **execution-integrity** — a claim about
+*where and how* the computation ran, fully mechanical, independently checkable from the enclave's own quote.
+
+**What it may not assert:** that the model's output was *correct* — semantically sound, policy-compliant, safe
+to act on. That is **judgment**, structurally a different kind of claim: it needs an evaluator with the
+authority and context to say "this specific output was right," and no amount of hardware attestation touches
+that question. A TEE can attest that an unmodified model ran the input through — it cannot attest that the
+answer was good. Collapsing the two is the exact authority-upgrade `does_not_establish` exists to block, on the
+*judgment* axis instead of the *recomputation* axis.
+
+**Concrete precedent (not just a definition):** invinoveritas's own `/review` verdict already carries this split
+under a different name — every verdict binds a `source_class` and a mechanically-derived `vantage_limitation`,
+computed as a pure function of `(source_class, artifact_type)`
+(`services/proof_signing.py::_compute_vantage_limitation`) so a verifier recomputes it rather than trusting a
+free-text string. The parallel: `does_not_establish` discloses what an *execution-integrity* leaf doesn't
+cover; `vantage_limitation` discloses what a *judgment* verdict's vantage doesn't cover. Same discipline, both
+sides of the same boundary — which is why `SEMANTIC_VERIFICATION` sits in `does_not_establish` with the same
+weight as `INDEPENDENT_RECOMPUTATION`.
+
+## Evidence-class enum (v0 — shared with semantic-abi)
+Pinned string values, identical to `trustless-ai/semantic-abi`'s `authority_class` set:
+- `ENCLAVE_ATTESTED` — execution-integrity via a genuine, measured enclave (this leaf's class).
+- `INDEPENDENT_RECOMPUTATION` — re-derived from public bytes (disclaimed by this leaf).
+- `SEMANTIC_VERIFICATION` — the output judged correct (disclaimed by this leaf).
+
+A joint note with semantic-abi will pin the full shared set; these three strings are fixed.
 
 ## Conformance
 
@@ -73,9 +99,8 @@ authorization · class not committed by the content-address (won't survive the f
 > omitting the "not judged correct" disclaimer passed — the exact green-but-adjacent hole this profile catches,
 > in our own checker. Execution integrity ≠ judgment: both axes are now gated with equal weight.
 
-## Open / for Fede + review
-- **Review-boundary section (Fede):** execution-integrity vs judgment — what an attested leaf may/may not assert.
-- **Shared evidence-class enum:** converge `ENCLAVE_ATTESTED` + the `does_not_establish` classes with semantic-abi's set.
-- **CI wiring:** the standalone reference passes; aligning the stdio adapter I/O to `bin/conformance-suite`'s
-  contract is the one integration step left (see `suite.json`).
-- **`bundle_digest`:** pin to the real `tee-inference-enclave.v0` bundle content-address (placeholder here).
+## Open / next
+- [x] **Review boundary** — execution-integrity vs judgment (folded in above, @babyblueviper1).
+- [x] **Shared evidence-class enum** — the three strings pinned; full shared set → joint note with semantic-abi.
+- [ ] **CI wiring:** align the stdio adapter I/O to `bin/conformance-suite`'s contract (standalone reference passes 7/7).
+- [ ] **`bundle_digest`:** pin to the real `tee-inference-enclave.v0` bundle content-address (placeholder here).
