@@ -9,7 +9,8 @@
 //
 // Same vocabulary as trustless-ai/semantic-abi: authority_class + does_not_establish, claim-scoped.
 //
-// Usage:  node tee-attested-leaf-v0.reference.mjs <vectors.json>
+// Usage:  node tee-attested-leaf-v0.reference.mjs <vectors.json>   (standalone self-check)
+//         node tee-attested-leaf-v0.reference.mjs --grade          (bin/conformance-suite adapter: fixture on stdin -> {results:{name:outcome}} on stdout)
 //         node tee-attested-leaf-v0.reference.mjs --digest <leaf.json>   (authoring helper)
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -73,24 +74,35 @@ const v = (reason) => ({ outcome: "VIOLATED", reason });
 
 // --- CLI (only when run directly, not when imported) ---
 if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
-  const arg = process.argv[2];
-  if (arg === "--digest") {
-    console.log(leafDigest(JSON.parse(readFileSync(process.argv[3], "utf8"))));
-  } else if (arg) {
-    const { vectors } = JSON.parse(readFileSync(arg, "utf8"));
+  const args = process.argv.slice(2);
+  if (args[0] === "--digest") {
+    console.log(leafDigest(JSON.parse(readFileSync(args[1], "utf8"))));
+  } else if (args.includes("--grade")) {
+    // bin/conformance-suite contract: fixture JSON on stdin -> {results:{name:outcome}} on stdout.
+    // A PURE REPORTER — it reports what it recomputed and lets the suite do the judging (compare each
+    // outcome to its `expected`), so a wrong outcome surfaces as a clean vector refutation, not as an
+    // opaque "adapter exited". tools/run_conformance.py (which reads only the exit code) catches a
+    // *tampered vectors file* via the pinned vectors.sha256 (DRIFT), so it stays meaningful too.
+    const { vectors } = JSON.parse(readFileSync(0, "utf8"));
+    const results = {};
+    for (const vec of vectors) results[vec.name] = checkLeaf(vec.leaf).outcome;
+    console.log(JSON.stringify({ results }));
+    process.exit(0);
+  } else if (args[0]) {
+    const { vectors } = JSON.parse(readFileSync(args[0], "utf8"));
     let fails = 0;
     console.log("");
     for (const vec of vectors) {
       const got = checkLeaf(vec.leaf);
       const ok = got.outcome === vec.expected;
       if (!ok) fails++;
-      console.log(`  ${ok ? "✓" : "✗"} ${vec.id.padEnd(26)} expected ${vec.expected.padEnd(9)} got ${got.outcome}`);
+      console.log(`  ${ok ? "✓" : "✗"} ${vec.name.padEnd(26)} expected ${vec.expected.padEnd(9)} got ${got.outcome}`);
       if (!ok) console.log(`      reason: ${got.reason}`);
     }
     console.log(`\n  ${vectors.length - fails}/${vectors.length} vectors conform\n`);
     process.exit(fails ? 1 : 0);
   } else {
-    console.error("usage: node tee-attested-leaf-v0.reference.mjs <vectors.json>");
+    console.error("usage: node tee-attested-leaf-v0.reference.mjs <vectors.json> | --grade (stdin) | --digest <leaf.json>");
     process.exit(2);
   }
 }
