@@ -3,7 +3,7 @@
   "description": "An enclave inference leaf folded into an ERC-8281 anchored manifest as an evidence-class-tagged entry ('attested, not recomputed'). Conformant iff the class is well-formed, keeps the three TEE claims separate, disclaims recomputation, and is committed by the leaf content-address so it survives the fold. Negatives MUST fail.",
   "vectors": [
     {
-      "id": "attested-leaf-ok",
+      "name": "attested-leaf-ok",
       "description": "Well-formed attested TeeML leaf: enclave-attested class, disclaims recomputation, three TEE subclaims explicit (only hardware authenticity asserted, image/freshness honestly null), class committed by the content-address.",
       "expected": "PRESERVED",
       "leaf": {
@@ -11,28 +11,41 @@
         "evidence_class": "ENCLAVE_ATTESTED",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["INDEPENDENT_RECOMPUTATION", "SEMANTIC_VERIFICATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "does_not_establish": [
+          "INDEPENDENT_RECOMPUTATION",
+          "SEMANTIC_VERIFICATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "attested-tag-dropped",
+      "name": "attested-tag-dropped",
       "description": "Negative: the evidence_class marker is missing — a fold would anchor the enclave leaf with no way to know it is attested, not recomputed.",
       "expected": "VIOLATED",
       "leaf": {
         "leaf_kind": "tee_enclave_inference",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["INDEPENDENT_RECOMPUTATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "does_not_establish": [
+          "INDEPENDENT_RECOMPUTATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "claims-recomputed-for-enclave",
+      "name": "claims-recomputed-for-enclave",
       "description": "Negative: the leaf claims INDEPENDENT_RECOMPUTATION for the enclave model-call root. The model call is attested by the enclave, never recomputed — this is the exact over-claim the tag exists to stop.",
       "expected": "VIOLATED",
       "leaf": {
@@ -41,13 +54,17 @@
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
         "does_not_establish": [],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "missing-recompute-disclaimer",
+      "name": "missing-recompute-disclaimer",
       "description": "Negative: attested class but does_not_establish omits INDEPENDENT_RECOMPUTATION — a downstream consumer could read the attested model call as recomputed.",
       "expected": "VIOLATED",
       "leaf": {
@@ -55,14 +72,20 @@
         "evidence_class": "ENCLAVE_ATTESTED",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["SEMANTIC_VERIFICATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "does_not_establish": [
+          "SEMANTIC_VERIFICATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "missing-semantic-verification-disclaimer",
+      "name": "missing-semantic-verification-disclaimer",
       "description": "Negative (mirror of missing-recompute-disclaimer, found by @babyblueviper1): attested class but does_not_establish omits SEMANTIC_VERIFICATION — a consumer could read the attested model call as judged correct. Execution integrity is not judgment.",
       "expected": "VIOLATED",
       "leaf": {
@@ -70,14 +93,20 @@
         "evidence_class": "ENCLAVE_ATTESTED",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["INDEPENDENT_RECOMPUTATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "does_not_establish": [
+          "INDEPENDENT_RECOMPUTATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "conflates-authenticity-with-authorization",
+      "name": "conflates-authenticity-with-authorization",
       "description": "Negative: asserts image_authorized=true with no image_authorization_evidence — collapses TEE claim (1) hardware authenticity into claim (2) expected-image authorization. Authenticity is not authorization.",
       "expected": "VIOLATED",
       "leaf": {
@@ -85,14 +114,21 @@
         "evidence_class": "ENCLAVE_ATTESTED",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["INDEPENDENT_RECOMPUTATION", "SEMANTIC_VERIFICATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": true, "pcs_fresh": null },
+        "does_not_establish": [
+          "INDEPENDENT_RECOMPUTATION",
+          "SEMANTIC_VERIFICATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": true,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
       }
     },
     {
-      "id": "class-not-committed-by-content-address",
+      "name": "class-not-committed-by-content-address",
       "description": "Negative: the class fields are present on the leaf, but leaf_digest was computed over a class-less preimage (the anchor folded it as a plain step). The class would NOT survive the fold — the anchored root wouldn't cover it.",
       "expected": "VIOLATED",
       "leaf": {
@@ -100,8 +136,15 @@
         "evidence_class": "ENCLAVE_ATTESTED",
         "claim_type": "model_inference_result",
         "scope": "0g:glm-5.2:action:demo-001",
-        "does_not_establish": ["INDEPENDENT_RECOMPUTATION", "SEMANTIC_VERIFICATION"],
-        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "does_not_establish": [
+          "INDEPENDENT_RECOMPUTATION",
+          "SEMANTIC_VERIFICATION"
+        ],
+        "tee_subclaims": {
+          "hardware_authentic": true,
+          "image_authorized": null,
+          "pcs_fresh": null
+        },
         "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
         "leaf_digest": "83a8ff75d1bbcb5b46cdc3b92431f9e03320f47c97b0302ab31ac9e808ee71e8"
       }

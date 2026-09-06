@@ -102,5 +102,17 @@ authorization · class not committed by the content-address (won't survive the f
 ## Open / next
 - [x] **Review boundary** — execution-integrity vs judgment (folded in above, @babyblueviper1).
 - [x] **Shared evidence-class enum** — the three strings pinned; full shared set → joint note with semantic-abi.
-- [ ] **CI wiring:** align the stdio adapter I/O to `bin/conformance-suite`'s contract (standalone reference passes 7/7).
-- [ ] **`bundle_digest`:** pin to the real `tee-inference-enclave.v0` bundle content-address (placeholder here).
+- [x] **CI wiring:** the reference speaks `bin/conformance-suite`'s contract — `--grade` reads the
+  fixture on stdin and emits `{results:{name:outcome}}` as a **pure reporter**, letting the suite do
+  the judging (compare each outcome to its `expected`), so a wrong outcome surfaces as a clean vector
+  refutation. `tools/run_conformance.py` (which reads only the exit code) catches a *tampered vectors
+  file* via the pinned `vectors.sha256` (DRIFT). `suite.json` is the flat single-check shape.
+  Verified 7/7 under both runners, and proven-can-fail: a flipped `expected` is a clean refutation
+  under `conformance-suite` and a DRIFT failure under `run_conformance`.
+- [ ] **`bundle_digest`:** still a documented placeholder (`PIN:tee-inference-enclave-v0/bundle`),
+  and deliberately so — **not** filled with an invented CID. It must be the content-address of a
+  *frozen* `tee-inference-enclave.v0` evidence bundle, and no such bundle is a committed, canonically
+  content-addressed artifact yet (that recipe ships per-check inputs, not one frozen bundle). Pinning
+  a fabricated value would be the exact over-claim this profile exists to catch. Blocked on the
+  companion recipe freezing a bundle + defining its content-addressing; then this pins to that real
+  digest and every vector's `leaf_digest` is recomputed over it. `PIN:` prefix marks it unresolved.

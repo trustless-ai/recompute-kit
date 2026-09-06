@@ -1,21 +1,16 @@
 {
   "profile": "tee-attested-leaf.v0",
-  "checks": [
-    {
-      "name": "attested-leaf-class-preservation",
-      "vectors": {
-        "path": "tee-attested-leaf-v0.vectors.json",
-        "sha256": "612de00f92e8af61c7b5a08113362c047dc19927ef08affed12fc7b67b33d567"
-      },
-      "adapter": {
-        "kind": "stdio",
-        "cmd": "node tee-attested-leaf-v0.reference.mjs tee-attested-leaf-v0.vectors.json"
-      }
-    }
-  ],
+  "vectors": {
+    "path": "tee-attested-leaf-v0.vectors.json",
+    "sha256": "b12304ca2a43bef2c710034ec7b99ad8ce9cf78ed7a8fc0ae8bed9df22df2940"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "node tee-attested-leaf-v0.reference.mjs --grade"
+  },
   "laneHint": "attested",
   "spec": {
     "path": "tee-attested-leaf-v0.spec.md",
-    "sha256": "eb080e9241bb3d3f5094e6aaddad1b1b3d00fe12ddcd764729af905017db5885"
+    "sha256": "3766d12d8bdd448f2b56db84d1021401f162bc22ceceae1c5e46cd02442b1d27"
   }
 }
