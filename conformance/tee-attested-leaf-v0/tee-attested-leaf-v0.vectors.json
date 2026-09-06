@@ -62,6 +62,21 @@
       }
     },
     {
+      "id": "missing-semantic-verification-disclaimer",
+      "description": "Negative (mirror of missing-recompute-disclaimer, found by @babyblueviper1): attested class but does_not_establish omits SEMANTIC_VERIFICATION — a consumer could read the attested model call as judged correct. Execution integrity is not judgment.",
+      "expected": "VIOLATED",
+      "leaf": {
+        "leaf_kind": "tee_enclave_inference",
+        "evidence_class": "ENCLAVE_ATTESTED",
+        "claim_type": "model_inference_result",
+        "scope": "0g:glm-5.2:action:demo-001",
+        "does_not_establish": ["INDEPENDENT_RECOMPUTATION"],
+        "tee_subclaims": { "hardware_authentic": true, "image_authorized": null, "pcs_fresh": null },
+        "bundle_digest": "PIN:tee-inference-enclave-v0/bundle",
+        "leaf_digest": "111285de444dfcd4ea5a41d11a1c6d1825dbdf4056625a7fed7936e43701cdb8"
+      }
+    },
+    {
       "id": "conflates-authenticity-with-authorization",
       "description": "Negative: asserts image_authorized=true with no image_authorization_evidence — collapses TEE claim (1) hardware authenticity into claim (2) expected-image authorization. Authenticity is not authorization.",
       "expected": "VIOLATED",

@@ -49,6 +49,10 @@ export function checkLeaf(leaf) {
   const dne = Array.isArray(leaf.does_not_establish) ? leaf.does_not_establish : [];
   if (!dne.includes("INDEPENDENT_RECOMPUTATION"))
     return v("does_not_establish omits INDEPENDENT_RECOMPUTATION — a consumer could read the attested model call as recomputed");
+  // Execution-integrity ≠ judgment: an enclave attests HOW the call ran, never that its output was correct.
+  // (Gap found by @babyblueviper1 running the mirror case against this checker — the judgment axis of the same boundary.)
+  if (!dne.includes("SEMANTIC_VERIFICATION"))
+    return v("does_not_establish omits SEMANTIC_VERIFICATION — a consumer could read the attested model call as judged correct");
 
   // 3. the THREE TEE claims stay separate (authenticity ≠ authorization ≠ freshness).
   const t = leaf.tee_subclaims || {};

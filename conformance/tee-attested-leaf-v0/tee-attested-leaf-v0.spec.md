@@ -62,11 +62,16 @@ accompanying evidence field; asserting it bare conflates authenticity with autho
 
 ## Conformance
 
-`tee-attested-leaf-v0.vectors.json` — 6 vectors, standalone reference passes 6/6
+`tee-attested-leaf-v0.vectors.json` — 7 vectors, standalone reference passes 7/7
 (`node tee-attested-leaf-v0.reference.mjs tee-attested-leaf-v0.vectors.json`): 1 `PRESERVED` (well-formed) +
-5 `VIOLATED` negatives that MUST fail — tag dropped · `INDEPENDENT_RECOMPUTATION` claimed for the enclave root ·
-recompute-disclaimer omitted · authenticity conflated with image authorization · class not committed by the
-content-address (won't survive the fold).
+6 `VIOLATED` negatives that MUST fail — tag dropped · `INDEPENDENT_RECOMPUTATION` claimed for the enclave root ·
+recompute-disclaimer omitted · **semantic-verification-disclaimer omitted** · authenticity conflated with image
+authorization · class not committed by the content-address (won't survive the fold).
+
+> The `SEMANTIC_VERIFICATION` gate (+ its negative vector) was added after @babyblueviper1 ran the mirror case
+> against this checker in review: it disclaimed the *recomputation* axis but not the *judgment* axis, so a leaf
+> omitting the "not judged correct" disclaimer passed — the exact green-but-adjacent hole this profile catches,
+> in our own checker. Execution integrity ≠ judgment: both axes are now gated with equal weight.
 
 ## Open / for Fede + review
 - **Review-boundary section (Fede):** execution-integrity vs judgment — what an attested leaf may/may not assert.
