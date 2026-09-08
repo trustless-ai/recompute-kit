@@ -1,0 +1,17 @@
+{
+  "profile": "verdict-profile-binding.v0",
+  "checks": [
+    {
+      "name": "binding",
+      "vectors": { "path": "verdict-profile-binding-v0.vectors.json", "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a" },
+      "adapter": { "kind": "stdio", "cmd": "python3 verdict_binding_gate.py verdict-profile-binding-v0.vectors.json" }
+    },
+    {
+      "name": "binding-reference-ts",
+      "vectors": { "path": "verdict-profile-binding-v0.vectors.json", "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a" },
+      "adapter": { "kind": "stdio", "cmd": "bun verdict-profile-binding-v0.reference.mjs verdict-profile-binding-v0.vectors.json" }
+    }
+  ],
+  "laneHint": "recomputable",
+  "spec": { "path": "verdict-profile-binding-v0.spec.md", "sha256": "a58aa6f4e88043b10c385f75368fd8f7429234d947a3f7c1122d67a19f41c309" }
+}

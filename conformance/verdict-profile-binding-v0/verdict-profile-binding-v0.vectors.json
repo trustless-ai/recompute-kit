@@ -1,0 +1,122 @@
+{
+  "profile": "verdict-profile-binding.v0",
+  "description": "Resolution end of the profile-commitment loop: a verdict is BOUND to its profile only if its core carries the task's authorized effective_profile_commitment inside the resolver's signed preimage AND the resolver signed that exact core; otherwise UNRESOLVED and nothing is certified. Composes with profile-amendment-v0 (amendment end). Checks binding, not signature cryptography.",
+  "vectors": [
+    {
+      "name": "bound",
+      "note": "profile in signed preimage + resolver signed this core",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": {
+        "signed_digest": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "pubkey": "abababababababababababababababababababababababababababababababababababababababababababababababab"
+      },
+      "expect": {
+        "verdict_core_cc": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "resolution_status": "bound",
+        "bound_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      }
+    },
+    {
+      "name": "bound-distinct-verdict",
+      "note": "other verdict fields may vary; the profile commitment being in-preimage + signed is what binds",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "rejected",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": {
+        "signed_digest": "5bb05a5a7ba5177a04cc9f07642dec3fee3b2b48ea0eefe88939afcc42d67360",
+        "pubkey": "abababababababababababababababababababababababababababababababababababababababababababababababab"
+      },
+      "expect": {
+        "verdict_core_cc": "5bb05a5a7ba5177a04cc9f07642dec3fee3b2b48ea0eefe88939afcc42d67360",
+        "resolution_status": "bound",
+        "bound_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      }
+    },
+    {
+      "name": "profile-omitted",
+      "note": "profile not in the signed preimage -> not bound (side-channel reference)",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": {
+        "signed_digest": "e6dad4eacbd69361b07e1d67dd06a6483e0cb7826d3e263844b714410f878374",
+        "pubkey": "abababababababababababababababababababababababababababababababababababababababababababababababab"
+      },
+      "expect": {
+        "verdict_core_cc": "e6dad4eacbd69361b07e1d67dd06a6483e0cb7826d3e263844b714410f878374",
+        "resolution_status": "unresolved",
+        "bound_profile_commitment": null
+      }
+    },
+    {
+      "name": "wrong-profile",
+      "note": "core commits to a profile != task's authorized effective profile",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "59a37f100cb309dbf414d6cb96d13842ec7c23ec37d9ad16cce54464a854b591"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": {
+        "signed_digest": "bbdce81b558f58d0f124b317fdfe19c7fa699da31fc1fcbfb4252bdbc841010c",
+        "pubkey": "abababababababababababababababababababababababababababababababababababababababababababababababab"
+      },
+      "expect": {
+        "verdict_core_cc": "bbdce81b558f58d0f124b317fdfe19c7fa699da31fc1fcbfb4252bdbc841010c",
+        "resolution_status": "unresolved",
+        "bound_profile_commitment": null
+      }
+    },
+    {
+      "name": "signature-over-wrong-core",
+      "note": "resolver signature is not over this verdict core",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": {
+        "signed_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pubkey": "abababababababababababababababababababababababababababababababababababababababababababababababab"
+      },
+      "expect": {
+        "verdict_core_cc": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "resolution_status": "unresolved",
+        "bound_profile_commitment": null
+      }
+    },
+    {
+      "name": "resolver-absent",
+      "note": "no resolver signature -> nothing attests the resolution",
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "task_effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+      "resolver_sig": null,
+      "expect": {
+        "verdict_core_cc": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "resolution_status": "unresolved",
+        "bound_profile_commitment": null
+      }
+    }
+  ]
+}
