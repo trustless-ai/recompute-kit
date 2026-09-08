@@ -53,6 +53,13 @@ composing the shipped gates; each reds on a refuted vector, and a gate mutated t
 claimed profile (the shared-constant bug) flips exactly `open-verdict-wrong-profile` to a false `closed` —
 so the seam is demonstrably load-bearing.
 
+**Which vector isolates the seam.** That same mutation also drifts the resolution-side fields on
+`open-bare-swap`, but its `loop_status` does not move: its amendment side already refuses
+(`transition_status` stays `unresolved`, which forces `closed=false` regardless of what the resolution
+side reports), so the drift is masked there. `open-verdict-wrong-profile`, where the amendment is
+permitted, is therefore the only vector whose `loop_status` isolates the seam predicate. (Caught by
+@babyblueviper1 on #42.)
+
 ## Scope
 
 Checks the composition binding, not signature cryptography (inherited from the two sub-suites: an

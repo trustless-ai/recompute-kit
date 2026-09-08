@@ -49,6 +49,9 @@ def loop(v):
         "task_effective_profile_commitment": transition["effective_profile_commitment"],
         "resolver_sig": v.get("resolver_sig"),
     })
+    # Note (babyblueviper1, #42): because a non-permitted amendment alone forces closed=False, the
+    # amendment side can mask a resolution-side fault. So open-verdict-wrong-profile (amendment permitted)
+    # is the vector whose loop_status isolates the seam; open-bare-swap's refusal masks the same drift.
     closed = (transition["transition_status"] == "permitted"
               and binding["resolution_status"] == "bound")
     return {
