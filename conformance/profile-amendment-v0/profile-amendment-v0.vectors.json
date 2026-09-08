@@ -1,0 +1,468 @@
+{
+  "profile": "profile-amendment.v0",
+  "description": "Authorized profile amendment (A -> co-signed amendment -> B) vs unauthorized swap. A change is permitted only if an amendment binds this exact A->B for this escrow AND both required parties co-signed that amendment; otherwise UNRESOLVED and the effective profile fails closed to the prior. Checks binding, not signature cryptography.",
+  "vectors": [
+    {
+      "name": "permitted",
+      "note": "A->B bound, both co-sign -> effective becomes B",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+        "transition_status": "permitted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      }
+    },
+    {
+      "name": "permitted-distinct-pubkey",
+      "note": "pubkey bytes must not change the transition verdict",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "dededededededededededededededededededededededededededededededededededededededededededededededede"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+        "transition_status": "permitted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      }
+    },
+    {
+      "name": "bare-swap-no-amendment",
+      "note": "hash change alone is a swap, not an amendment (the core attack)",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": null,
+      "authorizations": {},
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": null,
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    },
+    {
+      "name": "buyer-only",
+      "note": "one-sided authorization fails the both-parties requirement",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    },
+    {
+      "name": "supplier-only",
+      "note": "one-sided authorization fails the both-parties requirement",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    },
+    {
+      "name": "wrong-prior",
+      "note": "declared prior != in-force profile -> does not bind this transition",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "0000000000000000000000000000000000000000000000000000000000000000",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "8866ab67d960d51e3453ebda53c51c399afbe862e6c604332498e2892887f80d",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "8866ab67d960d51e3453ebda53c51c399afbe862e6c604332498e2892887f80d",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "8866ab67d960d51e3453ebda53c51c399afbe862e6c604332498e2892887f80d",
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    },
+    {
+      "name": "wrong-escrow",
+      "note": "amendment for another escrow_ref cannot authorize this task",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100#3"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "2fc6198a4bfa03a16dab1486122a8e874f50391d0612628c1159763541563459",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "2fc6198a4bfa03a16dab1486122a8e874f50391d0612628c1159763541563459",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "2fc6198a4bfa03a16dab1486122a8e874f50391d0612628c1159763541563459",
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    },
+    {
+      "name": "auth-names-wrong-digest",
+      "note": "signatures over some other amendment do not authorize this one",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expect": {
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "amendment_cc": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+        "transition_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      }
+    }
+  ]
+}
