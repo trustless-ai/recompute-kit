@@ -1,0 +1,71 @@
+{
+  "profile": "pq_key_binding.v0",
+  "description": "The third verdict. The ERC: a verifier that cannot complete a step (unreachable anchor proof, unresolvable chain) MUST report the artifact UNVERIFIABLE, distinct from both accept and reject. These cases pin that lane. Boundary deliberately encoded: a chain that CANNOT BE RESOLVED is unverifiable; a chain that resolves and finds nothing is a completed step and stays in the admit/reject lane. Run against the shipped enforcer these cases come out ADMIT or REJECT, which is the gap; the enforcer needs an unverifiable path before they reproduce.",
+  "bindings": [
+    {
+      "name": "kya-l4-genesis",
+      "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+      "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+      "binding_anchor_time": 1785423299
+    }
+  ],
+  "consumer_cutoff": 1790000000,
+  "cases": [
+    {
+      "name": "anchor proof unreachable, claimed pre-cutoff -> unverifiable, never classical admit",
+      "comment": "A pre-cutoff CLAIM with an unfetchable proof is not a proven anchor. Spec: an anchor is only a cutoff for a verifier who can fetch it. The dangerous failure is silent ADMIT on the unproven claim.",
+      "artifact": {
+        "anchor_time": 1786000000,
+        "anchored": true,
+        "anchor_proof": "unreachable",
+        "pq_companion": null
+      },
+      "expected": {
+        "resolved": null,
+        "resolution_reason": "not_attempted",
+        "rule": "anchor_proof_unreachable",
+        "decision": "UNVERIFIABLE"
+      }
+    },
+    {
+      "name": "anchor proof unreachable, post-cutoff claim with valid companion -> still unverifiable",
+      "comment": "The companion cannot rescue it: without the anchor time there is no in-force resolution to bind the companion to. Not a REJECT, the check never completed.",
+      "artifact": {
+        "anchor_time": 1790500000,
+        "anchored": true,
+        "anchor_proof": "unreachable",
+        "pq_companion": {
+          "present": true,
+          "valid": true,
+          "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa"
+        }
+      },
+      "expected": {
+        "resolved": null,
+        "resolution_reason": "not_attempted",
+        "rule": "anchor_proof_unreachable",
+        "decision": "UNVERIFIABLE"
+      }
+    },
+    {
+      "name": "binding chain unresolvable, post-cutoff -> unverifiable, distinct from no_in_force_binding",
+      "comment": "The chain source is unreachable, so in-force resolution cannot RUN. Distinct from a chain that resolves and finds no binding governing that time: that is a completed resolution and belongs to the admit/reject lane.",
+      "chain_unresolvable": true,
+      "artifact": {
+        "anchor_time": 1790500000,
+        "anchored": true,
+        "pq_companion": {
+          "present": true,
+          "valid": true,
+          "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa"
+        }
+      },
+      "expected": {
+        "resolved": null,
+        "resolution_reason": "not_attempted",
+        "rule": "chain_unresolvable",
+        "decision": "UNVERIFIABLE"
+      }
+    }
+  ]
+}
