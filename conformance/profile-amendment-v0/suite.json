@@ -1,0 +1,32 @@
+{
+  "profile": "profile-amendment.v0",
+  "checks": [
+    {
+      "name": "amendment",
+      "vectors": {
+        "path": "profile-amendment-v0.vectors.json",
+        "sha256": "79cd891adcb9019da5f4b3c81e01e8c083ba036d4ae25577f53873b17a105f74"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 amendment_gate.py profile-amendment-v0.vectors.json"
+      }
+    },
+    {
+      "name": "amendment-reference-ts",
+      "vectors": {
+        "path": "profile-amendment-v0.vectors.json",
+        "sha256": "79cd891adcb9019da5f4b3c81e01e8c083ba036d4ae25577f53873b17a105f74"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "bun profile-amendment-v0.reference.mjs profile-amendment-v0.vectors.json"
+      }
+    }
+  ],
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "profile-amendment-v0.spec.md",
+    "sha256": "6088753df1f0c428f14ccb954179ff5441af1684d2f289761e872a7a3a17c50b"
+  }
+}
