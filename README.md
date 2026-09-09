@@ -16,7 +16,7 @@ flowchart TB
 
     subgraph KIT["recompute-kit"]
         direction TB
-        MCP["MCP server · mcp/server.py<br/>8 tools · host-side, off-chat · :7079"]
+        MCP["MCP server · mcp/server.py<br/>9 tools · host-side, off-chat · :7079"]
         subgraph L2["recipe layer · recompute-step"]
             REC["ERC-specific recipes<br/>one named step, composed from primitives"]
             CONF["conformance vectors<br/>public inputs to expected verdict"]
@@ -103,7 +103,7 @@ the primitives. `recompute-step list` prints the catalog.
 | input provenance (ERC-8299 / WYRIWE) | `wyriwe/raw` · `wyriwe/pipeline` |
 | identity & dispatch (ERC-8004 / ERC-8301) | `8004/agent-id` · `8301/task-hash` · `ens/namehash` · `name/keccak-binding` |
 | verify & precedence (ERC-8274 / ERC-8263) | `8274/verify` · `8263/precedence` |
-| eligibility & reputation (ReceiptOS / ERC-8275) | `receiptos/receipt-hash` · `8275/reputation` |
+| eligibility & reputation (ReceiptOS / ERC-8275) | `receiptos/receipt-hash` · `receiptos/ruleset-version` · `receiptos/canonicalize` · `8275/reputation` |
 | observation-completeness (scope-contestation) | `scope/binding` · `scope/value-fidelity` · `scope/value-fidelity-onchain` · `scope/contest-verify` · `scope/suite` |
 | bounded actions (ERC-8312) | `8312/cap-conservation` · `8312/budget-substrate` |
 | Layer-3 defense | `scope/bond-standing` |
@@ -133,11 +133,31 @@ contract / spec), never from a recipe, so a recipe is never tested against itsel
 bin/conformance      # reference recompute (via cast) vs every golden vector
 ```
 
+### Per-suite conformance (`conformance/<suite>/`)
+
+Beyond the single agent-flow vector file, each ERC/profile also ships as its own
+**hash-pinned suite** under `conformance/<suite>/` — e.g. `captured-admission-v0`,
+`pq-key-binding-v0` and `pq-key-binding-v1`, `dex-calldata-v0`, `tee-inference-v0`,
+`crc-claim-v0`, `storage-root-v0`. Each carries a `suite.json` that pins its vectors file
+**by sha256** and names the adapter command that grades a candidate against them, plus a
+`spec.md`/`README.md`:
+
+```bash
+bin/conformance-suite --suite conformance/pq-key-binding-v1   # grade vs the hash-pinned suite
+```
+
+The pin is the point: the grader recomputes the sha256 of the exact vector bytes and refuses
+to run if it drifts from `suite.json`, so a suite can never silently grade against changed
+vectors. `conformance/uncovered.json` declares — explicitly, never by omission — which suite
+directories no runner executes yet: a directory listed there is **not passing, it is not
+running at all**, because "no gate" and "green gate" must never read the same.
+
 ## MCP server
 
-`mcp/server.py` (FastMCP, streamable-HTTP on `:7079`) exposes all 8 tools — `recompute_repo`,
+`mcp/server.py` (FastMCP, streamable-HTTP on `:7079`) exposes all 9 tools — `recompute_repo`,
 `verify_claim`, `recheck_ci`, `recompute_onchain`, `recompute_commitment`,
-`recompute_storage_proof`, `recompute_receipt_proof`, `recompute_step` — each returning compact
+`recompute_storage_proof`, `recompute_receipt_proof`, `recompute_step`, and `conformance_run`
+(grade a candidate against a hash-pinned suite) — each returning compact
 `{verdict, pass, gate, evidence}`. So an agent recomputes-don't-trusts automatically, and the
 mesh runs the kit **node-side** (not self-attested) as the always-on audit runtime.
 
