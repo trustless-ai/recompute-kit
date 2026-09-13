@@ -10,9 +10,10 @@
   "consumer_cutoff": 1795000000,
   "cases": [
     {
-      "name": "before binding existed → ungoverned",
+      "name": "before the baseline's own anchor → baseline still governs (governs_from = 0)",
+      "note": "FLIPPED 2026-08-13 (Merlini + pipavlo82, was REJECT/no_in_force_binding): baseline governs_from = 0, anchoring gives it a provable time not a birthday. Matches PQ_baseline_governs_from_zero, verified 15/15 against the v1 profile in #9. This does NOT weaken revocation -- see the next case, which is unchanged: a REVOKED baseline still REJECTs at/after its revocation, governs_from=0 only ever extends coverage backward in time, never past a real revocation event.",
       "artifact": { "anchor_time": 1785000000, "anchored": true, "pq_companion": null },
-      "expected": { "resolved": null, "resolution_reason": "no_in_force_binding", "rule": "no_in_force_binding", "decision": "REJECT" }
+      "expected": { "resolved": "kya-example", "resolution_reason": "baseline_governs_from_zero", "rule": "anchored_before_cutoff", "decision": "ADMIT" }
     },
     {
       "name": "after binding, BEFORE revocation → governed (stays valid)",
