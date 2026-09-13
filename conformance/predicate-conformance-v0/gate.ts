@@ -456,6 +456,18 @@ export function evaluate(v: Vector) {
   };
 }
 
+// NOT compared here, deliberately (Pavlo, PR #14 post-merge follow-up: "gate_commit, run_identity,
+// and repaired_mutant_commit are emitted but are not currently discriminating in
+// matchesExpected() -- if intentionally recorded-only, that boundary should be explicit"):
+// ConformanceRun.gate_commit/run_identity and RepairRun.repaired_mutant_commit. Vector["expected"]
+// carries no field for any of the three, by design -- real binding/witnessing of a run to the
+// repository commit/identity that actually produced it is C1's job (git ancestry + resolving a
+// commit to a real author), which is explicitly out of scope for this vectors-based gate (see the
+// ConformanceRun/RepairRun type comments above, and predicate-conformance-v0.spec.md's own C1
+// section). They are carried on the record for completeness/forward-compatibility with a future
+// real-repo CI step, not because this gate can meaningfully verify them today -- so this function
+// correctly never diffs them, and a vector cannot pin an expected value for a field this gate has
+// no way to check.
 function matchesExpected(got: ReturnType<typeof evaluate>, expected: Vector["expected"]): boolean {
   if (got.disjointness_holds !== expected.disjointness_holds) return false;
   if (got.precommit_hash !== expected.precommit_hash) return false;
@@ -528,6 +540,16 @@ if (import.meta.main) {
     // grade JSON (unchanged contract for anything else consuming it), but now also diffs each
     // vector against its own pinned `expected` and exits 1 if any vector disagrees.
     const fx = JSON.parse(await Bun.stdin.text());
+    // FIXED (Pavlo, PR #14 post-merge follow-up: "an empty vectors corpus still vacuously exits
+    // 0"): an empty (or missing/non-array) vectors list previously fell straight through the loop
+    // below with fails staying 0 -- exit(0), indistinguishable from every vector genuinely passing.
+    // A corpus that checked nothing is UNVERIFIABLE, not a PASS, same tri-state exit convention
+    // tools/run_conformance.py's own doc comment already establishes (0 reproduced / 1 verified-bad
+    // / 2 could-not-run) -- exit 2 here, not 0, and say why on stderr.
+    if (!Array.isArray(fx.vectors) || fx.vectors.length === 0) {
+      console.error("gate.ts --grade: vectors corpus is empty or malformed -- nothing was checked, this is UNVERIFIABLE, not a pass");
+      process.exit(2);
+    }
     const out: Record<string, unknown> = {};
     let fails = 0;
     for (const v of fx.vectors as Vector[]) {
@@ -543,6 +565,12 @@ if (import.meta.main) {
   const fx = JSON.parse(
     await Bun.file(`${import.meta.dir}/predicate-conformance-v0.vectors.json`).text()
   );
+  // Same fail-closed guard as --grade above -- an empty self-check corpus is UNVERIFIABLE, not a
+  // silent 0/0 pass.
+  if (!Array.isArray(fx.vectors) || fx.vectors.length === 0) {
+    console.error("gate.ts: vectors corpus is empty or malformed -- nothing was checked, this is UNVERIFIABLE, not a pass");
+    process.exit(2);
+  }
   let fails = 0;
   for (const v of fx.vectors as Vector[]) {
     const got = tamper ? evaluateTampered(v) : evaluate(v);
