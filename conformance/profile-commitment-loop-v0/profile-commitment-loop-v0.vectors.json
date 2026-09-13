@@ -1,0 +1,344 @@
+{
+  "profile": "profile-commitment-loop.v0",
+  "description": "End-to-end loop chaining profile-amendment-v0 (amendment end) and verdict-profile-binding-v0 (resolution end) over the same task+escrow. The amendment gate's computed effective_profile_commitment is fed as the resolution gate's task_effective (the seam is computed, never a shared constant). loop_status is closed iff the amendment is permitted AND the verdict is bound to that computed effective profile; otherwise open, fail closed. Composes the shipped gates, does not reimplement.",
+  "vectors": [
+    {
+      "name": "closed",
+      "note": "authorized A->B + verdict commits exactly B + signed -> loop closes",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "resolver_sig": {
+        "signed_digest": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "pubkey": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "expect": {
+        "transition_status": "permitted",
+        "resolution_status": "bound",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "bound_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "loop_status": "closed"
+      }
+    },
+    {
+      "name": "open-bare-swap",
+      "note": "unauthorized swap: amendment fails closed to A, verdict commits B -> seam mismatch -> open",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": null,
+      "authorizations": {},
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "resolver_sig": {
+        "signed_digest": "4737bd0ea50300752149ab2d50f58c90f7089ee56ebbe7a4861e243082319986",
+        "pubkey": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "expect": {
+        "transition_status": "unresolved",
+        "resolution_status": "unresolved",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "bound_profile_commitment": null,
+        "loop_status": "open"
+      }
+    },
+    {
+      "name": "open-verdict-wrong-profile",
+      "note": "verdict commits A while the amendment made B effective -> seam mismatch -> open",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce"
+      },
+      "resolver_sig": {
+        "signed_digest": "7464a2611f474e7104ec7d501eeaec99de97b25ef9e5f202485bbef356c583b0",
+        "pubkey": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "expect": {
+        "transition_status": "permitted",
+        "resolution_status": "unresolved",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "bound_profile_commitment": null,
+        "loop_status": "open"
+      }
+    },
+    {
+      "name": "open-verdict-unsigned",
+      "note": "right profile but resolver did not sign this verdict core -> open",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984"
+      },
+      "resolver_sig": {
+        "signed_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pubkey": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "expect": {
+        "transition_status": "permitted",
+        "resolution_status": "unresolved",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "bound_profile_commitment": null,
+        "loop_status": "open"
+      }
+    },
+    {
+      "name": "open-verdict-profile-omitted",
+      "note": "verdict carries no effective_profile_commitment (side-channel) -> open",
+      "in_force_profile": {
+        "schema": "verification-profile.v0",
+        "version": 1,
+        "mechanically_checkable": [
+          "result_hash_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "proposed_profile": {
+        "schema": "verification-profile.v0",
+        "version": 2,
+        "mechanically_checkable": [
+          "result_hash_matches",
+          "chain_id_matches"
+        ],
+        "admissible_evidence": [
+          "onchain_receipt"
+        ],
+        "jury_resolved": [
+          "reasoning_quality"
+        ]
+      },
+      "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0",
+      "required_parties": [
+        "buyer",
+        "supplier"
+      ],
+      "amendment": {
+        "schema": "profile-amendment.v0",
+        "prior_profile_commitment": "cc458bd42359a4dcd873cd3bde38cc45e5562f51f674c214b4659030317c70ce",
+        "new_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "escrow_ref": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90#0"
+      },
+      "authorizations": {
+        "buyer": {
+          "party": "buyer",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "supplier": {
+          "party": "supplier",
+          "signed_digest": "6e1e3f6df4a77a9e38b0eaaf64f5d5eb3297acf4dbdc9e0c80e14c1ce93324e5",
+          "pubkey": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "verdict_core": {
+        "schema": "verdict.v0",
+        "job_id": "job-7",
+        "outcome": "accepted"
+      },
+      "resolver_sig": {
+        "signed_digest": "e6dad4eacbd69361b07e1d67dd06a6483e0cb7826d3e263844b714410f878374",
+        "pubkey": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "expect": {
+        "transition_status": "permitted",
+        "resolution_status": "unresolved",
+        "effective_profile_commitment": "c5561c0ddd64f3b971563ef2ec08b812b2aaad3787ed8de3cc39d69d9fd35984",
+        "bound_profile_commitment": null,
+        "loop_status": "open"
+      }
+    }
+  ]
+}

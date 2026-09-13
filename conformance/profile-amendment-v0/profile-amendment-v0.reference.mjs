@@ -9,7 +9,8 @@
 // exactly as companion-envelope checks content_address === verdict_core_cc). Signature cryptography
 // (ML-DSA / ECDSA validity) rides the separate signature lane and is intentionally not recomputed here.
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 function jcs(v) {
   if (Array.isArray(v)) return "[" + v.map(jcs).join(",") + "]";
@@ -68,6 +69,10 @@ export function profileTransition(v) {
 }
 
 // --- runner: reproduce the pinned vectors, exit 1 on any mismatch ---
+// Runs only when invoked directly, not when imported for composition (profile-commitment-loop-v0).
+let _runDirectly = false;
+try { _runDirectly = !!process.argv[1] && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]); } catch {}
+if (_runDirectly) {
 const KEYS = ["prior_profile_commitment", "new_profile_commitment", "amendment_cc",
   "transition_status", "effective_profile_commitment"];
 const path = process.argv.find((a, i) => i >= 2 && !a.startsWith("-")) ||
@@ -82,3 +87,4 @@ for (const v of doc.vectors) {
 }
 console.log(`${doc.vectors.length - fails}/${doc.vectors.length} vectors reproduced (JS reference == amendment_gate.py)`);
 process.exit(fails ? 1 : 0);
+}
