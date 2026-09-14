@@ -1,0 +1,1 @@
+[ { "file": "mod.py", "find": "n % 2 == 0", "replace": "n % 2 >= 0", "class": "guard", "label": "is_even always-true" } ]
