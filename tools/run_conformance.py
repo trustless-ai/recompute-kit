@@ -54,7 +54,7 @@ def sha256(p: pathlib.Path) -> str:
 # Which failure kinds are a determinate verdict (exit 1) and which mean we could not
 # conclude at all (exit 2). RUNNER and NOT COVERED are not evidence about the vectors.
 DETERMINATE = {"SUITE", "DRIFT"}
-UNDETERMINED = {"RUNNER", "NOT COVERED", "UNDECLARED"}
+UNDETERMINED = {"RUNNER", "NOT COVERED", "UNDECLARED", "UNVERIFIABLE"}
 
 # These signatures identify failures in the command/runtime/dependency layer, before an
 # adapter can answer its conformance question. Keep them specific: generic words such as
@@ -105,6 +105,11 @@ def classify_process_failure(returncode: int, output: str, cmd: str) -> ProcessF
     last = _last_process_diagnostic(output)
     if any(signature in output for signature in ENVIRONMENT_FAILURE_SIGNATURES):
         return ProcessFailure("RUNNER", f"environment, not evidence: {last}")
+    if returncode == 2:
+        # The gate's own tri-state verdict: it ran and could not conclude (empty corpus,
+        # missing optional lane, validator fault). Scoring it as refuted would accuse the
+        # vectors of a fault the gate explicitly said it could not check.
+        return ProcessFailure("UNVERIFIABLE", f"gate could not conclude (exit 2): {last}")
     return ProcessFailure("SUITE", f"exit {returncode}: {last}")
 
 
@@ -299,6 +304,7 @@ def main() -> int:
             "NOT COVERED": "NOT COVERED",
             "DECLARED UNCOVERED": "NOT RUN",
             "REQUIRES LIVE": "SKIPPED",
+            "UNVERIFIABLE": "UNVERIFIABLE",
         }.get(r.kind, "FAIL") if not r.ok else "PASS"
         print(f"{status:<12} {r.name:<{width}}  {r.detail}")
 
@@ -354,13 +360,14 @@ def main() -> int:
     if failed:
         print()
         print("not green, by cause:")
-        for kind in ("SUITE", "DRIFT", "UNDECLARED", "RUNNER", "NOT COVERED"):
+        for kind in ("SUITE", "DRIFT", "UNDECLARED", "UNVERIFIABLE", "RUNNER", "NOT COVERED"):
             group = [r for r in failed if r.kind == kind]
             if not group:
                 continue
             label = {
                 "SUITE": "suite failed (a vector did not reproduce)",
                 "DRIFT": "pinned digest mismatch (vectors/spec changed without repinning)",
+                "UNVERIFIABLE": "gate ran and could not conclude (its own exit 2: nothing checked, nothing refuted)",
                 "RUNNER": "runner could not execute it (environment, not evidence)",
                 "UNDECLARED": "vector files present that no manifest declares — unrun, and green without them is false coverage",
             "NOT COVERED": "discovered but never run — treat as failing, not as absent",
