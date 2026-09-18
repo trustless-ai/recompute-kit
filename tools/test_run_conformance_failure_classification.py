@@ -25,14 +25,14 @@ def command_for(script: pathlib.Path) -> str:
     return " ".join(shlex.quote(part) for part in (sys.executable, str(script)))
 
 
-def add_failing_suite(root: pathlib.Path, name: str, output: str) -> None:
+def add_failing_suite(root: pathlib.Path, name: str, output: str, returncode: int = 1) -> None:
     suite = root / name
     suite.mkdir()
     adapter = suite / "adapter.py"
     adapter.write_text(
         "import sys\n"
         f"print({output!r})\n"
-        "raise SystemExit(1)\n",
+        f"raise SystemExit({returncode})\n",
         encoding="utf-8",
         newline="\n",
     )
@@ -50,7 +50,7 @@ def add_failing_suite(root: pathlib.Path, name: str, output: str) -> None:
     )
 
 
-def run_temporary_repository(suites: list[tuple[str, str]]) -> tuple[int, str]:
+def run_temporary_repository(suites: list[tuple[str, str] | tuple[str, str, int]]) -> tuple[int, str]:
     with tempfile.TemporaryDirectory() as temporary:
         conformance = pathlib.Path(temporary) / "conformance"
         conformance.mkdir()
@@ -59,8 +59,8 @@ def run_temporary_repository(suites: list[tuple[str, str]]) -> tuple[int, str]:
             encoding="utf-8",
             newline="\n",
         )
-        for name, output in suites:
-            add_failing_suite(conformance, name, output)
+        for name, output, *returncode in suites:
+            add_failing_suite(conformance, name, output, *returncode)
         captured = io.StringIO()
         with mock.patch.object(runner, "CONFORMANCE", conformance), contextlib.redirect_stdout(captured):
             return runner.main(), captured.getvalue()
@@ -103,6 +103,32 @@ class ProcessFailureClassificationTests(unittest.TestCase):
             "adapter command",
         )
         self.assertEqual("SUITE", failure.kind)
+
+    def test_gate_exit_two_is_unverifiable_not_suite(self) -> None:
+        # A gate that exits 2 has run and said it could not conclude (empty corpus, missing
+        # optional lane). That is the repo's own tri-state convention, and must not be scored
+        # as a refutation of the vectors.
+        failure = runner.classify_process_failure(
+            2,
+            "gate.ts --grade: vectors corpus is empty or malformed -- nothing was checked",
+            "adapter command",
+        )
+        self.assertEqual("UNVERIFIABLE", failure.kind)
+        self.assertIn("could not conclude", failure.detail)
+        self.assertNotIn("SUITE", failure.kind)
+
+    def test_gate_exit_one_with_same_output_stays_suite(self) -> None:
+        # Only the exit code carries the tri-state; the wording of the diagnostic does not.
+        failure = runner.classify_process_failure(
+            1,
+            "gate.ts --grade: vectors corpus is empty or malformed -- nothing was checked",
+            "adapter command",
+        )
+        self.assertEqual("SUITE", failure.kind)
+
+    def test_environment_signature_outranks_exit_two(self) -> None:
+        failure = runner.classify_process_failure(2, "ModuleNotFoundError: No module named 'x'", "adapter command")
+        self.assertEqual("RUNNER", failure.kind)
 
     def test_generic_words_do_not_become_runner(self) -> None:
         failure = runner.classify_process_failure(
@@ -163,6 +189,24 @@ class FinalExitSemanticsTests(unittest.TestCase):
         self.assertEqual(1, code)
         self.assertIn("suite failed (a vector did not reproduce)", output)
         self.assertIn("runner could not execute it (environment, not evidence)", output)
+
+    def test_unverifiable_only_repository_exits_two(self) -> None:
+        code, output = run_temporary_repository([
+            ("empty-corpus", "vectors corpus is empty -- nothing was checked", 2),
+        ])
+        self.assertEqual(2, code)
+        self.assertIn("UNVERIFIABLE empty-corpus", output)
+        self.assertIn("gate ran and could not conclude", output)
+        self.assertNotIn("suite failed (a vector did not reproduce)", output)
+
+    def test_unverifiable_gate_does_not_soften_a_real_refutation(self) -> None:
+        code, output = run_temporary_repository([
+            ("empty-corpus", "vectors corpus is empty -- nothing was checked", 2),
+            ("semantic-refutation", "vector mismatch: expected 00, got ff"),
+        ])
+        self.assertEqual(1, code)
+        self.assertIn("suite failed (a vector did not reproduce)", output)
+        self.assertIn("gate ran and could not conclude", output)
 
     def test_exit_precedence_helper_includes_drift(self) -> None:
         runner_failure = runner.Result("environment", False, "RUNNER", "missing dependency")
