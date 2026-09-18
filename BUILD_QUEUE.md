@@ -21,6 +21,8 @@ Deferred design notes — not urgent, but load-bearing when their moment comes. 
 
 **Status (2026-07-19):** direction ratified by all SDK authors (Jimmy, Fede, Pavlo, Tiago) — basis-points is the agreed target, not an open proposal. Jimmy is refining the Rust SDK design plans around it. **Cutover must be coordinated**: every SDK (Rust + TS reference) switches together, each pinning the new convention hash — a half-migrated family reintroduces exactly the cross-SDK mismatch this guards against. Still not urgent; no cutover scheduled.
 
+**Reconciliation status (2026-08-28):** a fresh cross-repository preflight found that the family is already partially migrated: `agent-sdk` and the live Baby Blue Viper/Fede ledger emit BPS, while the primary `agent-flow` gate and downstream consumer surfaces remain legacy or convention-unbound. It also identified two distinct legacy hashes that require separate resolution. The exact PR/owner dependencies and completion gate are recorded in [`BASIS_POINTS_CUTOVER_MATRIX.md`](BASIS_POINTS_CUTOVER_MATRIX.md). No completion window is scheduled yet; this is a coordinated completion, not a new independent switch.
+
 ---
 
 ## ACE cross-chain precedence: `entitled_at` indeterminate state + `precedence_policy` allowlist
