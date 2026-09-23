@@ -28,6 +28,10 @@ MUTANTS = [
     ("M8_MISSING_EVIDENCE_BECOMES_AUTHORIZED", ["P12", "P13", "P14"],
      'status = combine(current)  # M8',
      'status = "satisfied" if combine(current) == "cannot_establish" else combine(current)  # M8'),
+    ("M9_ALLOW_CONSUMED_IDENTITY_MISMATCH", ["P17", "P18"],
+     'if identity(consume) != identity(selected):  # M9', 'if False:  # M9'),
+    ("M10_ALLOW_CONSUMED_CAPACITY_DOMAIN_MISMATCH", ["P19"],
+     'if consume["capacity_domain"] != selected["capacity_domain"]:  # M10', 'if False:  # M10'),
 ]
 
 
