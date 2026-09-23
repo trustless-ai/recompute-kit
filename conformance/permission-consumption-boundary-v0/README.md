@@ -166,10 +166,12 @@ outcomes. There are no runtime mutation switches in the checker.
 | M6 ignore current capacity | P9 |
 | M7 allow unrelated capacity domain | P11 |
 | M8 promote missing evidence to authorization | P12, P13, P14 |
+| M9 allow consumed identity mismatch | P17, P18 |
+| M10 allow consumed capacity domain mismatch | P19 |
 
-M9 is not added: historical results are computed once before the current phase;
-P6 independently pins nonretroactivity without inventing a current-to-historical
-assignment solely to mutate it.
+No nonretroactivity mutation is added: historical results are computed once
+before the current phase; P6 independently pins nonretroactivity without
+inventing a current-to-historical assignment solely to mutate it.
 
 ## Relationship to #46 and limits
 
