@@ -177,9 +177,9 @@ def evaluate(case):
     if historical_status != "satisfied":
         return result(historical_status, "cannot_establish", observed, historical, {},
                       ["HISTORICAL_AUTHORIZATION_NOT_ESTABLISHED", "CURRENT_AUTHORIZATION_NOT_EVALUATED"])
-    if identity(consume) != identity(selected):
+    if identity(consume) != identity(selected):  # M9
         return result("satisfied", "violated", observed, historical, {}, ["GRANT_IDENTITY_MISMATCH"])
-    if consume["capacity_domain"] != selected["capacity_domain"]:
+    if consume["capacity_domain"] != selected["capacity_domain"]:  # M10
         return result("satisfied", "violated", observed, historical, {}, ["CAPACITY_DOMAIN_MISMATCH"])
     candidates = [g for g in data["grants"]
                   if g["grant_id"] == selected["grant_id"]  # M5
