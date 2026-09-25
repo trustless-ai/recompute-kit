@@ -71,13 +71,16 @@ jobs:
       # refuted vector) or mis-inventories declared files (a spec.path reported as an unrun
       # vector) is worse than none — but a test that CI never runs has no failure mode. Neither
       # of these was wired in before, so both run here: the failure-classification test and the
-      # declared-file inventory regression.
-      - name: Runner unit tests — failure classification + declared-file inventory
+      # declared-file inventory regression. The stale-declaration regression is the third: an
+      # uncovered.json entry for a multi-check suite (results labelled "<dir>/<check>") was never
+      # reported stale once the suite ran, because the sweep compared labels to directory names.
+      - name: Runner unit tests — failure classification + declared-file inventory + stale declarations
         run: |
           python3 tools/test_run_conformance_failure_classification.py
           python3 tools/test_run_conformance_undeclared_inventory.py
           python3 tools/test_run_conformance_checker_pins.py
           python3 tools/test_run_conformance_unpinned_executables.py
+          python3 tools/test_run_conformance_stale_declarations.py
 
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported

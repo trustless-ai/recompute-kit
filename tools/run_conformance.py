@@ -243,6 +243,37 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
     return Result(label, True, "SUITE", _last_process_diagnostic(out))
 
 
+def suite_dir(label: str) -> str:
+    """The suite directory a result label belongs to. A suite that declares several checks
+    reports one result per check, labelled "<dir>/<check>" (e.g. "permission-consumption-
+    boundary-v0/conformance"); a single-check suite reports the bare "<dir>"."""
+    return label.split("/", 1)[0]
+
+
+def classify_declared_uncovered(results, declared, declared_undeclared_vectors) -> list[str]:
+    """Relabel results the uncovered list excuses, and return the suite directories whose
+    entry is STALE (declared uncovered, yet the suite now runs).
+
+    Match on the suite DIRECTORY, not the full result label: `declared` holds directory
+    names, and a multi-check suite's results are labelled "<dir>/<check>", which never
+    equal a bare directory name. Matching the label meant an uncovered entry for any
+    multi-check suite could never be reported stale, so it stayed on the list after the
+    suite started running — the exact drift this list's own header says it must catch.
+    Returned once per directory, in first-seen order."""
+    stale: list[str] = []
+    for r in results:
+        if r.kind == "UNDECLARED" and r.name in declared_undeclared_vectors:
+            r.kind = "DECLARED UNCOVERED"
+            continue
+        d = suite_dir(r.name)
+        if d in declared:
+            if r.kind == "NOT COVERED":
+                r.kind = "DECLARED UNCOVERED"
+            elif d not in stale:
+                stale.append(d)
+    return stale
+
+
 def load_declared_uncovered() -> dict[str, str]:
     """Directories explicitly declared as not-run, with reasons. See conformance/uncovered.json."""
     f = CONFORMANCE / "uncovered.json"
@@ -371,16 +402,7 @@ def main() -> int:
 
     # A declared-uncovered suite is still printed and still counted as not-run. It just
     # does not fail the build, because someone signed their name to it being unrun.
-    stale = []
-    for r in results:
-        if r.kind == "UNDECLARED" and r.name in declared_undeclared_vectors:
-            r.kind = "DECLARED UNCOVERED"
-            continue
-        if r.name in declared:
-            if r.kind == "NOT COVERED":
-                r.kind = "DECLARED UNCOVERED"
-            else:
-                stale.append(r.name)
+    stale = classify_declared_uncovered(results, declared, declared_undeclared_vectors)
 
     width = max(len(r.name) for r in results)
     for r in results:
