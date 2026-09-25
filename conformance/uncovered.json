@@ -76,12 +76,16 @@
     {
       "suite": "communication-chain-v0",
       "reason": "gate.ts shells out to foundry `cast` for keccak AND makes a live MCP call to gateway.ensub.org. Intentional as a live-capability lane (it checks a running capability still returns the pinned bytes) but not hermetic: it cannot be reproduced by a third party without our gateway up, and CI has neither cast nor a reason to depend on our uptime.",
-      "owner": "unassigned"
+      "owner": "babyblueviper1",
+      "reviewed_at": "2026-09-24",
+      "review_after": "2026-10-24"
     },
     {
       "suite": "ens-write-v0",
       "reason": "gate.ts makes a live MCP call to gateway.ensub.org (CONFORMANCE_GATEWAY_URL) to get the candidate calldata for each vector. Same shape as communication-chain-v0: it checks a running capability still returns the pinned bytes, but it cannot be reproduced by a third party without our gateway up, so an external outage should not turn the canonical runner red.",
-      "owner": "unassigned"
+      "owner": "babyblueviper1",
+      "reviewed_at": "2026-09-24",
+      "review_after": "2026-10-24"
     }
   ]
 }

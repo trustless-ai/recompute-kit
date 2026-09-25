@@ -77,6 +77,7 @@ jobs:
           python3 tools/test_run_conformance_failure_classification.py
           python3 tools/test_run_conformance_undeclared_inventory.py
           python3 tools/test_run_conformance_checker_pins.py
+          python3 tools/test_run_conformance_live_lifecycle.py
 
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
