@@ -1,0 +1,10 @@
+{
+  "schema": "recompute-kit.mutation-survival.v0.vectors",
+  "recipe": "recompute-mutation-survival",
+  "note": "Gates the gate: it MUST return verified-good on a load-bearing suite and verified-bad on a decorative one. Same code, same mutation; only the test differs.",
+  "test_cmd": "rm -rf __pycache__ && python3 test.py",
+  "vectors": [
+    { "name": "load-bearing", "fixture": "fixtures/load-bearing", "mutation": "is_even always-true", "class": "guard", "expected_mutation": "KILLED",   "expected_exit": 0, "expected_verdict": "verified-good" },
+    { "name": "decorative",   "fixture": "fixtures/decorative",   "mutation": "is_even always-true", "class": "guard", "expected_mutation": "SURVIVED", "expected_exit": 1, "expected_verdict": "verified-bad" }
+  ]
+}

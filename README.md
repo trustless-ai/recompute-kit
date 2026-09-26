@@ -72,6 +72,7 @@ off-chain value can never manufacture a pass.
 | `recompute-commitment` | a digest — `keccak` / `keccak256(abi.encode(…))` | the committed value |
 | `recompute-storage-proof` | a storage value — `eth_getProof` MPT inclusion | the block's `stateRoot` |
 | `recompute-receipt-proof` | a log/event — the rebuilt receipt trie | the block's `receiptsRoot` |
+| `recompute-mutation-survival` | that a suite's tests are **load-bearing** — mutate the source, the suite must catch it | the suite's own KILLED / SURVIVED |
 
 ```bash
 # clone @ an exact ref and run its tests yourself — the atomic recomputation
@@ -88,6 +89,10 @@ bin/recompute-storage-proof <rpc> <block> <address> <slot> [expected]
 
 # an event the trustless way — rebuild the receipt trie vs receiptsRoot, confirm the log
 bin/recompute-receipt-proof <rpc> <block> <txhash|index> [<log_address> <topic0>]
+
+# prove a suite's tests are load-bearing, not decorative — a guard mutation MUST be killed,
+# or the passing suite is green about nothing (the automated form of "prove the check can fail")
+bin/recompute-mutation-survival --dir <repo> --test-cmd "npm test" --mutations mutations.json
 ```
 
 The storage/receipt proofs are the **indexer-uncheatable** layer: a lying or mis-structured RPC
