@@ -1,0 +1,16 @@
+{
+  "profile": "dex-calldata.v0",
+  "vectors": {
+    "path": "dex-calldata-v0.vectors.json",
+    "sha256": "0f88616f3c21ad6f90875e34b3d891b998616f41a0012e45dffe12a0d24fe282"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "python3 gate.py --grade"
+  },
+  "laneHint": "recomputable",
+  "spec": {
+    "path": "dex-calldata-v0.spec.md",
+    "sha256": "6d0f67769b7b83ba7fc65f64da2d41f9bb2127d27f50b60ea22ab6376cfdfeff"
+  }
+}

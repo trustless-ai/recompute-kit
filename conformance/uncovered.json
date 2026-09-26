@@ -16,10 +16,10 @@
     "undeclared_vectors: a suite.json points at ONE vectors file. Other vector files in",
     "the same directory are run by no manifest. Listing them here is an admission that",
     "they are unrun in CI, not a claim that they pass. Clearing this needs multi-vector",
-    "manifest support (suite.json declaring a list) \u2014 a schema change for the WG, not a",
+    "manifest support (suite.json declaring a list) — a schema change for the WG, not a",
     "runner change. Until then these files are exercised only by hand.",
     "",
-    "requires_live: suites that cannot run hermetically \u2014 they need an external binary on",
+    "requires_live: suites that cannot run hermetically — they need an external binary on",
     "PATH, or a live HTTP call to infrastructure we operate. They are SKIPPED by CI, not",
     "passed. A suite whose green depends on our own service being reachable is measuring",
     "our uptime as much as the claim, so it must not contribute to a CI pass."
@@ -27,37 +27,32 @@
   "uncovered": [
     {
       "suite": "convention-hash-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     },
     {
       "suite": "crc-claim-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     },
     {
       "suite": "deils-leg2-reveal-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
-      "owner": "unassigned"
-    },
-    {
-      "suite": "dex-calldata-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     },
     {
       "suite": "id-write-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     },
     {
       "suite": "nft-fulfill-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     },
     {
       "suite": "storage-root-v0",
-      "reason": "no suite.json \u2014 never executed by any runner; pass/fail state unknown",
+      "reason": "no suite.json — never executed by any runner; pass/fail state unknown",
       "owner": "unassigned"
     }
   ],
