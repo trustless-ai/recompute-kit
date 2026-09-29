@@ -3,8 +3,15 @@
 
 The suite manifest is the contract, so this reads it rather than assuming:
 
-    adapter.cmd     the command, run with the suite directory as cwd
-    adapter.kind    "stdio" -> the vectors file is fed on STDIN
+    adapter.cmd       the command, run with the suite directory as cwd
+    adapter.kind      "stdio" -> the vectors file is fed on STDIN
+    adapter.contract  WHO GRADES (required; no inference from --grade, output shape or exit code):
+                      "self_grading" -- the adapter compares against its own declared expectations; its exit code is
+                                        the verdict (0 reproduced, 1 refuted, 2 could not conclude).
+                      "reporter"     -- the adapter only reports results; exit 0 means a report was produced, nothing
+                                        more. The RUNNER compares every result with the pinned vectors[].expected
+                                        (bin/conformance-suite's comparison) and fails missing, extra or invalid output
+                                        as REPORT_CONTRACT. A valid pin never waives this grading.
     vectors.path    the vectors, and vectors.sha256 if pinned
     spec.sha256     the spec digest, if pinned
 
@@ -55,7 +62,13 @@ def sha256(p: pathlib.Path) -> str:
 # Which failure kinds are a determinate verdict (exit 1) and which mean we could not
 # conclude at all (exit 2). RUNNER and NOT COVERED are not evidence about the vectors.
 DETERMINATE = {"SUITE", "DRIFT"}
-UNDETERMINED = {"RUNNER", "NOT COVERED", "UNDECLARED", "UNVERIFIABLE"}
+UNDETERMINED = {"RUNNER", "NOT COVERED", "UNDECLARED", "UNVERIFIABLE", "REPORT_CONTRACT"}
+# REPORT_CONTRACT: a reporter-contract adapter did not complete the reporter protocol (missing / extra / invalid / empty
+# report, a nonzero reporter exit, an invalid corpus). It cannot establish the vectors (exit 2), it is attributed to the
+# implementation under test rather than the environment, and it is deliberately NOT "NOT COVERED": the uncovered.json
+# pass rewrites NOT COVERED on a declared suite to NOT RUN (build-silent), so a reporter that drops the vectors it gets
+# wrong must never be able to reach that rewrite.
+ADAPTER_CONTRACTS = ("reporter", "self_grading")
 
 # These signatures identify failures in the command/runtime/dependency layer, before an
 # adapter can answer its conformance question. Keep them specific: generic words such as
@@ -224,9 +237,19 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
     if kind and kind != "stdio":
         return Result(label, False, "NOT COVERED", f"adapter.kind '{kind}' not implemented by this runner")
 
+    contract = adapter.get("contract")
+    if contract not in ADAPTER_CONTRACTS:
+        # No implicit third contract and no inference from --grade / output shape / exit code: an adapter that does not
+        # say who grades cannot be graded, so it is not run as if it had said.
+        return Result(label, False, "NOT COVERED",
+                      f"adapter.contract must be one of {'/'.join(ADAPTER_CONTRACTS)}, got {contract!r}")
+
     stdin_data = b""
     if vec_path:
         stdin_data = (d / vec_path).read_bytes()
+
+    if contract == "reporter":
+        return _run_reporter(d, cmd, label, stdin_data, vec_path)
 
     try:
         proc = subprocess.run(cmd, shell=True, cwd=d, input=stdin_data,
@@ -241,6 +264,134 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
         failure = classify_process_failure(proc.returncode, out, cmd)
         return Result(label, False, failure.kind, failure.detail)
     return Result(label, True, "SUITE", _last_process_diagnostic(out))
+
+
+def _grader_canon():
+    """The comparison representation of bin/conformance-suite (sorted compact JSON, ensure_ascii=False), imported rather
+    than copied so the canonical runner and the standalone grader cannot drift apart."""
+    import importlib.machinery, importlib.util
+    loader = importlib.machinery.SourceFileLoader("_conformance_suite_grader", str(ROOT / "bin" / "conformance-suite"))
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    mod = importlib.util.module_from_spec(spec)
+    loader.exec_module(mod)
+    return mod.canon
+
+
+class _Invalid(Exception):
+    pass
+
+
+def _strict_json(data: bytes, what: str):
+    """UTF-8 JSON, one document, no duplicate object members at any depth, no NaN/Infinity."""
+    def no_dupes(pairs):
+        obj = {}
+        for k, v in pairs:
+            if k in obj:
+                raise _Invalid(f"{what}: duplicate member {k!r}")
+            obj[k] = v
+        return obj
+
+    def no_const(c):
+        raise _Invalid(f"{what}: non-JSON number {c}")
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as e:
+        raise _Invalid(f"{what}: not UTF-8 ({e.reason})")
+    try:
+        return json.loads(text, object_pairs_hook=no_dupes, parse_constant=no_const)
+    except _Invalid:
+        raise
+    except ValueError as e:
+        raise _Invalid(f"{what}: not a single JSON document ({e.msg} at {e.pos})")
+
+
+def _reporter_corpus(stdin_data: bytes):
+    """-> list of (name, vector) for a reporter check. Rejects what cannot be graded unambiguously."""
+    canon = _grader_canon()
+    c = _strict_json(stdin_data, "INVALID_CORPUS")
+    if not isinstance(c, dict) or not isinstance(c.get("vectors"), list):
+        raise _Invalid("INVALID_CORPUS: a reporter corpus is an object with a \"vectors\" array")
+    if not c["vectors"]:
+        raise _Invalid("EMPTY_CORPUS: no vectors, and 0/0 is not a pass")
+    seen, out = set(), []
+    for i, v in enumerate(c["vectors"]):
+        if not isinstance(v, dict) or not isinstance(v.get("name"), str) or not v["name"]:
+            raise _Invalid(f"INVALID_CORPUS: vectors[{i}] needs a nonempty string name")
+        if v["name"] == "results":
+            raise _Invalid("INVALID_CORPUS: \"results\" is reserved (it is the report envelope key)")
+        if v["name"] in seen:
+            raise _Invalid(f"INVALID_CORPUS: duplicate vector name {v['name']!r}")
+        if "expected" not in v:
+            raise _Invalid(f"INVALID_CORPUS: vector {v['name']!r} declares no expected")
+        if "must_not_equal" in v and canon(v["expected"]) == canon(v["must_not_equal"]):
+            raise _Invalid(f"INVALID_CORPUS: vector {v['name']!r} expects the value it forbids (must_not_equal)")
+        seen.add(v["name"])
+        out.append((v["name"], v))
+    return out
+
+
+def _run_reporter(d: pathlib.Path, cmd: str, label: str, stdin_data: bytes, vec_path) -> Result:
+    """REPORTER contract: exit 0 means only that a report was produced; the runner compares every result with the
+    pinned vectors[].expected. stdout carries exactly one JSON report (a name->result map, or {"results": map});
+    stderr is diagnostics and is never parsed."""
+    if not vec_path:
+        return Result(label, False, "REPORT_CONTRACT", "INVALID_CORPUS: a reporter check must declare vectors")
+    try:
+        vectors = _reporter_corpus(stdin_data)
+    except _Invalid as e:
+        return Result(label, False, "REPORT_CONTRACT", str(e))
+    try:
+        proc = subprocess.run(cmd, shell=True, cwd=d, input=stdin_data,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+    except subprocess.TimeoutExpired:
+        return Result(label, False, "RUNNER", "timed out after 300s")
+    except Exception as e:
+        return Result(label, False, "RUNNER", f"could not execute adapter.cmd: {e}")
+    combined = (proc.stdout + b"\n" + proc.stderr).decode("utf-8", "replace").strip()
+    if proc.returncode != 0:
+        failure = classify_process_failure(proc.returncode, combined, cmd)
+        if failure.kind == "RUNNER":
+            return Result(label, False, "RUNNER", failure.detail)
+        # A nonzero reporter exit is not a self-graded refutation: the reporter protocol was not completed.
+        return Result(label, False, "REPORT_CONTRACT",
+                      f"ADAPTER_FAILED: reporter exited {proc.returncode} ({_last_process_diagnostic(combined)})")
+    if not proc.stdout.strip():
+        return Result(label, False, "REPORT_CONTRACT", "EMPTY_REPORT: exit 0 with no report on stdout")
+    try:
+        report = _strict_json(proc.stdout, "INVALID_REPORT")
+    except _Invalid as e:
+        return Result(label, False, "REPORT_CONTRACT", str(e))
+    if not isinstance(report, dict):
+        return Result(label, False, "REPORT_CONTRACT", "INVALID_REPORT: the report must be a JSON object")
+    if list(report) == ["results"]:
+        report = report["results"]
+        if not isinstance(report, dict):
+            return Result(label, False, "REPORT_CONTRACT", "INVALID_REPORT: \"results\" must be a name->result object")
+
+    canon = _grader_canon()
+    declared = {n for n, _ in vectors}
+    missing = sorted(declared - set(report))
+    extra = sorted(set(report) - declared)
+    refuted = []
+    for name, v in vectors:
+        if name not in report:          # membership is tested apart from value: absent is never null
+            continue
+        got = report[name]
+        if canon(got) != canon(v["expected"]):
+            refuted.append(f"{name}: expected {canon(v['expected'])[:60]} got {canon(got)[:60]}")
+        elif "must_not_equal" in v and canon(got) == canon(v["must_not_equal"]):   # presence, not truthiness
+            refuted.append(f"{name}: reproduced the forbidden value {canon(v['must_not_equal'])[:60]}")
+    notes = (f"; also MISSING_RESULT {missing[:5]}" if missing else "") + (f"; also EXTRA_RESULT {extra[:5]}" if extra else "")
+    if refuted:   # a witnessed expected-value contradiction is determinate, whatever else went wrong
+        return Result(label, False, "SUITE",
+                      f"{len(refuted)}/{len(vectors)} vector(s) did not reproduce: {refuted[0]}{notes}")
+    if missing:
+        return Result(label, False, "REPORT_CONTRACT",
+                      f"MISSING_RESULT: {len(missing)}/{len(vectors)} declared vector(s) not in the report: {missing[:5]}"
+                      + (f"; also EXTRA_RESULT {extra[:5]}" if extra else ""))
+    if extra:
+        return Result(label, False, "REPORT_CONTRACT", f"EXTRA_RESULT: undeclared result(s) {extra[:5]}")
+    return Result(label, True, "SUITE", f"{len(vectors)}/{len(vectors)} reproduced (runner-graded reporter)")
 
 
 def load_declared_uncovered() -> dict[str, str]:
@@ -443,6 +594,7 @@ def main() -> int:
             "DECLARED UNCOVERED": "NOT RUN",
             "REQUIRES LIVE": "SKIPPED",
             "UNVERIFIABLE": "UNVERIFIABLE",
+            "REPORT_CONTRACT": "REPORT CONTRACT",
         }.get(r.kind, "FAIL") if not r.ok else "PASS"
         print(f"{status:<12} {r.name:<{width}}  {r.detail}")
 
@@ -516,7 +668,7 @@ def main() -> int:
     if failed:
         print()
         print("not green, by cause:")
-        for kind in ("SUITE", "DRIFT", "UNDECLARED", "UNVERIFIABLE", "RUNNER", "NOT COVERED"):
+        for kind in ("SUITE", "DRIFT", "UNDECLARED", "REPORT_CONTRACT", "UNVERIFIABLE", "RUNNER", "NOT COVERED"):
             group = [r for r in failed if r.kind == kind]
             if not group:
                 continue
@@ -524,6 +676,8 @@ def main() -> int:
                 "SUITE": "suite failed (a vector did not reproduce)",
                 "DRIFT": "pinned digest mismatch (vectors/spec changed without repinning)",
                 "UNVERIFIABLE": "gate ran and could not conclude (its own exit 2: nothing checked, nothing refuted)",
+                "REPORT_CONTRACT": "reporter did not complete the reporter contract (missing/extra/invalid/empty report, "
+                                   "nonzero reporter exit, invalid corpus) -- the implementation under test, not the environment",
                 "RUNNER": "runner could not execute it (environment, not evidence)",
                 "UNDECLARED": "vector files present that no manifest declares — unrun, and green without them is false coverage",
             "NOT COVERED": "discovered but never run — treat as failing, not as absent",
@@ -531,6 +685,10 @@ def main() -> int:
             print(f"  {label}:")
             for r in group:
                 print(f"    - {r.name}: {r.detail}")
+
+        shown = {"SUITE", "DRIFT", "UNDECLARED", "REPORT_CONTRACT", "UNVERIFIABLE", "RUNNER", "NOT COVERED"}
+        for r in [r for r in failed if r.kind not in shown]:   # no failing result may be diagnostically invisible
+            print(f"  {r.kind}: {r.name}: {r.detail}")
 
         exit_code = exit_code_for_failures(failed)
         if exit_code == 1:

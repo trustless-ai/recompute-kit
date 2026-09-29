@@ -7,6 +7,7 @@
   "adapter": {
     "kind": "stdio",
     "cmd": "python3 ../captured-admission-v0/admission_check.py vectors.json",
+    "contract": "self_grading",
     "note": "reuses the core checker unmodified -- no forked evaluator, profile supplies data + interpretation only"
   },
   "laneHint": "recomputable",

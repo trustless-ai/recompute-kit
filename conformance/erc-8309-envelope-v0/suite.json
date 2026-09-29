@@ -11,7 +11,8 @@
   "upstream": "babyblueviper1/invinoveritas @ f88d5263 (erc-8309.envelope schema, \u00a75)",
   "adapter": {
     "kind": "stdio",
-    "cmd": "python3 erc-8309-envelope-grade.py"
+    "cmd": "python3 erc-8309-envelope-grade.py",
+    "contract": "reporter"
   },
   "laneHint": "read-only"
 }

@@ -36,7 +36,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 permission_check.py vectors.json"
+        "cmd": "python3 permission_check.py vectors.json",
+        "contract": "self_grading"
       }
     },
     {
@@ -47,7 +48,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 mutation_check.py"
+        "cmd": "python3 mutation_check.py",
+        "contract": "self_grading"
       }
     }
   ]

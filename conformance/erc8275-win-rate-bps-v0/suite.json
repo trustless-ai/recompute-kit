@@ -13,7 +13,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 gate.py"
+        "cmd": "python3 gate.py",
+        "contract": "reporter"
       }
     },
     {
@@ -24,7 +25,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 gate.py --prove-mutations"
+        "cmd": "python3 gate.py --prove-mutations",
+        "contract": "reporter"
       }
     }
   ],

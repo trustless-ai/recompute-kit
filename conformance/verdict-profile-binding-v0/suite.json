@@ -4,12 +4,12 @@
     {
       "name": "binding",
       "vectors": { "path": "verdict-profile-binding-v0.vectors.json", "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a" },
-      "adapter": { "kind": "stdio", "cmd": "python3 verdict_binding_gate.py verdict-profile-binding-v0.vectors.json" }
+      "adapter": { "kind": "stdio", "cmd": "python3 verdict_binding_gate.py verdict-profile-binding-v0.vectors.json", "contract": "self_grading" }
     },
     {
       "name": "binding-reference-ts",
       "vectors": { "path": "verdict-profile-binding-v0.vectors.json", "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a" },
-      "adapter": { "kind": "stdio", "cmd": "bun verdict-profile-binding-v0.reference.mjs verdict-profile-binding-v0.vectors.json" }
+      "adapter": { "kind": "stdio", "cmd": "bun verdict-profile-binding-v0.reference.mjs verdict-profile-binding-v0.vectors.json", "contract": "self_grading" }
     }
   ],
   "laneHint": "recomputable",

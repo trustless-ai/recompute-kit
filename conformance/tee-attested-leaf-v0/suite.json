@@ -6,7 +6,8 @@
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "node tee-attested-leaf-v0.reference.mjs --grade"
+    "cmd": "node tee-attested-leaf-v0.reference.mjs --grade",
+    "contract": "reporter"
   },
   "laneHint": "attested",
   "spec": {

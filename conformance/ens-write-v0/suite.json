@@ -6,7 +6,8 @@
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "bun gate.ts --grade"
+    "cmd": "bun gate.ts --grade",
+    "contract": "reporter"
   },
   "laneHint": "recomputable",
   "spec": {
