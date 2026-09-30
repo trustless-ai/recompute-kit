@@ -90,6 +90,14 @@ jobs:
       - name: pq-key-binding-v1 — no_in_force_binding must imply revocation
         run: python3 tools/test_pq_v1_cutoff_reason_reachability.py
 
+      # grade() compares declared fields by `got.get(k) != exp[k]`, which returns None for both a
+      # present-null value and an absent key — 13 of the 26 v1 cutoff cases declare `resolved: null`,
+      # so a checker that stops emitting `resolved` on those paths would pass unnoticed. This proves
+      # the fix closes that gap on all 13, with the pre-fix comparison as a control showing the bug
+      # was real, not hypothetical.
+      - name: pq-key-binding-v1 — grade() must assert presence, not just value
+        run: python3 tools/test_pq_v1_cutoff_grade_presence.py
+
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
       # as a suite failure — not as drift and not as a runner error. Without this a

@@ -197,10 +197,21 @@ def grade(got, exp):
     expectation that cannot fail is decorative, which is the exact failure class this suite exists
     to detect, so the grader must not carry a whitelist.
 
+    PRESENCE, not just value: `got.get(k) != exp[k]` collapses a missing key into an explicit null,
+    since `got.get(k)` returns None either way. 13 of 26 cases declare `resolved: null` — a checker
+    that stopped emitting `resolved` on those paths would pass unnoticed. A field is graded only once
+    presence is settled: absent -> mismatch against whatever the vector expects (including an
+    expected null, which absence does not satisfy); present -> compared by value.
+
     NOTE: `unverifiable_reason` and `resolved_pq_pubkey` are produced by admit() but declared by no
     vector today, so they are unasserted rather than mis-asserted. Same class, deliberately left to
     its own change to keep this one scoped to the discriminator Pavlo named."""
-    diffs = [(k, got.get(k), exp[k]) for k in exp if got.get(k) != exp[k]]
+    diffs = []
+    for k in exp:
+        if k not in got:
+            diffs.append((k, "<absent>", exp[k]))
+        elif got[k] != exp[k]:
+            diffs.append((k, got[k], exp[k]))
     diffs += [(k, got.get(k), "<absent>") for k in DISCRIMINATING if k not in exp and k in got]
     return diffs
 
