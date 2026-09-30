@@ -16,7 +16,7 @@
       "name": "cutoff",
       "vectors": {
         "path": "pq-key-binding-v0.cutoff-vectors.json",
-        "sha256": "7cfd7e8906b0afbfa1d000e99177ab797b2f757dc2d71364ff79cc48fbc506f7"
+        "sha256": "151f9400bd896195ba19a7c19ebb4a546d8d0489db4f0c21f6c84c6f300ca2d0"
       },
       "adapter": {
         "kind": "stdio",
@@ -27,7 +27,7 @@
       "name": "rotation",
       "vectors": {
         "path": "pq-key-binding-v0.rotation-vectors.json",
-        "sha256": "2c046fdaaebe1a8e71b99b191cbd8efa48abe7b6449e5f4b32cc30f1750d6b1a"
+        "sha256": "40475cdeb4abdc1d93a058c2e220d0f82a21f31bcb03fd37c83a07dc88d36613"
       },
       "adapter": {
         "kind": "stdio",
@@ -38,7 +38,7 @@
       "name": "revocation",
       "vectors": {
         "path": "pq-key-binding-v0.revocation-vectors.json",
-        "sha256": "3481360d3ffa5e785ca640a06994a9724ab6e7cee1a2e033102e70b91f31cac0"
+        "sha256": "ead29048ed87b4ee78a339ee936091717d53634c933e36d362062f46835bf9ef"
       },
       "adapter": {
         "kind": "stdio",
