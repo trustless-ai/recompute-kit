@@ -1,0 +1,41 @@
+{
+  "profile": "scan_subject_binding.v0",
+  "spec": {
+    "path": "README.md",
+    "sha256": "2a21492921198faacf1727aba0464c60ea9dd47964addb8e16a11f12c041fd0d"
+  },
+  "checker": {
+    "path": "scan_check.py",
+    "sha256": "4f459fcc4d37053046d8ceaff9a7f4a714d15c37f22ea624fa133fb8d793473a"
+  },
+  "mutation_checker": {
+    "path": "mutation_check.py",
+    "sha256": "442d1d6000b872358acd5a9668e0ce7869b0a50e699369810eaa7b10c0777ac9"
+  },
+  "dependencies": [],
+  "laneHint": "recomputable",
+  "checks": [
+    {
+      "name": "conformance",
+      "vectors": {
+        "path": "vectors.json",
+        "sha256": "eab2b61c37e57bc697957ed7f26cf48cc097a519fc1f4a8ea71b3d06cc026562"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 scan_check.py vectors.json"
+      }
+    },
+    {
+      "name": "mutation-coverage",
+      "vectors": {
+        "path": "vectors.json",
+        "sha256": "eab2b61c37e57bc697957ed7f26cf48cc097a519fc1f4a8ea71b3d06cc026562"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "cmd": "python3 mutation_check.py"
+      }
+    }
+  ]
+}
