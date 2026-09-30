@@ -177,6 +177,45 @@ def admit(bindings, consumer_cutoff, artifact):
             "rule": "post_cutoff_no_valid_companion"}
 
 
+# Fields that DISCRIMINATE between outcomes sharing one `rule`. post_cutoff_no_valid_companion is
+# reached three ways — no companion, companion CHECKED-invalid, and valid companion under a
+# NON-in-force key — and `refuted_because` is the ONLY field that tells the third apart from the
+# first two. Grading it only where a vector declares it would leave the other two asserting nothing
+# about it, so ABSENCE is asserted too: a vector that does not declare a discriminating field
+# requires that field to be ABSENT from the verdict. That is what makes it load-bearing in both
+# directions — deleting the key from the checker fails the case that declares it, and emitting it on
+# the wrong branch fails the cases that do not.
+DISCRIMINATING = ("refuted_because",)
+
+
+def grade(got, exp):
+    """Return the list of (field, got, expected) disagreements for one case.
+
+    EVERY field the vector declares is compared. The previous implementation compared a hardcoded
+    five-key whitelist, so any other declared field — `refuted_because` was the live instance —
+    was silently dropped and the expectation asserted nothing that could fail. A declared
+    expectation that cannot fail is decorative, which is the exact failure class this suite exists
+    to detect, so the grader must not carry a whitelist.
+
+    PRESENCE, not just value: `got.get(k) != exp[k]` collapses a missing key into an explicit null,
+    since `got.get(k)` returns None either way. 13 of 26 cases declare `resolved: null` — a checker
+    that stopped emitting `resolved` on those paths would pass unnoticed. A field is graded only once
+    presence is settled: absent -> mismatch against whatever the vector expects (including an
+    expected null, which absence does not satisfy); present -> compared by value.
+
+    NOTE: `unverifiable_reason` and `resolved_pq_pubkey` are produced by admit() but declared by no
+    vector today, so they are unasserted rather than mis-asserted. Same class, deliberately left to
+    its own change to keep this one scoped to the discriminator Pavlo named."""
+    diffs = []
+    for k in exp:
+        if k not in got:
+            diffs.append((k, "<absent>", exp[k]))
+        elif got[k] != exp[k]:
+            diffs.append((k, got[k], exp[k]))
+    diffs += [(k, got.get(k), "<absent>") for k in DISCRIMINATING if k not in exp and k in got]
+    return diffs
+
+
 def run(path):
     fx = json.load(open(path))
     baseB, baseR, baseC = fx.get("bindings", []), fx.get("revocations", []), fx["consumer_cutoff"]
@@ -184,14 +223,12 @@ def run(path):
     for c in fx["cases"]:
         bindings = apply_revocations(c.get("bindings", baseB), c.get("revocations", baseR))
         got, exp = admit(bindings, c.get("consumer_cutoff", baseC), c["artifact"]), c["expected"]
-        keys = ("decision", "rule", "resolved", "resolution_reason", "evidence")
-        ok = all(got.get(k) == exp.get(k) for k in keys if k in exp)
+        diffs = grade(got, exp)
+        ok = not diffs
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {c['name']:<52} {got['evidence']:<12} {got['rule']:<34} -> {got['decision']}")
-        if not ok:
-            for k in keys:
-                if k in exp and got.get(k) != exp.get(k):
-                    print(f"      {k}: got {got.get(k)!r} != exp {exp.get(k)!r}")
+        for k, g, e in diffs:
+            print(f"      {k}: got {g!r} != exp {e!r}")
     print(f"{len(fx['cases']) - fails}/{len(fx['cases'])} cases reproduced")
     return fails
 

@@ -80,6 +80,24 @@ jobs:
           python3 tools/test_run_conformance_unpinned_executables.py
           python3 tools/test_run_conformance_live_lifecycle.py
 
+      # pq_key_binding.v1 keeps a reason vocabulary in which no_in_force_binding is reachable ONLY
+      # via revocation. That is the whole reason a separate authority_revoked field would be
+      # decorative rather than load-bearing (no sibling case could assert its absence). The claim
+      # was measured once by hand; measured-once is remembered, not pinned. If a future rule opens a
+      # non-revocation path, t == R becomes genuinely under-specified and the question reopens — this
+      # is how that goes red instead of being rediscovered. Carries its own positive control, because
+      # a sweep that finds nothing proves nothing.
+      - name: pq-key-binding-v1 — no_in_force_binding must imply revocation
+        run: python3 tools/test_pq_v1_cutoff_reason_reachability.py
+
+      # grade() compares declared fields by `got.get(k) != exp[k]`, which returns None for both a
+      # present-null value and an absent key — 13 of the 26 v1 cutoff cases declare `resolved: null`,
+      # so a checker that stops emitting `resolved` on those paths would pass unnoticed. This proves
+      # the fix closes that gap on all 13, with the pre-fix comparison as a control showing the bug
+      # was real, not hypothetical.
+      - name: pq-key-binding-v1 — grade() must assert presence, not just value
+        run: python3 tools/test_pq_v1_cutoff_grade_presence.py
+
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
       # as a suite failure — not as drift and not as a runner error. Without this a
