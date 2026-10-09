@@ -33,7 +33,7 @@ Every NO_FINDING carries an `evidence_grade`, and the two grades claim different
 NO_FINDING means "this named scanner found nothing in this named subject". It is never POISONING_ABSENT, which matches the reading
 Agent Manifest itself requires of a clean scan; that word is outside the checker's vocabulary (mutant M2).
 
-## Cases (`vectors.json`, 10)
+## Cases (`vectors.json`, 12)
 
 | case | point |
 |---|---|
@@ -45,6 +45,7 @@ Agent Manifest itself requires of a clean scan; that word is outside the checker
 | c4 / c4b | published deterministic scanner rerun -> NO_FINDING / CONTRADICTED, both REPRODUCED |
 | c5 | k=2: `effective_dataset_digest = root(retrieved)` is unordered, profile frozen to k=1 -> CANNOT_ESTABLISH |
 | c6 | c2 with one manifest-signature byte flipped: `check_decision()` must refuse it on `signature` and nothing else (end-to-end control; the primitive controls alone cannot see a deleted guard) |
+| c7 | signed `flagged` result (non-clean) -> `result_only_check` must say NOT_VALID, not VALID (mutant M11's only legitimate killer) |
 
 ## Run
 
