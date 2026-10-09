@@ -1,13 +1,46 @@
 #!/usr/bin/env bash
 # Conformance for recompute-mutation-survival. The gate MUST tell load-bearing coverage from
-# decorative coverage: verified-good (0) when a guard mutation is killed, verified-bad (1) when it
-# survives. If it can't distinguish them, the gate is decorative itself and this check fails.
+# decorative coverage, and must NOT accept a mutant that died unobserved as a kill.
+#
+# The expectations live in mutation-survival-v0.vectors.json and this script READS them. They used
+# to be bash literals here, which meant the vectors asserted nothing: inverting every expected_exit
+# and expected_verdict, repinning the digest, and re-running still printed CONFORMANT — a decorative
+# vector set shipped with the tool for catching decorative tests. (zexoverz, check:10, 2026-08-26)
 here="$(cd "$(dirname "$0")" && pwd)"
-bin="$here/../../bin/recompute-mutation-survival"
-tc="rm -rf __pycache__ && python3 test.py"
-run() { python3 "$bin" --dir "$here/fixtures/$1" --test-cmd "$tc" --mutations "$here/fixtures/$1/mutations.json" >/dev/null 2>&1; echo $?; }
-fail=0
-lb=$(run load-bearing);  [ "$lb" = "0" ]  && echo "OK   load-bearing -> verified-good (0)" || { echo "FAIL load-bearing -> $lb (want 0)"; fail=1; }
-dec=$(run decorative);   [ "$dec" = "1" ] && echo "OK   decorative   -> verified-bad (1)"  || { echo "FAIL decorative   -> $dec (want 1)"; fail=1; }
-[ "$fail" = 0 ] && echo "mutation-survival-v0: CONFORMANT" || echo "mutation-survival-v0: NON-CONFORMANT"
-exit $fail
+exec python3 - "$here" <<'PY'
+import json, os, subprocess, sys, tempfile
+here = sys.argv[1]
+bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
+spec = json.load(open(os.path.join(here, "mutation-survival-v0.vectors.json")))
+tc = spec["test_cmd"]
+fail = 0
+for v in spec["vectors"]:
+    d = os.path.join(here, v["fixture"])
+    with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as t:
+        art = t.name
+    rc = subprocess.run([sys.executable, bin_, "--dir", d, "--test-cmd", tc,
+                         "--mutations", os.path.join(d, "mutations.json"), "--out", art],
+                        capture_output=True, text=True).returncode
+    got_verdict = got_mut = None
+    try:
+        a = json.load(open(art))
+        got_verdict = a.get("verdict")
+        rows = [r for r in a.get("results", []) if r.get("label") == v["mutation"]]
+        got_mut = rows[0]["verdict"] if rows else None
+    except Exception as e:
+        got_verdict = f"<artifact unreadable: {e}>"
+    finally:
+        os.unlink(art)
+    bad = []
+    if rc != v["expected_exit"]:            bad.append(f"exit {rc} != {v['expected_exit']}")
+    if got_verdict != v["expected_verdict"]: bad.append(f"verdict {got_verdict!r} != {v['expected_verdict']!r}")
+    if got_mut != v["expected_mutation"]:    bad.append(f"mutation {got_mut!r} != {v['expected_mutation']!r}")
+    if bad:
+        print(f"FAIL {v['name']:14} " + "; ".join(bad)); fail = 1
+    else:
+        print(f"OK   {v['name']:14} exit {rc}, {got_verdict}, mutation {got_mut}")
+print("mutation-survival-v0: " + ("CONFORMANT" if not fail else "NON-CONFORMANT"))
+# NOTE: a single exit 1 for both "a vector did not reproduce" and "could not run" is zexoverz's
+# check:13 — left for that fixup so the two changes do not collide.
+sys.exit(fail)
+PY

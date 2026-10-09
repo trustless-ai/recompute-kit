@@ -8,14 +8,16 @@ load-bearing — is 100% line-covered and catches zero bugs. Coverage/CRAP score
 mutation catches it.
 
 Method (the automated form of the house rule "prove the check can fail"): for each declared mutation
-— a small semantic change to real source — apply it, run the suite, restore. A guard mutation is
-KILLED if a test fails (the suite caught it) and SURVIVED if the suite stays green (a fault the tests
-cannot see). Probes are informational: their survivors are the actionable coverage backlog.
+— a small semantic change to real source — apply it exactly once, run the suite, restore. A guard
+mutation is KILLED only if the suite fails AND its declared kill_witness appears in the output;
+SURVIVED if the suite stays green (a fault the tests cannot see); and CRASHED if it died without the
+witness, which is not a kill. Probes are informational: their survivors are the coverage backlog.
 
 Verdict (kit-standard exit codes):
   0  verified-good  — baseline green AND every `guard` mutation was KILLED (tests are load-bearing)
   1  verified-bad   — a `guard` mutation SURVIVED (a decorative test that should catch it does not)
-  2  UNVERIFIABLE   — baseline not green, a guard anchor not found, or the suite could not be run
+  2  UNVERIFIABLE   — baseline not green, a guard anchor not found or applied other than exactly
+                      once, a guard with no declared kill_witness, or a guard that CRASHED
 
 The run is itself recomputable: --out writes a MutationRun artifact (each mutation + verdict) that
 anyone can re-derive by re-running against the same ref. Stdlib only.
@@ -23,9 +25,14 @@ anyone can re-derive by re-running against the same ref. Stdlib only.
 Usage:
   bin/recompute-mutation-survival --dir <repo> --test-cmd "<cmd>" --mutations <mutations.json> [--out run.json]
 
-mutations.json: [ { "file", "find", "replace", "class": "guard"|"probe", "label", "must" }, ... ]
+mutations.json: [ { "file", "find", "replace", "class", "label", "kill_witness", "must" }, ... ]
   file    path relative to --dir
-  find    exact substring present in the current source (its absence => UNVERIFIABLE for a guard)
+  find    exact substring that must occur EXACTLY ONCE in the current source (zero => not_applied,
+          more than one => ambiguous_application; both UNVERIFIABLE for a guard)
+  kill_witness  REQUIRED on a guard — the substring that must appear in the suite's output for a
+          failure to count as a KILL. Without it a mutant that merely crashed, failed to import or
+          misused the harness would be scored as caught: a non-zero exit shows the harness stopped,
+          not that anything observed the fault. No inference from exit code or output shape.
   replace the mutated substring
   class   "guard" (must be KILLED, gates the verdict) | "probe" (informational only)
   must    optional — the specification obligation this mutant guards (e.g. an ERC MUST). When a
@@ -36,8 +43,12 @@ mutations.json: [ { "file", "find", "replace", "class": "guard"|"probe", "label"
 import sys, os, json, argparse, subprocess, hashlib
 
 def run(cmd, cwd):
+    """-> (returncode, combined output). The output is REQUIRED: an exit code alone cannot tell a
+    semantic refutation from an execution failure, and treating the two alike is what made this
+    tool accept an unobserved death as proof (zexoverz, bin/...:73, 2026-08-26; independently
+    rediscovered by pipavlo82, 2026-10-09)."""
     r = subprocess.run(cmd, cwd=cwd, shell=True, capture_output=True, text=True)
-    return r.returncode
+    return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 def main():
     ap = argparse.ArgumentParser()
@@ -49,7 +60,8 @@ def main():
 
     muts = json.loads(open(a.mutations).read())
     # baseline MUST be green — a red baseline can't tell a kill from a pre-existing failure
-    if run(a.test_cmd, a.dir) != 0:
+    base_rc, base_out = run(a.test_cmd, a.dir)
+    if base_rc != 0:
         print("UNVERIFIABLE: baseline suite is not green (exit != 0) — cannot distinguish kills")
         sys.exit(2)
 
@@ -64,28 +76,65 @@ def main():
             results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "file not found"})
             if m.get("class") == "guard": unverifiable = True
             continue
-        if m["find"] not in src:
-            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "anchor not found"})
+        # PRECONDITION 1 — applied EXACTLY ONCE. Presence is not application: testing with `in`
+        # and applying with replace(..., 1) silently mutates the first occurrence, which may not be
+        # the site `must` refers to. (zexoverz, :67)
+        hits = src.count(m["find"])
+        if hits != 1:
+            reason = "not_applied" if hits == 0 else f"ambiguous_application ({hits} occurrences)"
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": reason})
             if m.get("class") == "guard": unverifiable = True
             continue
+
+        # PRECONDITION 2 — a guard MUST declare how its refutation is recognised. No inference from
+        # the exit code or the output shape: the same discipline run_conformance applies to
+        # adapter.contract. Without this the relation degrades to "any non-zero exit is a kill".
+        witness = m.get("kill_witness")
+        if m.get("class") == "guard" and not witness:
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "no kill_witness declared"})
+            unverifiable = True
+            continue
+        # A witness already present in the GREEN baseline proves nothing when it reappears.
+        if witness and witness in base_out:
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE",
+                            "reason": f"kill_witness {witness!r} is present in the green baseline"})
+            if m.get("class") == "guard": unverifiable = True
+            continue
+
         open(full, "w", encoding="utf-8").write(src.replace(m["find"], m["replace"], 1))
         try:
-            green = run(a.test_cmd, a.dir) == 0   # green under mutation => SURVIVED
+            rc, out = run(a.test_cmd, a.dir)
         finally:
             open(full, "w", encoding="utf-8").write(src)   # always restore
-        verdict = "SURVIVED" if green else "KILLED"
-        results.append({**_lbl(m), "verdict": verdict})
-        if m.get("class") == "guard" and verdict == "SURVIVED":
-            guard_survived = True
 
-    killed = sum(1 for r in results if r["verdict"] == "KILLED")
-    surv   = sum(1 for r in results if r["verdict"] == "SURVIVED")
+        # THE KILL RELATION. A kill requires a load-bearing semantic witness to have refuted the
+        # mutant. A non-zero exit on its own is only evidence that the harness stopped, which a
+        # crash, an import error or a usage error all satisfy without any assertion observing
+        # anything. CRASHED is therefore its own class and is NOT a kill.
+        if rc == 0:
+            verdict, reason = "SURVIVED", None
+        elif witness and witness in out:
+            verdict, reason = "KILLED", None
+        else:
+            verdict = "CRASHED"
+            reason = (f"exit {rc} without the declared kill_witness {witness!r} — "
+                      "the mutant died unobserved, which is not a kill")
+        row = {**_lbl(m), "verdict": verdict}
+        if reason: row["reason"] = reason
+        results.append(row)
+        if m.get("class") == "guard":
+            if verdict == "SURVIVED": guard_survived = True
+            elif verdict == "CRASHED": unverifiable = True
+
+    killed  = sum(1 for r in results if r["verdict"] == "KILLED")
+    surv    = sum(1 for r in results if r["verdict"] == "SURVIVED")
+    crashed = sum(1 for r in results if r["verdict"] == "CRASHED")
     print(f"{'mutation':44} {'class':7} {'verdict':9} guards")
     print("-" * 78)
     for r in results:
         print(f"{r['label'][:44]:44} {r['class']:7} {r['verdict']:9} {r.get('must','')}")
     print("-" * 78)
-    print(f"killed {killed} / survived {surv} / applied {len(results)}")
+    print(f"killed {killed} / survived {surv} / crashed {crashed} / applied {len(results)}")
 
     verdict = "UNVERIFIABLE" if unverifiable else ("verified-bad" if guard_survived else "verified-good")
     print(f"VERDICT: {verdict}")
