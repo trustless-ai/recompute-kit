@@ -7,7 +7,8 @@
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "python3 ../captured-admission-v0/admission_check.py vectors.json"
+    "cmd": "python3 ../captured-admission-v0/admission_check.py vectors.json",
+    "contract": "self_grading"
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",

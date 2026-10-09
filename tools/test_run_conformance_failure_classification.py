@@ -41,7 +41,7 @@ def add_failing_suite(root: pathlib.Path, name: str, output: str, returncode: in
     manifest = {
         "profile": name,
         "vectors": {"path": vectors.name},
-        "adapter": {"kind": "stdio", "cmd": command_for(adapter)},
+        "adapter": {"kind": "stdio", "cmd": command_for(adapter), "contract": "self_grading"},
     }
     (suite / "suite.json").write_text(
         json.dumps(manifest, indent=2) + "\n",
@@ -141,7 +141,7 @@ class ProcessFailureClassificationTests(unittest.TestCase):
     def test_timeout_remains_runner(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             suite = pathlib.Path(temporary)
-            manifest = {"adapter": {"kind": "stdio", "cmd": "slow adapter"}}
+            manifest = {"adapter": {"kind": "stdio", "cmd": "slow adapter", "contract": "self_grading"}}
             with mock.patch.object(
                 runner.subprocess,
                 "run",
@@ -157,7 +157,7 @@ class ProcessFailureClassificationTests(unittest.TestCase):
             (suite / "vectors.json").write_text("{}\n", encoding="utf-8", newline="\n")
             manifest = {
                 "vectors": {"path": "vectors.json", "sha256": "0" * 64},
-                "adapter": {"kind": "stdio", "cmd": "unused adapter"},
+                "adapter": {"kind": "stdio", "cmd": "unused adapter", "contract": "self_grading"},
             }
             result = runner._run_one(suite, manifest, "drift")
         self.assertEqual("DRIFT", result.kind)
@@ -238,7 +238,7 @@ class DeclaredMissingSpecTests(unittest.TestCase):
                 newline="\n",
             )
             manifest = {
-                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py")},
+                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py"), "contract": "self_grading"},
                 "vectors": {"path": "vec.json", "sha256": vec_sha},
                 "spec": {"path": "nonexistent-spec.md", "sha256": "de" * 32},  # declared + pinned + ABSENT
             }
@@ -260,7 +260,7 @@ class DeclaredMissingSpecTests(unittest.TestCase):
             spec_sha = hashlib.sha256((d / "spec.md").read_bytes()).hexdigest()
             (d / "run.py").write_text("print('ok')\n", encoding="utf-8", newline="\n")
             manifest = {
-                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py")},
+                "adapter": {"kind": "stdio", "cmd": command_for(d / "run.py"), "contract": "self_grading"},
                 "vectors": {"path": "vec.json", "sha256": vec_sha},
                 "spec": {"path": "spec.md", "sha256": spec_sha},
             }

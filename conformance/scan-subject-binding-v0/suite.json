@@ -2,7 +2,7 @@
   "profile": "scan_subject_binding.v0",
   "spec": {
     "path": "README.md",
-    "sha256": "a3827f38c550b170c502e632aa02371b12e9b5ff57bc097a1b618d9d1a4476f5"
+    "sha256": "797f4ec557e10528a35cfa7749a9641253c3e23d207e41cb5e0749245f7e80d0"
   },
   "checker": {
     "path": "scan_check.py",
@@ -23,7 +23,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 scan_check.py vectors.json"
+        "cmd": "python3 scan_check.py vectors.json",
+        "contract": "self_grading"
       }
     },
     {
@@ -34,7 +35,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 mutation_check.py"
+        "cmd": "python3 mutation_check.py",
+        "contract": "self_grading"
       }
     }
   ]

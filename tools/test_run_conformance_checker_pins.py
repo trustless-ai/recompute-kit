@@ -31,7 +31,7 @@ def _suite(tmp: str, pin_checker=True, pin_mutation=True, pin_dep=True) -> pathl
     files = {"check.py": b"import sys\nsys.stdin.read()\n", "mutation.py": b"print('m')\n", "dep.py": b"print('d')\n", "vectors.json": b"[]"}
     for n, b in files.items():
         (d / n).write_bytes(b)
-    m = {"vectors": {"path": "vectors.json", "sha256": _h(files["vectors.json"])}, "adapter": {"kind": "stdio", "cmd": "python3 check.py"}}
+    m = {"vectors": {"path": "vectors.json", "sha256": _h(files["vectors.json"])}, "adapter": {"kind": "stdio", "cmd": "python3 check.py", "contract": "self_grading"}}
     if pin_checker:
         m["checker"] = {"path": "check.py", "sha256": _h(files["check.py"])}
     if pin_mutation:

@@ -7,6 +7,7 @@
   "adapter": {
     "kind": "stdio",
     "cmd": "python3 deadline_derivation.py deadline_vectors.json",
+    "contract": "self_grading",
     "note": "separate PR from review-profile-v0 (#6) per Pavlo's fix -- does not modify admission_check.py or anything in ../captured-admission-v0-review-profile/"
   },
   "laneHint": "recomputable",

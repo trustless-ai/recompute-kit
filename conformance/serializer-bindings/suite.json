@@ -9,7 +9,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 validate_binding_record.py binding-record.vectors.json"
+        "cmd": "python3 validate_binding_record.py binding-record.vectors.json",
+        "contract": "self_grading"
       }
     },
     {
@@ -20,7 +21,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 check_real_record.py"
+        "cmd": "python3 check_real_record.py",
+        "contract": "self_grading"
       }
     }
   ],

@@ -6,7 +6,8 @@
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "python3 recovery_check.py vectors.json"
+    "cmd": "python3 recovery_check.py vectors.json",
+    "contract": "self_grading"
   },
   "laneHint": "recomputable",
   "spec": {

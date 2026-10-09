@@ -9,7 +9,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "python3 amendment_gate.py profile-amendment-v0.vectors.json"
+        "cmd": "python3 amendment_gate.py profile-amendment-v0.vectors.json",
+        "contract": "self_grading"
       }
     },
     {
@@ -20,7 +21,8 @@
       },
       "adapter": {
         "kind": "stdio",
-        "cmd": "bun profile-amendment-v0.reference.mjs profile-amendment-v0.vectors.json"
+        "cmd": "bun profile-amendment-v0.reference.mjs profile-amendment-v0.vectors.json",
+        "contract": "self_grading"
       }
     }
   ],
