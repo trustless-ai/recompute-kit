@@ -6,7 +6,8 @@
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "python3 gate.py --grade"
+    "cmd": "python3 gate.py --grade",
+    "contract": "reporter"
   },
   "laneHint": "recomputable",
   "spec": {
