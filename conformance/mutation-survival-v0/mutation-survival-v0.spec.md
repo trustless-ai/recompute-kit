@@ -26,6 +26,27 @@ mutant the suite must kill.
 ## Verdict contract
 - `0` **verified-good** — baseline green AND every declared `guard` mutation was KILLED.
 - `1` **verified-bad** — a `guard` mutation SURVIVED (a test that should catch it does not).
+- `2` **UNVERIFIABLE** — includes a `guard` mutation that **CRASHED**.
+
+## The kill relation — CRASH is not a KILL
+
+A `guard` mutation is **KILLED** only when both hold:
+
+1. the mutation applied **exactly once** — `find` occurs once in the file. Zero occurrences is
+   `not_applied`, more than one is `ambiguous_application`; both are UNVERIFIABLE, because
+   `replace(..., 1)` would otherwise mutate the first site, which need not be the site `must`
+   refers to;
+2. the suite failed **and** the mutation's declared `kill_witness` appears in the output.
+
+A non-zero exit on its own is only evidence that the harness stopped. A crash, an import error,
+a syntax error or a usage error all satisfy it without any assertion having observed anything,
+so counting them as kills lets a mutation set certify coverage it does not have. That failure
+is **CRASHED** — a class of its own, never a kill, and UNVERIFIABLE for a guard.
+
+`kill_witness` is REQUIRED on a `guard`; its absence is UNVERIFIABLE. There is deliberately no
+inference from the exit code or the output shape — the same discipline `run_conformance` applies
+to `adapter.contract`. A witness already present in the green baseline is also UNVERIFIABLE,
+since a string that is there before the mutation proves nothing by being there after it.
 - `2` **UNVERIFIABLE** — baseline not green, an anchor not found, or the suite could not run.
 
 `probe` mutations are informational: survivors are reported as the coverage backlog, not a verdict.
