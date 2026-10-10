@@ -563,6 +563,133 @@
     "evidence": "verified",
     "decision": "ADMIT"
    }
+  },
+  {
+   "name": "rotation — both bindings anchored, neither revoked; artifact AFTER the successor's anchor resolves to the SUCCESSOR, not the baseline",
+   "bindings": [
+    {
+     "name": "kya-l4-genesis",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 1785423299
+    },
+    {
+     "name": "kya-l4-successor",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4",
+     "binding_anchor_time": 1786000000
+    }
+   ],
+   "artifact": {
+    "anchor_time": 1786500000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-successor",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "anchored_before_cutoff",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   }
+  },
+  {
+   "name": "revocation gap — baseline revoked before its successor is anchored; an artifact in the gap is no_in_force_binding, NOT pre_baseline",
+   "bindings": [
+    {
+     "name": "kya-l4-genesis",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 1785423299,
+     "revoked_at": 1785800000
+    },
+    {
+     "name": "kya-l4-successor",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4a1b2c3d4",
+     "binding_anchor_time": 1786000000
+    }
+   ],
+   "artifact": {
+    "anchor_time": 1785900000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "no_in_force_binding",
+    "rule": "no_in_force_binding",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "boundary t == C-1 — one second before the consumer cutoff: anchored_before_cutoff",
+   "artifact": {
+    "anchor_time": 1789999999,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-genesis",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "anchored_before_cutoff",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   }
+  },
+  {
+   "name": "boundary t == C — at the consumer cutoff: post-cutoff, a companion is required (cutoff exclusive)",
+   "artifact": {
+    "anchor_time": 1790000000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-genesis",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "post_cutoff_no_valid_companion",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "anchor status unknown — pre-cutoff time claimed, anchored is not a bool, no companion: unverifiable, not refuted",
+   "artifact": {
+    "anchor_time": 1785500000,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-genesis",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "post_cutoff_anchor_status_unknown",
+    "evidence": "unverifiable",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "activated_at == binding_anchor_time is well-formed — the documented successor shape, not chain_malformed",
+   "bindings": [
+    {
+     "name": "kya-l4-genesis",
+     "secp256k1_pubkey": "0xFf9a176577Fb42b6bc9c19fd05a241e8fCd0ca14",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 1785423299,
+     "activated_at": 1785423299
+    }
+   ],
+   "artifact": {
+    "anchor_time": 1785500000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "kya-l4-genesis",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "anchored_before_cutoff",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   }
   }
  ]
 }
