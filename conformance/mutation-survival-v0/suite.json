@@ -1,0 +1,16 @@
+{
+  "profile": "mutation_survival.v0",
+  "vectors": {
+    "path": "mutation-survival-v0.vectors.json",
+    "sha256": "e5c49e87e573df8c6f3804639515d8ff11965f5a51abe95944de3b3f5c66061a"
+  },
+  "spec": {
+    "path": "mutation-survival-v0.spec.md",
+    "sha256": "5d9b7c7c350410bd2f4337734df77fb8470a99668aece989ba8128faf13ed9ac"
+  },
+  "adapter": {
+    "kind": "stdio",
+    "cmd": "./check"
+  },
+  "laneHint": "read-only"
+}
