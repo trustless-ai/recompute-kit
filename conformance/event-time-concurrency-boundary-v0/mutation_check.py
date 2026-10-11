@@ -29,6 +29,9 @@ MUTANTS = [
 
 
 def main():
+    if not MUTANTS:
+        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
+        return 2
     cases = baseline.load_cases(HERE / "vectors.json")
     by_id = {c["case_id"]: c for c in cases}
     if any(baseline.evaluate(c) != c["expected"] for c in cases):

@@ -73,6 +73,9 @@ def witness(kind, expected, actual):
 
 
 def main():
+    if not MUTANTS:
+        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
+        return 2
     cases = baseline.load_cases(HERE / "vectors.json")
     if any(baseline.evaluate(c) != c["expected"] for c in cases) or not all(baseline.assertions(cases).values()):
         print(json.dumps({"status": "BASELINE_FAILED"}))

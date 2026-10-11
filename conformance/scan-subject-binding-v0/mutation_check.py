@@ -62,6 +62,9 @@ MUTANTS = [
 CONTROLS = ["c0_answer_flips_while_all_bindings_valid"]
 
 def main():
+    if not MUTANTS:
+        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
+        return 2
     import scan_check as base
     V, pub, toy = base.load(HERE / "vectors.json")
     cases = dict(sorted(V["cases"].items()))

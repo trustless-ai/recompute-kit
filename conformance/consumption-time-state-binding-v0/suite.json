@@ -10,7 +10,7 @@
   },
   "mutation_checker": {
     "path": "mutation_check.py",
-    "sha256": "0a8d644310d11893f3c4e251ea16ebec738e5a4f47382c7880831eb1e91a0514"
+    "sha256": "da5202ad445e18fc498fd40a743f6c3d658c6159f8057ef08c0790c379e552fa"
   },
   "laneHint": "recomputable",
   "checks": [
