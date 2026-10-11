@@ -128,6 +128,9 @@ def changed_dimensions(actual, expected):
 
 
 def main():
+    if not MUTANTS:
+        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
+        return 2
     document = baseline.load_document(HERE / "vectors.json")
     registry, pubkey = document["registry"], document["trusted_pubkey"]
     cases = document["cases"]

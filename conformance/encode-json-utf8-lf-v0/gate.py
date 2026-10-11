@@ -172,6 +172,9 @@ def negative_controls(vector_bytes: bytes, document: dict[str, Any]) -> list[str
 
 
 def main() -> int:
+    if not NEGATIVE_CONTROLS:
+        print("UNVERIFIABLE encode-json-utf8-lf.v0: ZERO_CONTROLS", file=sys.stderr)
+        return 2
     only_controls = "--negative-controls" in sys.argv
     stdin_bytes = None if sys.stdin.isatty() else sys.stdin.buffer.read()
     try:

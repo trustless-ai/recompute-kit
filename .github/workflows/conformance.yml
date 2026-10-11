@@ -179,6 +179,9 @@ jobs:
           fi
           echo "infrastructure break correctly attributed (exit 2 = UNVERIFIABLE, reported as environment, zero suites accused)"
 
+      - name: Mutation inventories — zero evidence must not certify coverage
+        run: python3 -B tools/test_mutation_inventory_nonempty.py
+
       # The controls above restore what they touched. If anything is still modified the
       # green from the real run cannot be trusted, because it may have been produced
       # against a mutated tree.
