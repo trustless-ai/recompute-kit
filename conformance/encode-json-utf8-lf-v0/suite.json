@@ -14,6 +14,11 @@
     "cmd": "python gate.py --grade",
     "contract": "self_grading"
   },
+  "runtime": {
+    "commands": [
+      "bun"
+    ]
+  },
   "implementations": [
     {
       "language": "python",

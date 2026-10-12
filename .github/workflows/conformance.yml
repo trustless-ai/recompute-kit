@@ -80,6 +80,7 @@ jobs:
           python3 tools/test_run_conformance_unpinned_executables.py
           python3 tools/test_run_conformance_reporter_contract.py
           python3 tools/test_run_conformance_live_lifecycle.py
+          python3 tools/test_run_conformance_runtime_preconditions.py
 
       # pq_key_binding.v1 keeps a reason vocabulary in which no_in_force_binding is reachable ONLY
       # via revocation. That is the whole reason a separate authority_revoked field would be
@@ -178,6 +179,15 @@ jobs:
             cat /tmp/infra.out
             exit 1
           fi
+          # Attributed by the declared-runtime precondition, before execution, not by matching stderr wording: bun's
+          # message for a missing package floats with bun-version: latest, and a wording list cannot keep up (#68).
+          for s in tee-inference-v0 tee-inference-enclave-v0; do
+            if ! grep -q -- "- $s: precondition: runtime dependency missing" /tmp/infra.out; then
+              echo "::error::$s reached the adapter with node_modules hidden — its runtime dependency was not checked as a precondition"
+              cat /tmp/infra.out
+              exit 1
+            fi
+          done
           echo "infrastructure break correctly attributed (exit 2 = UNVERIFIABLE, reported as environment, zero suites accused)"
 
       - name: Mutation inventories — zero evidence must not certify coverage

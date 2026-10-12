@@ -141,7 +141,8 @@ class ProcessFailureClassificationTests(unittest.TestCase):
     def test_timeout_remains_runner(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             suite = pathlib.Path(temporary)
-            manifest = {"adapter": {"kind": "stdio", "cmd": "slow adapter", "contract": "self_grading"}}
+            # A real interpreter, so the runtime precondition passes and the timeout path is what is exercised.
+            manifest = {"adapter": {"kind": "stdio", "cmd": command_for(suite / "slow_adapter.py"), "contract": "self_grading"}}
             with mock.patch.object(
                 runner.subprocess,
                 "run",

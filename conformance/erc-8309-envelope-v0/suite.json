@@ -14,5 +14,11 @@
     "cmd": "python3 erc-8309-envelope-grade.py",
     "contract": "reporter"
   },
+  "runtime": {
+    "python_modules": [
+      "jsonschema",
+      "rfc8785"
+    ]
+  },
   "laneHint": "read-only"
 }

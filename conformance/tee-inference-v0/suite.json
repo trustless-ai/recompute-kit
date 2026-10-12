@@ -9,6 +9,14 @@
     "cmd": "bun gate.ts --grade",
     "contract": "reporter"
   },
+  "runtime": {
+    "commands": [
+      "bun"
+    ],
+    "node_packages": [
+      "ethers"
+    ]
+  },
   "laneHint": "recomputable+attested",
   "spec": {
     "path": "tee-inference-v0.spec.md",
