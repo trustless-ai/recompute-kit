@@ -59,8 +59,14 @@ import sys, os, json, argparse, subprocess, hashlib, shutil, tempfile
 # --test-cmd touches is outside the mechanism entirely. So the guarantee is structural instead of
 # enumerated — every run gets a throwaway copy of the suite, and nothing can outlive one mutant.
 # This also removes the restore path, i.e. "the tool died and left the tree mutated".
-_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", ".pytest_cache", ".mypy_cache",
-                                 ".ruff_cache", ".tox", "node_modules")
+# ONLY caches keyed on source identity — the things that can go stale. Dependency trees
+# (node_modules, .venv, .tox) are deliberately NOT excluded: they are what a --test-cmd needs to run
+# at all, and stripping them turns every mutant into a CRASHED import error. That errs loud rather
+# than silent, but it is still wrong. A build-output directory cannot be classified generically, so
+# a suite that keeps mutable build output inside --dir must clear it in its own --test-cmd; this
+# tool guarantees freshness of the SOURCE it wrote, which is the obligation in the spec.
+_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo",
+                                 ".pytest_cache", ".mypy_cache", ".ruff_cache")
 
 class Workspace:
     """A disposable copy of the suite. Pre-existing caches are excluded rather than inherited:
