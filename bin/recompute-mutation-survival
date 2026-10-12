@@ -16,8 +16,14 @@ witness, which is not a kill. Probes are informational: their survivors are the 
 Verdict (kit-standard exit codes):
   0  verified-good  — baseline green AND every `guard` mutation was KILLED (tests are load-bearing)
   1  verified-bad   — a `guard` mutation SURVIVED (a decorative test that should catch it does not)
-  2  UNVERIFIABLE   — baseline not green, a guard anchor not found or applied other than exactly
-                      once, a guard with no declared kill_witness, or a guard that CRASHED
+  2  UNVERIFIABLE   — baseline not green, an EMPTY mutation inventory (ZERO_MUTANTS: nothing was
+                      tested, so nothing is certified), a guard anchor not found or applied other
+                      than exactly once, a guard with no declared kill_witness, or a guard that
+                      CRASHED
+
+Each mutant runs in a disposable copy of --dir, so the bytes written are the bytes executed: no
+bytecode, build or runner cache can carry from one mutant to the next, and the suite tree is never
+written to. A --test-cmd must therefore be self-contained within --dir.
 
 The run is itself recomputable: --out writes a MutationRun artifact (each mutation + verdict) that
 anyone can re-derive by re-running against the same ref. Stdlib only.
@@ -40,7 +46,34 @@ mutations.json: [ { "file", "find", "replace", "class", "label", "kill_witness",
           obligations are demonstrably load-bearing in the implementation, not merely declared: the
           gate becomes a conformance property of the specification itself, not just of the code.
 """
-import sys, os, json, argparse, subprocess, hashlib
+import sys, os, json, argparse, subprocess, hashlib, shutil, tempfile
+
+# EXECUTION FRESHNESS. A mutant is only evidence if the bytes written are the bytes that ran. They
+# are not, by default: CPython validates timestamp .pyc files on (source mtime seconds, source
+# size), so two same-length mutants written inside one second reuse the first one's bytecode — the
+# second runs code it did not write, and a genuine SURVIVED is reported as KILLED, turning a
+# coverage gap into a pass. (zexoverz, 2026-10-12, reproduced with controls before this change.)
+#
+# Bumping the mtime per write fixes that one path. It does not fix the others: a PEP 552
+# unchecked-hash .pyc is never revalidated against the source at all, and any non-Python cache a
+# --test-cmd touches is outside the mechanism entirely. So the guarantee is structural instead of
+# enumerated — every run gets a throwaway copy of the suite, and nothing can outlive one mutant.
+# This also removes the restore path, i.e. "the tool died and left the tree mutated".
+_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", ".pytest_cache", ".mypy_cache",
+                                 ".ruff_cache", ".tox", "node_modules")
+
+class Workspace:
+    """A disposable copy of the suite. Pre-existing caches are excluded rather than inherited:
+    copytree preserves mtimes, so copying a stale __pycache__ would carry the staleness in."""
+    def __init__(self, src): self.src = src
+    def __enter__(self):
+        self.tmp = tempfile.mkdtemp(prefix="mutation-survival-")
+        self.dir = os.path.join(self.tmp, "work")
+        shutil.copytree(self.src, self.dir, ignore=_IGNORE)
+        return self.dir
+    def __exit__(self, *exc):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        return False
 
 def run(cmd, cwd):
     """-> (returncode, combined output). The output is REQUIRED: an exit code alone cannot tell a
@@ -59,8 +92,26 @@ def main():
     a = ap.parse_args()
 
     muts = json.loads(open(a.mutations).read())
+
+    # An empty inventory certifies nothing: with no mutants "no guard survived" is vacuous, and this
+    # returned verified-good / exit 0 — absence of evidence certifying coverage, the same class #65
+    # closed for the harnesses. The guard lives HERE, at the tool boundary, because #66 discovers
+    # suites by `mutation_check.py` and this suite has none, so it is invisible to that sweep by
+    # construction. Token kept identical to #65 so the vocabulary stays one. (zexoverz, 2026-10-12.)
+    if not muts:
+        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
+        print("UNVERIFIABLE: empty mutation inventory — nothing was tested, so nothing is certified")
+        if a.out:
+            open(a.out, "w").write(json.dumps(
+                {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
+                 "test_cmd": a.test_cmd, "status": "ZERO_MUTANTS",
+                 "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
+                 "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
+        sys.exit(2)
+
     # baseline MUST be green — a red baseline can't tell a kill from a pre-existing failure
-    base_rc, base_out = run(a.test_cmd, a.dir)
+    with Workspace(a.dir) as w:
+        base_rc, base_out = run(a.test_cmd, w)
     if base_rc != 0:
         print("UNVERIFIABLE: baseline suite is not green (exit != 0) — cannot distinguish kills")
         sys.exit(2)
@@ -101,11 +152,10 @@ def main():
             if m.get("class") == "guard": unverifiable = True
             continue
 
-        open(full, "w", encoding="utf-8").write(src.replace(m["find"], m["replace"], 1))
-        try:
-            rc, out = run(a.test_cmd, a.dir)
-        finally:
-            open(full, "w", encoding="utf-8").write(src)   # always restore
+        with Workspace(a.dir) as w:
+            open(os.path.join(w, m["file"]), "w", encoding="utf-8").write(
+                src.replace(m["find"], m["replace"], 1))
+            rc, out = run(a.test_cmd, w)   # the real tree is never written to, so no restore
 
         # THE KILL RELATION. A kill requires a load-bearing semantic witness to have refuted the
         # mutant. A non-zero exit on its own is only evidence that the harness stopped, which a

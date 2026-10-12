@@ -2,15 +2,16 @@
   "profile": "mutation_survival.v0",
   "vectors": {
     "path": "mutation-survival-v0.vectors.json",
-    "sha256": "e5c49e87e573df8c6f3804639515d8ff11965f5a51abe95944de3b3f5c66061a"
+    "sha256": "f92ac2b5aa37f24ad756b2f50dfcfd2f7cee7a5dcd6818d3f53c2d2ad18f5d4a"
   },
   "spec": {
     "path": "mutation-survival-v0.spec.md",
-    "sha256": "5d9b7c7c350410bd2f4337734df77fb8470a99668aece989ba8128faf13ed9ac"
+    "sha256": "1c840dc3ca8350c2dcc6b7de2140b65ff5a34294248395f48cafab2c24c14f2a"
   },
   "adapter": {
     "kind": "stdio",
-    "cmd": "./check"
+    "cmd": "./check",
+    "contract": "self_grading"
   },
   "laneHint": "read-only"
 }

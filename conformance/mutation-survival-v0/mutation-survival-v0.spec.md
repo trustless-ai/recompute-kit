@@ -26,7 +26,18 @@ mutant the suite must kill.
 ## Verdict contract
 - `0` **verified-good** — baseline green AND every declared `guard` mutation was KILLED.
 - `1` **verified-bad** — a `guard` mutation SURVIVED (a test that should catch it does not).
-- `2` **UNVERIFIABLE** — includes a `guard` mutation that **CRASHED**.
+- `2` **UNVERIFIABLE** — baseline not green, an anchor not found or applied other than exactly once,
+  a `guard` with no declared `kill_witness`, a `guard` that **CRASHED**, or an **empty mutation
+  inventory**.
+
+An empty inventory MUST NOT be verified-good. With no mutants, "no guard survived" is vacuously true,
+so `killed 0 / survived 0` would certify coverage by the absence of any evidence about it. The tool
+refuses with `ZERO_MUTANTS` and exit `2`. The token is deliberately the same one the mutation
+harnesses use, so one condition has one name across the kit.
+
+This guard lives at **this tool's own boundary** rather than in the repo-wide sweep, because that
+sweep discovers suites by the presence of a `mutation_check.py` and this suite does not have one — it
+would be exempt by construction. A sweep should land an enforcement, not a list.
 
 ## The kill relation — CRASH is not a KILL
 
@@ -47,11 +58,10 @@ is **CRASHED** — a class of its own, never a kill, and UNVERIFIABLE for a guar
 inference from the exit code or the output shape — the same discipline `run_conformance` applies
 to `adapter.contract`. A witness already present in the green baseline is also UNVERIFIABLE,
 since a string that is there before the mutation proves nothing by being there after it.
-- `2` **UNVERIFIABLE** — baseline not green, an anchor not found, or the suite could not run.
 
 `probe` mutations are informational: survivors are reported as the coverage backlog, not a verdict.
 
-## The vector (gates the gate)
+## The vectors (they gate the gate)
 Two fixtures share the same module (`is_even`) and the same guard mutation (make it always true). Only
 the test differs:
 - `fixtures/load-bearing` — the test asserts the negative case too, so the mutation is **KILLED** → verified-good.
@@ -60,12 +70,50 @@ the test differs:
 If the primitive returned the same verdict for both, it could not distinguish real coverage from
 decorative coverage and would be useless; `check` fails in that case.
 
+Three more vectors each exist to red if a specific guard is removed:
+- `fixtures/crashing` — a mutant that dies without its witness is **CRASHED**, never a kill.
+- `fixtures/stale-bytecode` — execution freshness, below. Both of its mutants are pinned, not one:
+  pinning only the survivor would let a run that got the first mutant wrong still pass.
+- `fixtures/zero-mutants` — an empty inventory is `ZERO_MUTANTS` / exit 2, not verified-good.
+
+`check` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
+self-grading check with nothing to grade reports CONFORMANT otherwise.
+
 ## Run
 ```
 conformance/mutation-survival-v0/check
 ```
 
-## Note on the target's test command
-The `test_cmd` clears `__pycache__` because CPython can re-run a cached `.pyc` when a mutation lands in
-the same filesystem-mtime second, hiding the mutation (a false SURVIVED). Compiled/transpiled suites
-(e.g. `node --test` via `tsx`) recompile per run and don't need this; native Python targets do.
+## Execution freshness (normative)
+
+**The bytes written MUST be the bytes executed.** A mutant that did not run is not evidence, and the
+tool cannot tell the difference from the outside: a run of stale bytecode produces an ordinary exit
+code and an ordinary output.
+
+CPython validates a timestamp `.pyc` on `(source mtime in whole seconds, source size)`. Two
+same-length mutants written inside one second therefore match a previous run's cache, and the second
+one executes the first one's bytecode. Both directions are wrong, and they are not equally bad:
+
+- **false SURVIVED** — the mutation never took effect. Loud: it reports a coverage gap that is not
+  there.
+- **false KILLED** — the previous mutant's failure, and its witness, reappear. **Silent: a real
+  coverage gap is laundered into verified-good / exit 0.** This is the direction that matters.
+
+Earlier revisions of this spec discharged the obligation by having each target's `test_cmd` clear
+`__pycache__`. That is the wrong place for it twice over: it puts a correctness precondition in
+per-suite configuration where omitting it fails open, and it covers only one of several ways stale
+code reaches the interpreter. A PEP 552 **unchecked-hash** `.pyc` is never revalidated against its
+source at all, so no amount of mtime or size change invalidates it; and any build or runner cache a
+`--test-cmd` touches is outside the mechanism entirely.
+
+The obligation is therefore discharged **structurally**: every run — baseline included — executes in
+a disposable copy of `--dir`, with bytecode and runner caches excluded from the copy rather than
+inherited (`copytree` preserves mtimes, so copying a stale cache would carry the staleness in).
+Nothing can outlive a single mutant, the suite tree is never written to, and there is no restore
+path to fail. A `--test-cmd` MUST therefore be self-contained within `--dir`.
+
+An implementation MAY discharge the obligation differently — per-write mtime uniqueness is sufficient
+for CPython timestamp invalidation alone — but it MUST state which mechanism it uses and what that
+mechanism does not cover. `fixtures/stale-bytecode` is the control: its test command pins a fixed
+mtime so that neither size nor mtime can discriminate, which makes the failure deterministic rather
+than dependent on which second the writes land in.
