@@ -120,6 +120,12 @@ def main():
         base_rc, base_out = run(a.test_cmd, w)
     if base_rc != 0:
         print("UNVERIFIABLE: baseline suite is not green (exit != 0) — cannot distinguish kills")
+        if a.out:
+            open(a.out, "w").write(json.dumps(
+                {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
+                 "test_cmd": a.test_cmd, "status": "BASELINE_NOT_GREEN",
+                 "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
+                 "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
         sys.exit(2)
 
     results = []

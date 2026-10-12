@@ -70,14 +70,55 @@ the test differs:
 If the primitive returned the same verdict for both, it could not distinguish real coverage from
 decorative coverage and would be useless; `check` fails in that case.
 
-Three more vectors each exist to red if a specific guard is removed:
+Five more vectors each exist to red if a specific guard is removed:
 - `fixtures/crashing` — a mutant that dies without its witness is **CRASHED**, never a kill.
 - `fixtures/stale-bytecode` — execution freshness, below. Both of its mutants are pinned, not one:
   pinning only the survivor would let a run that got the first mutant wrong still pass.
 - `fixtures/zero-mutants` — an empty inventory is `ZERO_MUTANTS` / exit 2, not verified-good.
+- `fixtures/not-applied` — an anchor absent from the file was never applied, so the run says nothing
+  about the suite; grading it either way would be fabricating evidence. UNVERIFIABLE.
+- `fixtures/red-baseline` — the suite already fails, so no later failure can be attributed to a
+  mutant and every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE
+  before the first mutant is applied.
 
 `check` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
 self-grading check with nothing to grade reports CONFORMANT otherwise.
+
+## Self-application (`self-check`) — are these vectors load-bearing?
+
+The vectors prove the primitive behaves correctly on crafted inputs. They do not prove the converse,
+which is the claim that actually matters: **that a broken guard would be noticed.** A vector set can
+be green and decorative, which is the exact defect this primitive exists to detect — so it has to
+hold itself to it.
+
+`self-check` applies the primitive to its own source. Each guard in
+`bin/recompute-mutation-survival` is a mutant in `self/mutations.json`, whose `kill_witness` is the
+name of the vector that must red when that guard is disabled:
+
+| guard disabled | vector that must red |
+|---|---|
+| per-run isolation | `stale-bytecode` |
+| `ZERO_MUTANTS` | `zero-mutants` |
+| kill relation degraded to any non-zero exit | `crashing` |
+| SURVIVED / KILLED branches swapped | `load-bearing` |
+| applied-exactly-once precondition | `not-applied` |
+| baseline-green precondition | `red-baseline` |
+
+**This is bounded, not circular.** A mutant that breaks the tool badly enough to stop it running
+reports CRASHED / UNVERIFIABLE, never a pass — which is what the CRASH-is-not-a-KILL relation buys.
+So self-application cannot launder a broken tool green. Neither can it certify one from nothing, and
+it is not offered as doing so.
+
+**One guard is declared `probe`, not `guard`: baseline isolation.** Baseline staleness requires
+bytecode left behind by a *previous invocation*, and no single-run vector can set that up. It
+therefore shows as a named survivor in the coverage backlog rather than being counted as covered —
+the same honesty the primitive demands of its targets. A guard nothing can witness is a coverage gap
+with a name, not a passing check.
+
+`self-check` carries its own positive and negative controls
+(`tools/test_mutation_survival_self_check.py`): remove the vector that witnesses a guard, and that
+guard must come back SURVIVED with exit 1. A self-check that cannot fail is the decorative test it
+exists to detect, one level up.
 
 ## Run
 ```

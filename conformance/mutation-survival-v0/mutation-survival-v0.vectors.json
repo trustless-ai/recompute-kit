@@ -55,6 +55,25 @@
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
       "note": "An empty inventory certified coverage: killed 0 / survived 0 read as verified-good / exit 0. Same class as #65 ZERO_MUTANTS, but it has to be guarded at this tool's own boundary because #66 discovers suites by mutation_check.py and this suite has none. Remove the guard and this vector reds. (zexoverz, 2026-10-12.)"
+    },
+    {
+      "name": "not-applied",
+      "fixture": "fixtures/not-applied",
+      "expected_mutations": {
+        "anchor that is not in the file": "UNVERIFIABLE"
+      },
+      "expected_exit": 2,
+      "expected_verdict": "UNVERIFIABLE",
+      "note": "A mutation whose anchor is absent was never applied, so the run says nothing about the suite — grading it either way would be fabricating evidence. Presence is not application: testing with `in` and applying with replace(..., 1) mutates the first occurrence, which need not be the site `must` refers to. Witnesses the applied-exactly-once precondition, which until now no vector reached."
+    },
+    {
+      "name": "red-baseline",
+      "fixture": "fixtures/red-baseline",
+      "expected_mutations": {},
+      "expected_no_results": true,
+      "expected_exit": 2,
+      "expected_verdict": "UNVERIFIABLE",
+      "note": "The suite fails before any mutation, so no later failure can be attributed to a mutant: every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE before the first mutant is applied. Witnesses the baseline-green precondition, which until now no vector reached."
     }
   ]
 }
