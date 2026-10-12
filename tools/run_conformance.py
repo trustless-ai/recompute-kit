@@ -210,9 +210,17 @@ _JS_SPECIFIER = re.compile(
     r"""(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*|\bexport\s*\*\s*from\s*)["']([^"'\n]+)["']""")
 
 
+# Node core modules also resolve WITHOUT the node: prefix (import fs from "fs"); they are not packages to declare.
+# From node 22's require("module").builtinModules (top-level names); bun resolves the same names.
+NODE_BUILTINS = frozenset((
+    "assert", "async_hooks", "buffer", "child_process", "cluster", "console", "constants", "crypto", "dgram", "diagnostics_channel", "dns", "domain", "events", "fs", "http", "http2", "https", "inspector", "module", "net", "os", "path", "perf_hooks", "process", "punycode", "querystring", "readline", "repl", "stream", "string_decoder", "sys", "timers", "tls", "trace_events", "tty", "url", "util", "v8", "vm", "wasi", "worker_threads", "zlib"))
+
+
 def _node_package_name(spec: str):
     """Bare specifier -> package name; None for relative, absolute, URL or runtime-builtin specifiers."""
     if spec.startswith((".", "/")) or ":" in spec:
+        return None
+    if spec.split("/")[0] in NODE_BUILTINS:
         return None
     parts = spec.split("/")
     return "/".join(parts[:2]) if spec.startswith("@") and len(parts) > 1 else parts[0]
@@ -244,7 +252,19 @@ def _imported_python_modules(d: pathlib.Path) -> set:
             tree = ast.parse(f.read_bytes())
         except SyntaxError:
             continue  # not executable as Python anyway; the adapter run reports it
+        # An import inside `try: ... except ImportError` (or ModuleNotFoundError, or a bare except) has a fallback: it is an
+        # optional dependency. Requiring it to be declared would then require it to be installed, so it could never be optional.
+        optional = set()
+        for t in ast.walk(tree):
+            if isinstance(t, ast.Try) and any(
+                    h.type is None or any(isinstance(n, ast.Name) and n.id in ("ImportError", "ModuleNotFoundError", "Exception")
+                                          for n in (h.type.elts if isinstance(h.type, ast.Tuple) else [h.type]))
+                    for h in t.handlers):
+                for stmt in t.body:
+                    optional.update(id(n) for n in ast.walk(stmt) if isinstance(n, (ast.Import, ast.ImportFrom)))
         for node in ast.walk(tree):
+            if id(node) in optional:
+                continue
             if isinstance(node, ast.Import):
                 names = [a.name for a in node.names]
             elif isinstance(node, ast.ImportFrom) and not node.level and node.module:

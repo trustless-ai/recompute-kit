@@ -118,5 +118,26 @@ class RuntimePreconditionTests(unittest.TestCase):
             self.assertFalse(runner._imported_python_modules(d) - set(rt.get("python_modules", [])), d.name)
 
 
+class RuntimePreconditionCornerTests(unittest.TestCase):
+    def test_bare_node_core_modules_are_not_packages(self):
+        src = 'import fs from "fs";\nimport { join } from "path";\nconst c = require("crypto");\nimport { readFile } from "fs/promises";\n'
+        tmp, d, m = suite_with({"adapter.py": ADAPTER, "gate.mjs": src}, runtime={})
+        with tmp:
+            self.assertEqual(set(), runner._imported_node_packages(d))
+
+    def test_optional_python_import_with_fallback_is_neither_required_nor_flagged(self):
+        src = ("try:\n    import rfc8785\nexcept ImportError:\n    rfc8785 = None\n"
+               "try:\n    from nacl.signing import VerifyKey\nexcept (ImportError, ModuleNotFoundError):\n    VerifyKey = None\n")
+        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={})
+        with tmp:
+            self.assertEqual(set(), runner._imported_python_modules(d))
+
+    def test_required_import_next_to_an_optional_one_is_still_flagged(self):
+        src = "import requests\ntry:\n    import rfc8785\nexcept ImportError:\n    rfc8785 = None\n"
+        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={})
+        with tmp:
+            self.assertEqual({"requests"}, runner._imported_python_modules(d))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
