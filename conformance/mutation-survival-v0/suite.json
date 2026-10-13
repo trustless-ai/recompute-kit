@@ -13,5 +13,10 @@
     "cmd": "./check",
     "contract": "self_grading"
   },
-  "laneHint": "read-only"
+  "laneHint": "read-only",
+  "runtime": {
+    "commands": [
+      "python3"
+    ]
+  }
 }
