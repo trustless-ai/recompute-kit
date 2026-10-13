@@ -246,6 +246,18 @@ def _imported_node_packages(d: pathlib.Path) -> set:
     return found
 
 
+def _unparseable_python_sources(d: pathlib.Path) -> list:
+    """Suite .py files ast cannot parse. Their imports are invisible to the scan, so they are reported, never skipped."""
+    import ast
+    bad = []
+    for f in _suite_sources(d, (".py",)):
+        try:
+            ast.parse(f.read_bytes())
+        except (SyntaxError, ValueError) as e:
+            bad.append(f"{f.relative_to(d)} ({type(e).__name__}: {e})")
+    return bad
+
+
 def _imported_python_modules(d: pathlib.Path) -> set:
     import ast
     local = {f.stem for f in _suite_sources(d, (".py",))} | {x.name for x in d.iterdir() if x.is_dir()}
@@ -253,8 +265,8 @@ def _imported_python_modules(d: pathlib.Path) -> set:
     for f in _suite_sources(d, (".py",)):
         try:
             tree = ast.parse(f.read_bytes())
-        except SyntaxError:
-            continue  # not executable as Python anyway; the adapter run reports it
+        except (SyntaxError, ValueError):
+            continue  # reported by _unparseable_python_sources before this scan's result is trusted
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 names = [a.name for a in node.names]
@@ -313,6 +325,9 @@ def _check_runtime(d: pathlib.Path, m: dict, cmd: str):
     undeclared = sorted(_imported_node_packages(d) - declared_node)
     if undeclared:
         return "NOT COVERED", f"imports node package(s) not declared in runtime.node_packages: {', '.join(undeclared)}"
+    unparseable = _unparseable_python_sources(d)
+    if unparseable:
+        return "NOT COVERED", f"python source(s) do not parse, so their imports cannot be checked: {'; '.join(unparseable)}"
     undeclared = sorted(_imported_python_modules(d) - declared_py - optional_py)
     if undeclared:
         return "NOT COVERED", f"imports python module(s) not declared in runtime.python_modules: {', '.join(undeclared)}"
@@ -321,6 +336,12 @@ def _check_runtime(d: pathlib.Path, m: dict, cmd: str):
         interpreter = shlex.split(cmd)[0]
     except (ValueError, IndexError):
         interpreter = None
+    # An adapter that is itself a script the scan cannot read (./check, ./gate.sh) hides every command it runs. It must
+    # declare them in runtime.commands; an empty list would be exempt by construction, not verified.
+    script = (d / interpreter).resolve() if interpreter and "/" in interpreter else None
+    if (script is not None and script.is_file() and script.is_relative_to(d.resolve())
+            and script.suffix not in (".py", *_JS_SUFFIXES) and not rt.get("commands")):
+        return "NOT COVERED", f"adapter {interpreter} is not Python or JS, so its dependencies cannot be scanned: declare runtime.commands"
     commands = list(rt.get("commands", []))
     if interpreter and "/" not in interpreter and "\\" not in interpreter:
         commands.insert(0, interpreter)

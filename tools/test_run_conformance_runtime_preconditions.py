@@ -115,7 +115,18 @@ class RuntimePreconditionTests(unittest.TestCase):
             d, m = manifest.parent, json.loads(manifest.read_text())
             rt = m.get("runtime", {})
             self.assertFalse(runner._imported_node_packages(d) - set(rt.get("node_packages", [])), d.name)
-            self.assertFalse(runner._imported_python_modules(d) - set(rt.get("python_modules", [])), d.name)
+            self.assertFalse(runner._imported_python_modules(d) - set(rt.get("python_modules", []))
+                             - set(rt.get("optional_python_modules", [])), d.name)
+            self.assertFalse(runner._unparseable_python_sources(d), d.name)
+
+    def test_repo_sweep_accepts_a_declared_optional_module(self):
+        # The sweep must apply the same rule as _check_runtime, or the first suite using optional_python_modules reds CI.
+        src = "try:\n    import surely_absent_optional_pkg\nexcept ImportError:\n    surely_absent_optional_pkg = None\n"
+        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={"optional_python_modules": ["surely_absent_optional_pkg"]})
+        with tmp:
+            (d / "suite.json").write_text(json.dumps(m))
+            with mock.patch.object(runner, "CONFORMANCE", d.parent):
+                self.test_every_repo_suite_declares_what_it_imports()
 
 
 class RuntimePreconditionCornerTests(unittest.TestCase):
@@ -168,6 +179,26 @@ class RuntimePreconditionCornerTests(unittest.TestCase):
             self.assertEqual([], runner._missing_python_modules(d, "./python-adapter", ["only_in_adapter_env"]))
             self.assertEqual(["only_in_adapter_env"], runner._missing_python_modules(d, sys.executable, ["only_in_adapter_env"]))
             self.assertTrue(runner._missing_python_modules(d, "./absent-python", ["json"]))
+
+    def test_unparseable_python_source_is_not_covered(self):
+        tmp, d, m = suite_with({"adapter.py": ADAPTER, "helper.py": "import requests_not_installed_xyz\ndef (:\n"}, runtime={})
+        with tmp:
+            r = self.run_one(d, m)
+        self.assertEqual("NOT COVERED", r.kind)
+        self.assertIn("helper.py", r.detail)
+
+    def test_shell_adapter_must_declare_its_commands(self):
+        tmp, d, m = suite_with({"gate.sh": "#!/bin/sh\njq . | gnuplot\n"}, runtime={}, cmd="./gate.sh")
+        with tmp:
+            r = self.run_one(d, m)
+            self.assertEqual("NOT COVERED", r.kind)
+            self.assertIn("runtime.commands", r.detail)
+            m["runtime"] = {"commands": ["definitely-not-a-real-command-xyz"]}
+            r = self.run_one(d, m)
+            self.assertEqual("RUNNER", r.kind)
+            self.assertIn("definitely-not-a-real-command-xyz", r.detail)
+            m["runtime"] = {"commands": ["sh"]}
+            self.assertIsNone(runner._check_runtime(d, m, m["adapter"]["cmd"]))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

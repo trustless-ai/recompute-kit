@@ -18,8 +18,8 @@ From this directory:
 ```text
 python encoder.py
 bun encoder.ts
-python gate.py
-python gate.py --negative-controls
+python3 gate.py
+python3 gate.py --negative-controls
 ```
 
 The normal gate verifies the pins in `suite.json`, executes every vector with
