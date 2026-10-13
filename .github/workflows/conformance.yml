@@ -54,6 +54,21 @@ jobs:
       - name: Run all conformance suites
         run: python3 tools/run_conformance.py
 
+      # The suite above proves the primitive behaves correctly on crafted inputs. This proves the
+      # other half: that those vectors are LOAD-BEARING against the primitive's own guards. Disable
+      # a guard in bin/recompute-mutation-survival and a named vector must red. Bounded, not
+      # circular — a mutant that breaks the tool enough to not run reports CRASHED / UNVERIFIABLE,
+      # never a pass, which is what the CRASH-is-not-a-KILL relation buys.
+      - name: mutation-survival — the suite's vectors must be load-bearing against the tool's guards
+        run: conformance/mutation-survival-v0/self-check
+
+      # And its controls, for the same reason the suites have them: a self-check that cannot fail is
+      # the decorative test it exists to detect, one level up. Drops the vector that witnesses a
+      # guard and asserts that guard then SURVIVES. Runs against a throwaway copy, so the tree stays
+      # clean for the cleanliness assertion at the end of this job.
+      - name: mutation-survival self-check — positive and negative controls
+        run: python3 tools/test_mutation_survival_self_check.py
+
       # The collapsed-state rule was written down on 4 Aug and reintroduced five times in two
       # days, in two codebases, by the people who wrote it — once inside the fix for the
       # collapse itself. A written rule has no failure mode; it cannot go red. This is the

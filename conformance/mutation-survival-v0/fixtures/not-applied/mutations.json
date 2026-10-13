@@ -1,0 +1,11 @@
+[
+  {
+    "file": "mod.py",
+    "find": "n % 3 == 0",
+    "replace": "n % 3 >= 0",
+    "class": "guard",
+    "label": "anchor that is not in the file",
+    "kill_witness": "AssertionError",
+    "must": "a mutation that did not apply MUST NOT be graded — not_applied is UNVERIFIABLE, never a kill and never a survival"
+  }
+]
