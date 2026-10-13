@@ -1,0 +1,11 @@
+[
+  {
+    "file": "mod.py",
+    "find": "n % 2 == 0",
+    "replace": "n % 2 >= 0",
+    "class": "guard",
+    "label": "is_even always-true",
+    "kill_witness": "AssertionError",
+    "must": "the suite never loads this file, so SURVIVED would be a claim about its assertions that the evidence does not support — UNVERIFIABLE/not_observed is the honest answer"
+  }
+]

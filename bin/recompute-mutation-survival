@@ -16,10 +16,12 @@ witness, which is not a kill. Probes are informational: their survivors are the 
 Verdict (kit-standard exit codes):
   0  verified-good  — baseline green AND every `guard` mutation was KILLED (tests are load-bearing)
   1  verified-bad   — a `guard` mutation SURVIVED (a decorative test that should catch it does not)
-  2  UNVERIFIABLE   — baseline not green, an EMPTY mutation inventory (ZERO_MUTANTS: nothing was
-                      tested, so nothing is certified), a guard anchor not found or applied other
-                      than exactly once, a guard with no declared kill_witness, or a guard that
-                      CRASHED
+  1  verified-bad   — takes PRECEDENCE over 2: a SURVIVED guard is a proven refutation, and the
+                      absence of a result elsewhere must not outrank it.
+  2  UNVERIFIABLE   — no guard mutation in the inventory (ZERO_MUTANTS, with `reason` saying whether
+                      the inventory was empty or carried probes only), baseline not green, a file the
+                      suite does not observe, a guard anchor not found or applied other than exactly
+                      once, a guard with no declared kill_witness, or a guard that CRASHED
 
 Each mutant runs in a disposable copy of --dir, so the bytes written are the bytes executed: no
 bytecode, build or runner cache can carry from one mutant to the next, and the suite tree is never
@@ -104,13 +106,23 @@ def main():
     # closed for the harnesses. The guard lives HERE, at the tool boundary, because #66 discovers
     # suites by `mutation_check.py` and this suite has none, so it is invisible to that sweep by
     # construction. Token kept identical to #65 so the vocabulary stays one. (zexoverz, 2026-10-12.)
-    if not muts:
-        print(json.dumps({"status": "ZERO_MUTANTS", "total": 0}))
-        print("UNVERIFIABLE: empty mutation inventory — nothing was tested, so nothing is certified")
+    # Only a `guard` gates the verdict, so an inventory with no guard certifies nothing — exactly as
+    # an empty one does not. The first cut of this guard tested `not muts`, which an all-probe
+    # inventory walks straight past: a decorative test plus a surviving probe returned verified-good
+    # and exit 0. (zexoverz, 2026-10-13.) One status, with a `reason` beside it that says which cause
+    # fired, because a marker reachable from two causes with nothing distinguishing them is the
+    # collapse tools/check_collapsed_states.py exists to catch.
+    guards = [m for m in muts if m.get("class") == "guard"]
+    if not guards:
+        reason = "empty_inventory" if not muts else "no_guard_mutations"
+        print(json.dumps({"status": "ZERO_MUTANTS", "reason": reason,
+                          "total": len(muts), "guards": 0}))
+        print(f"UNVERIFIABLE: {reason} — no guard mutation gates this run, so nothing is certified")
         if a.out:
             open(a.out, "w").write(json.dumps(
                 {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
-                 "test_cmd": a.test_cmd, "status": "ZERO_MUTANTS",
+                 "test_cmd": a.test_cmd, "status": "ZERO_MUTANTS", "reason": reason,
+                 "total": len(muts), "guards": 0,
                  "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
                  "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
         sys.exit(2)
@@ -128,6 +140,34 @@ def main():
                  "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
         sys.exit(2)
 
+    # OBSERVATION CONTROL. A mutation result only means something if the suite READS the file. If it
+    # does not — the classic case is a test that imports a vendored copy — then the mutant survives
+    # trivially and the tool reports SURVIVED, i.e. "a fault the suite cannot see", which is a claim
+    # about the suite's ASSERTIONS. The real finding is that the suite never loaded the file at all.
+    # Per-run isolation cannot catch this: the copy travels with the workspace. (zexoverz, 2026-10-13.)
+    #
+    # So, once per file, in its own throwaway copy: destroy the file and run the suite. Destroyed and
+    # the suite goes RED => the suite observes it, grade normally. Destroyed and the suite stays GREEN
+    # => it never observes it, and every mutation on that file is UNVERIFIABLE/not_observed rather
+    # than a coverage claim the evidence does not support.
+    #
+    # The payload is NUL bytes, which are invalid in Python source, JSON and Solidity alike, so the
+    # control does not quietly assume the target is Python. A red for an unrelated reason reads as
+    # "observed" and grading proceeds, which is the conservative direction.
+    _OBSERVE_PAYLOAD = b"\x00 recompute-mutation-survival observation control \x00"
+    observed = {}
+    for rel in dict.fromkeys(m["file"] for m in muts):
+        target = os.path.join(a.dir, rel)
+        if not os.path.exists(target):
+            continue                      # "file not found" is already its own UNVERIFIABLE below
+        with Workspace(a.dir) as w:
+            open(os.path.join(w, rel), "wb").write(_OBSERVE_PAYLOAD)
+            rc_obs, _ = run(a.test_cmd, w)
+        observed[rel] = rc_obs != 0
+        if not observed[rel]:
+            print(f"NOT OBSERVED: {rel} — the suite stays green with this file destroyed, "
+                  "so it never reads it and no mutation on it can be graded")
+
     results = []
     unverifiable = False
     guard_survived = False
@@ -139,6 +179,11 @@ def main():
             results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "file not found"})
             if m.get("class") == "guard": unverifiable = True
             continue
+        if observed.get(m["file"]) is False:
+            results.append({**_lbl(m), "verdict": "UNVERIFIABLE", "reason": "not_observed"})
+            if m.get("class") == "guard": unverifiable = True
+            continue
+
         # PRECONDITION 1 — applied EXACTLY ONCE. Presence is not application: testing with `in`
         # and applying with replace(..., 1) silently mutates the first occurrence, which may not be
         # the site `must` refers to. (zexoverz, :67)
@@ -198,7 +243,11 @@ def main():
     print("-" * 78)
     print(f"killed {killed} / survived {surv} / crashed {crashed} / applied {len(results)}")
 
-    verdict = "UNVERIFIABLE" if unverifiable else ("verified-bad" if guard_survived else "verified-good")
+    # PRECEDENCE: a SURVIVED guard is a PROVEN coverage gap. An UNVERIFIABLE row elsewhere is the
+    # absence of a result, and absence must not outrank evidence — reporting UNVERIFIABLE here hid a
+    # refutation the run had already established, and the survivor was printed below while the exit
+    # code said "could not tell". (zexoverz, 2026-10-13.) The UNVERIFIABLE rows stay in the artifact.
+    verdict = "verified-bad" if guard_survived else ("UNVERIFIABLE" if unverifiable else "verified-good")
     print(f"VERDICT: {verdict}")
     survivors = [r["label"] for r in results if r["verdict"] == "SURVIVED"]
     if survivors:
@@ -211,7 +260,7 @@ def main():
                "results": results, "verdict": verdict}
         open(a.out, "w").write(json.dumps(art, indent=2, sort_keys=True) + "\n")
 
-    sys.exit(2 if unverifiable else (1 if guard_survived else 0))
+    sys.exit(1 if guard_survived else (2 if unverifiable else 0))
 
 def _lbl(m):
     return {"label": m.get("label", f"{m['file']}: {m['find'][:30]}"),

@@ -30,10 +30,17 @@ mutant the suite must kill.
   a `guard` with no declared `kill_witness`, a `guard` that **CRASHED**, or an **empty mutation
   inventory**.
 
-An empty inventory MUST NOT be verified-good. With no mutants, "no guard survived" is vacuously true,
-so `killed 0 / survived 0` would certify coverage by the absence of any evidence about it. The tool
-refuses with `ZERO_MUTANTS` and exit `2`. The token is deliberately the same one the mutation
-harnesses use, so one condition has one name across the kit.
+An inventory with **no `guard`** MUST NOT be verified-good. Only a guard gates the verdict, so with
+no guard "no guard survived" is vacuously true and `killed 0 / survived 0` would certify coverage by
+the absence of any evidence about it. The tool refuses with `ZERO_MUTANTS` and exit `2`. The token is
+deliberately the same one the mutation harnesses use, so one condition has one name across the kit.
+
+⚠ **An empty list is not the only way to have no guard.** The first cut of this tested `not muts`,
+which an **all-probe** inventory walks straight past: a decorative test plus a surviving probe
+returned verified-good and exit 0. The condition is *no gating mutation*, not *no mutation*. One
+status carries a required **`reason`** — `empty_inventory` or `no_guard_mutations` — because a marker
+reachable from two causes with nothing distinguishing them is the collapse
+`tools/check_collapsed_states.py` exists to catch, and the fix for that is never a second marker.
 
 This guard lives at **this tool's own boundary** rather than in the repo-wide sweep, because that
 sweep discovers suites by the presence of a `mutation_check.py` and this suite does not have one — it
@@ -124,6 +131,39 @@ exists to detect, one level up.
 ```
 conformance/mutation-survival-v0/check
 ```
+
+## Observation (normative)
+
+**A mutation result means nothing unless the suite READS the mutated file.** If it does not, the
+mutant survives trivially, and reporting SURVIVED asserts *"a fault the suite cannot see"* — a claim
+about the suite's **assertions**. The real finding is that the suite never loaded the file, and the
+very same test may be one that would kill the mutant the moment it saw it.
+
+Execution freshness does not reach this. The classic case is a test that imports a **vendored copy**,
+and per-run isolation cannot help because the copy travels with the workspace.
+
+So, once per file in the inventory, in its own throwaway copy: **destroy the file and run the suite.**
+
+| destroyed file → suite | conclusion |
+|---|---|
+| **RED** | the suite observes the file; grade its mutations normally |
+| **GREEN** | the suite never reads it; every mutation on it is `UNVERIFIABLE` / `not_observed` |
+
+`not_observed` is a **reason on UNVERIFIABLE**, not a fifth verdict, because the vocabulary already
+distinguishes causes by a reason travelling beside the marker and splitting it earns a sixth next
+month.
+
+The payload is NUL bytes — invalid in Python source, JSON and Solidity alike — so the control does
+not quietly assume the target is Python. A red for an unrelated reason reads as *observed* and
+grading proceeds, which is the conservative direction: it risks doing the work, not skipping it.
+
+## Precedence (normative)
+
+**`verified-bad` outranks `UNVERIFIABLE`.** A SURVIVED guard is a proven coverage gap; an
+UNVERIFIABLE row is the *absence* of a result, and absence must not outrank evidence. Before this was
+fixed, a guard that survived alongside a stale anchor reported UNVERIFIABLE and exit `2` **while
+printing the survivor underneath it** — the human-readable output carried the refutation and the
+machine-readable answer hid it. The UNVERIFIABLE rows stay in the artifact either way.
 
 ## Execution freshness (normative)
 

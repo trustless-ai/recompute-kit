@@ -74,6 +74,36 @@
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
       "note": "The suite fails before any mutation, so no later failure can be attributed to a mutant: every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE before the first mutant is applied. Witnesses the baseline-green precondition, which until now no vector reached."
+    },
+    {
+      "name": "all-probe",
+      "fixture": "fixtures/all-probe",
+      "expected_mutations": {},
+      "expected_no_results": true,
+      "expected_exit": 2,
+      "expected_verdict": "UNVERIFIABLE",
+      "note": "Only a `guard` gates the verdict, so an inventory of probes alone certifies nothing — the first cut of the guard tested an empty list and this walked straight past it, returning verified-good / exit 0 with a decorative test and the probe surviving. `ZERO_MUTANTS` with reason `no_guard_mutations`. Remove the guard and this vector reds. (zexoverz, 2026-10-13.)"
+    },
+    {
+      "name": "stale-copy",
+      "fixture": "fixtures/stale-copy",
+      "expected_mutations": {
+        "is_even always-true": "UNVERIFIABLE"
+      },
+      "expected_exit": 2,
+      "expected_verdict": "UNVERIFIABLE",
+      "note": "The suite imports a vendored COPY and never loads the mutated file, so the mutant survives trivially. SURVIVED would assert a gap in the suite's ASSERTIONS; the real finding is that it never read the file — and this test WOULD kill the mutant if it saw it. Per-run isolation cannot catch this because the copy travels with the workspace; the observation control can. Remove the observation control and this vector reds. (zexoverz, 2026-10-13.)"
+    },
+    {
+      "name": "refutation-outranks",
+      "fixture": "fixtures/refutation-outranks",
+      "expected_mutations": {
+        "is_even always-true": "SURVIVED",
+        "stale anchor": "UNVERIFIABLE"
+      },
+      "expected_exit": 1,
+      "expected_verdict": "verified-bad",
+      "note": "A SURVIVED guard is a PROVEN coverage gap; an UNVERIFIABLE row is the absence of a result. Absence must not outrank evidence — this previously reported UNVERIFIABLE / exit 2 while printing the survivor below it, so the machine-readable answer hid a refutation the run had established. Both rows pinned, because pinning only one lets the other regress unseen. (zexoverz, 2026-10-13.)"
     }
   ]
 }

@@ -10,12 +10,12 @@
   },
   {
     "file": "bin/recompute-mutation-survival",
-    "find": "    if not muts:",
+    "find": "    if not guards:",
     "replace": "    if False:",
     "class": "guard",
     "label": "ZERO_MUTANTS guard disabled",
     "kill_witness": "FAIL zero-mutants",
-    "must": "an empty mutation inventory MUST NOT be verified-good"
+    "must": "an inventory with no guard mutation MUST NOT be verified-good"
   },
   {
     "file": "bin/recompute-mutation-survival",
@@ -61,5 +61,32 @@
     "label": "baseline isolation removed",
     "kill_witness": "FAIL",
     "must": "KNOWN GAP: baseline staleness needs cross-invocation state, which no single-run vector can set up"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "    guards = [m for m in muts if m.get(\"class\") == \"guard\"]",
+    "replace": "    guards = [m for m in muts if m.get(\"class\") != \"guard\"]",
+    "class": "guard",
+    "label": "guard-counting inverted (probes counted as guards)",
+    "kill_witness": "FAIL all-probe",
+    "must": "only a `guard` gates the verdict; counting probes restores the all-probe false pass"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "        observed[rel] = rc_obs != 0",
+    "replace": "        observed[rel] = True",
+    "class": "guard",
+    "label": "observation control disabled (everything assumed observed)",
+    "kill_witness": "FAIL stale-copy",
+    "must": "a mutation result means nothing unless the suite reads the file"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "    verdict = \"verified-bad\" if guard_survived else (\"UNVERIFIABLE\" if unverifiable else \"verified-good\")",
+    "replace": "    verdict = \"UNVERIFIABLE\" if unverifiable else (\"verified-bad\" if guard_survived else \"verified-good\")",
+    "class": "guard",
+    "label": "verdict precedence reverted (absence outranks evidence)",
+    "kill_witness": "FAIL refutation-outranks",
+    "must": "a proven refutation outranks an UNVERIFIABLE elsewhere"
   }
 ]

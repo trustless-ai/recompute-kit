@@ -1,0 +1,11 @@
+[
+  {
+    "file": "mod.py",
+    "find": "n % 2 == 0",
+    "replace": "n % 2 >= 0",
+    "class": "probe",
+    "label": "is_even always-true",
+    "kill_witness": "AssertionError",
+    "must": "only a guard gates the verdict, so an inventory of probes alone certifies nothing — even with a decorative test and this probe surviving"
+  }
+]
