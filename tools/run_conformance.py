@@ -198,12 +198,15 @@ def _check_declared_pins(d: pathlib.Path, m: dict):
 # by matching wording, and wording floats with the toolchain (bun-version: latest changed one message and an induced
 # infra break read as a refuted vector, #68). A suite declares what it needs in suite.json:
 #
-#     "runtime": {"commands": ["bun"], "node_packages": ["ethers"], "python_modules": ["rfc8785"]}
+#     "runtime": {"commands": ["bun"], "node_packages": ["ethers"], "python_modules": ["rfc8785"],
+#                 "optional_python_modules": ["nacl"]}
 #
 # and the runner verifies all of it BEFORE executing, so a missing dependency is a precondition failure (RUNNER, exit 2)
 # and never reaches a classifier. The list cannot silently exempt what is new: a third-party import in the suite's own
 # sources that the manifest does not declare is NOT COVERED, and the adapter command's interpreter is always checked.
-RUNTIME_KEYS = ("commands", "node_packages", "python_modules")
+# Optionality is declared too, never inferred from code shape: `try: import x / except ImportError: raise` looks like a
+# fallback and is not one. Every import must be in python_modules (preflighted) or optional_python_modules (not).
+RUNTIME_KEYS = ("commands", "node_packages", "python_modules", "optional_python_modules")
 _JS_SUFFIXES = (".ts", ".mts", ".cts", ".js", ".mjs", ".cjs")
 _JS_COMMENT = re.compile(r"/\*.*?\*/|(?<![:\"'\\])//[^\n]*", re.S)
 _JS_SPECIFIER = re.compile(
@@ -252,19 +255,7 @@ def _imported_python_modules(d: pathlib.Path) -> set:
             tree = ast.parse(f.read_bytes())
         except SyntaxError:
             continue  # not executable as Python anyway; the adapter run reports it
-        # An import inside `try: ... except ImportError` (or ModuleNotFoundError, or a bare except) has a fallback: it is an
-        # optional dependency. Requiring it to be declared would then require it to be installed, so it could never be optional.
-        optional = set()
-        for t in ast.walk(tree):
-            if isinstance(t, ast.Try) and any(
-                    h.type is None or any(isinstance(n, ast.Name) and n.id in ("ImportError", "ModuleNotFoundError", "Exception")
-                                          for n in (h.type.elts if isinstance(h.type, ast.Tuple) else [h.type]))
-                    for h in t.handlers):
-                for stmt in t.body:
-                    optional.update(id(n) for n in ast.walk(stmt) if isinstance(n, (ast.Import, ast.ImportFrom)))
         for node in ast.walk(tree):
-            if id(node) in optional:
-                continue
             if isinstance(node, ast.Import):
                 names = [a.name for a in node.names]
             elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
@@ -288,6 +279,26 @@ def _resolves_node_package(d: pathlib.Path, name: str) -> bool:
     return False
 
 
+def _missing_python_modules(d: pathlib.Path, interpreter, names: list) -> list:
+    """Resolve modules in the interpreter adapter.cmd runs, not the runner's own: a suite with its own venv is checked there."""
+    import importlib.util, os, shutil
+    if not names:
+        return []
+    # The adapter runs as `cmd` with cwd=d, so a path-like interpreter (venv/bin/python) resolves from d.
+    exe = None
+    if interpreter:
+        exe = shutil.which(interpreter) if "/" not in interpreter and "\\" not in interpreter else str(d / interpreter)
+    if exe and "/" in interpreter and not os.path.isfile(exe):
+        return [f"{n} (interpreter {interpreter} not found)" for n in names]
+    if not exe or not os.path.basename(exe).startswith("python") or os.path.realpath(exe) == os.path.realpath(sys.executable):
+        return [n for n in names if importlib.util.find_spec(n) is None]
+    probe = "import importlib.util,sys\nfor n in sys.argv[1:]:\n    importlib.util.find_spec(n) is None and print(n)"
+    r = subprocess.run([exe, "-c", probe, *names], cwd=d, capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        return [f"{n} (interpreter {interpreter} failed: rc={r.returncode})" for n in names]
+    return r.stdout.split()
+
+
 def _check_runtime(d: pathlib.Path, m: dict, cmd: str):
     """-> (kind, detail) when a precondition fails, else None. Runs before the adapter, never after it."""
     import importlib.util, shlex, shutil
@@ -296,10 +307,13 @@ def _check_runtime(d: pathlib.Path, m: dict, cmd: str):
             isinstance(rt.get(k, []), list) and all(isinstance(x, str) and x for x in rt.get(k, [])) for k in RUNTIME_KEYS):
         return "NOT COVERED", f"runtime must be an object of {'/'.join(RUNTIME_KEYS)} string lists: {rt!r:.120}"
     declared_node, declared_py = set(rt.get("node_packages", [])), set(rt.get("python_modules", []))
+    optional_py = set(rt.get("optional_python_modules", []))
+    if declared_py & optional_py:
+        return "NOT COVERED", f"declared both required and optional: {', '.join(sorted(declared_py & optional_py))}"
     undeclared = sorted(_imported_node_packages(d) - declared_node)
     if undeclared:
         return "NOT COVERED", f"imports node package(s) not declared in runtime.node_packages: {', '.join(undeclared)}"
-    undeclared = sorted(_imported_python_modules(d) - declared_py)
+    undeclared = sorted(_imported_python_modules(d) - declared_py - optional_py)
     if undeclared:
         return "NOT COVERED", f"imports python module(s) not declared in runtime.python_modules: {', '.join(undeclared)}"
 
@@ -312,7 +326,7 @@ def _check_runtime(d: pathlib.Path, m: dict, cmd: str):
         commands.insert(0, interpreter)
     missing = [c for c in dict.fromkeys(commands) if shutil.which(c) is None]
     missing += [f"node package {n}" for n in sorted(declared_node) if not _resolves_node_package(d, n)]
-    missing += [f"python module {n}" for n in sorted(declared_py) if importlib.util.find_spec(n) is None]
+    missing += [f"python module {n}" for n in _missing_python_modules(d, interpreter, sorted(declared_py))]
     if missing:
         return "RUNNER", f"precondition: runtime dependency missing ({', '.join(missing)}), adapter not run"
     return None

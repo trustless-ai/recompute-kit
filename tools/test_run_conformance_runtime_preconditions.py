@@ -119,25 +119,55 @@ class RuntimePreconditionTests(unittest.TestCase):
 
 
 class RuntimePreconditionCornerTests(unittest.TestCase):
+    run_one = RuntimePreconditionTests.run_one
+
     def test_bare_node_core_modules_are_not_packages(self):
         src = 'import fs from "fs";\nimport { join } from "path";\nconst c = require("crypto");\nimport { readFile } from "fs/promises";\n'
         tmp, d, m = suite_with({"adapter.py": ADAPTER, "gate.mjs": src}, runtime={})
         with tmp:
             self.assertEqual(set(), runner._imported_node_packages(d))
 
-    def test_optional_python_import_with_fallback_is_neither_required_nor_flagged(self):
-        src = ("try:\n    import rfc8785\nexcept ImportError:\n    rfc8785 = None\n"
-               "try:\n    from nacl.signing import VerifyKey\nexcept (ImportError, ModuleNotFoundError):\n    VerifyKey = None\n")
-        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={})
+    def test_try_except_import_is_still_required_unless_declared_optional(self):
+        # Optionality is declared, never inferred from the handler: these handlers re-raise or exit, so nothing falls back.
+        for handler in ("raise", "raise SystemExit(1)", "raise RuntimeError('need it')", "missing_pkg = None"):
+            src = f"try:\n    import missing_pkg\nexcept ImportError:\n    {handler}\n"
+            tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={})
+            with tmp:
+                self.assertEqual({"missing_pkg"}, runner._imported_python_modules(d), handler)
+                self.assertEqual("NOT COVERED", self.run_one(d, m).kind, handler)
+
+    def test_declared_optional_module_is_neither_flagged_nor_preflighted(self):
+        src = "try:\n    import surely_absent_optional_pkg\nexcept ImportError:\n    surely_absent_optional_pkg = None\n"
+        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={"optional_python_modules": ["surely_absent_optional_pkg"]})
         with tmp:
-            self.assertEqual(set(), runner._imported_python_modules(d))
+            self.assertIsNone(runner._check_runtime(d, m, m["adapter"]["cmd"]))
+
+    def test_module_declared_both_required_and_optional_is_not_covered(self):
+        tmp, d, m = suite_with({"adapter.py": ADAPTER}, runtime={"python_modules": ["x"], "optional_python_modules": ["x"]})
+        with tmp:
+            self.assertEqual("NOT COVERED", self.run_one(d, m).kind)
 
     def test_required_import_next_to_an_optional_one_is_still_flagged(self):
         src = "import requests\ntry:\n    import rfc8785\nexcept ImportError:\n    rfc8785 = None\n"
-        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={})
+        tmp, d, m = suite_with({"adapter.py": ADAPTER + src}, runtime={"optional_python_modules": ["rfc8785"]})
         with tmp:
-            self.assertEqual({"requests"}, runner._imported_python_modules(d))
+            r = runner._check_runtime(d, m, m["adapter"]["cmd"])
+            self.assertEqual("NOT COVERED", r[0])
+            self.assertIn("requests", r[1])
+            self.assertNotIn("rfc8785", r[1])
 
+    def test_python_modules_resolve_in_the_adapter_interpreter_not_the_runner(self):
+        # A module only the adapter's interpreter can import must pass, and one only the runner can import must not.
+        with tempfile.TemporaryDirectory() as tmp:
+            d = pathlib.Path(tmp)
+            (d / "venvlib").mkdir()
+            (d / "venvlib" / "only_in_adapter_env.py").write_text("")
+            wrapper = d / "python-adapter"
+            wrapper.write_text(f"#!/bin/sh\nPYTHONPATH={shlex.quote(str(d / 'venvlib'))} exec {shlex.quote(sys.executable)} -S \"$@\"\n")
+            wrapper.chmod(0o755)
+            self.assertEqual([], runner._missing_python_modules(d, "./python-adapter", ["only_in_adapter_env"]))
+            self.assertEqual(["only_in_adapter_env"], runner._missing_python_modules(d, sys.executable, ["only_in_adapter_env"]))
+            self.assertTrue(runner._missing_python_modules(d, "./absent-python", ["json"]))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
