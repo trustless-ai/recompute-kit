@@ -14,8 +14,16 @@ recompute, this grades *any* candidate implementation against *any* content-hash
 The run is itself recomputable: `--out` writes a ConformanceRun artifact anyone can re-verify,
 so no single runner is the authority.
 
+WHAT THIS GRADES, and what it refuses. It implements ONE manifest shape: a single-check suite whose
+adapter.contract is `reporter` (vectors in on stdin -> {name: result} out on stdout). Everything
+else is REFUSED with exit 2 and a sentence, never a traceback and never exit 1 — because exit 1
+means "a vector was refuted", and "I cannot read this declaration" is not a refutation. It used to
+traceback on 15 of 30 manifests and exit 1 for all of them (#72).
+`tools/run_conformance.py` is the general path: it reads every manifest and dispatches on
+adapter.contract.
+
 Usage:
-  bin/conformance-suite --suite <dir-with-suite.json> --adapter-cmd "bun gate.ts --grade"
+  bin/conformance-suite --suite <dir-with-suite.json> [--check <name>] --adapter-cmd "..."
   bin/conformance-suite --vectors <f.json> --vectors-sha256 <hex> --adapter-cmd "<cmd>" [--out run.json]
 """
 import sys, json, argparse, hashlib, subprocess, time
@@ -29,20 +37,72 @@ def load_suite(args):
     base_dir is where the adapter runs (so a relative adapter cmd resolves against the suite)."""
     if args.suite:
         d = Path(args.suite)
-        man = json.loads((d / "suite.json").read_text())
-        vp = d / man["vectors"]["path"]
-        sp = (d / man["spec"]["path"]) if man.get("spec") else None
-        return (vp, man["vectors"].get("sha256"),
-                sp, (man.get("spec") or {}).get("sha256"),
+        try:
+            man = json.loads((d / "suite.json").read_text())
+        except FileNotFoundError:
+            cannot_read(f"no suite.json in {d}")
+        except json.JSONDecodeError as e:
+            cannot_read(f"{d}/suite.json is not valid JSON: {e}")
+
+        # A multi-check manifest has no top-level `vectors` — each entry in `checks[]` has its own.
+        # Reading man["vectors"] unconditionally raised KeyError on 14 of 30 manifests and exited 1.
+        checks = man.get("checks")
+        if checks:
+            names = [c.get("name") for c in checks]
+            if not args.check:
+                cannot_read(f"{d.name} is a multi-check manifest ({len(checks)} checks: "
+                            f"{', '.join(str(n) for n in names)}).\n"
+                            f"    Name one with --check <name>, or use tools/run_conformance.py, "
+                            "which grades every check in every suite.")
+            selected = next((c for c in checks if c.get("name") == args.check), None)
+            if selected is None:
+                cannot_read(f"{d.name} declares no check named {args.check!r}; "
+                            f"it has {', '.join(str(n) for n in names)}")
+            man = {k: v for k, v in man.items() if k != "checks"} | selected
+        elif args.check:
+            cannot_read(f"{d.name} is a single-check manifest, so --check {args.check!r} "
+                        "does not apply")
+
+        if not isinstance(man.get("vectors"), dict) or not man["vectors"].get("path"):
+            cannot_read(f"{d.name} declares no vectors.path to grade against")
+
+        # A spec is VERIFIABLE only when it carries a sha256, which is the rule
+        # tools/run_conformance.py applies (`spec.get("path") and spec.get("sha256")`). Without one
+        # it is a reference, not a pin — and it need not even be a local file:
+        # pq-key-binding-v1-profile points at `spec/v1-temporal-authority.md` in ANOTHER repo, so
+        # joining it to the suite directory raised FileNotFoundError and exited 1.
+        spec = man.get("spec") or {}
+        pinned_spec = bool(spec.get("path") and spec.get("sha256"))
+        sp = (d / spec["path"]) if pinned_spec else None
+        return (d / man["vectors"]["path"], man["vectors"].get("sha256"),
+                sp, spec.get("sha256") if pinned_spec else None,
                 args.adapter_cmd or (man.get("adapter") or {}).get("cmd"),
-                man.get("profile", d.name), d)
+                man.get("profile", d.name), d,
+                (man.get("adapter") or {}).get("contract"), spec)
     if not args.vectors:
         sys.exit("error: pass --suite <dir> or --vectors <file>")
     vp = Path(args.vectors)
-    return (vp, args.vectors_sha256, None, None, args.adapter_cmd, vp.stem, vp.parent)
+    # An explicit --vectors run declares no contract; it IS the reporter contract by construction.
+    return (vp, args.vectors_sha256, None, None, args.adapter_cmd, vp.stem, vp.parent,
+            "reporter", {})
 
 def canon(o):  # order-insensitive comparison of result objects
     return json.dumps(o, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+def cannot_read(msg: str):
+    """Exit 2 for a manifest this tool does not implement.
+
+    Separate from fail_closed on purpose. Both are exit 2, so the REASON has to carry which of the
+    two happened — a marker that answers two questions is the collapse check_collapsed_states.py
+    exists to catch. fail_closed means "the candidate could not be established"; this means "the
+    declaration is not one I can read", which is a statement about the suite, not the candidate.
+    """
+    print(f"✗ cannot grade this suite: {msg}")
+    print("─" * 60)
+    print("UNVERIFIABLE — the declaration is not a shape this tool implements; nothing was graded.")
+    print("  (not a refutation: no vector was run, so no vector failed.)")
+    sys.exit(2)
+
 
 def fail_closed(msg: str, code: int = 2):
     print(f"✗ {msg}")
@@ -53,17 +113,35 @@ def fail_closed(msg: str, code: int = 2):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--suite"); ap.add_argument("--vectors"); ap.add_argument("--vectors-sha256")
+    ap.add_argument("--suite"); ap.add_argument("--check")
+    ap.add_argument("--vectors"); ap.add_argument("--vectors-sha256")
     ap.add_argument("--spec"); ap.add_argument("--spec-sha256")
     ap.add_argument("--adapter-cmd"); ap.add_argument("--out")
     args = ap.parse_args()
 
-    vp, vsha, sp, ssha, adapter, profile, base = load_suite(args)
+    vp, vsha, sp, ssha, adapter, profile, base, contract, spec = load_suite(args)
     if args.spec: sp, ssha = Path(args.spec), args.spec_sha256
     if not adapter:
-        sys.exit("error: no adapter — pass --adapter-cmd or set adapter.cmd in suite.json")
+        cannot_read("no adapter — pass --adapter-cmd or set adapter.cmd in suite.json")
+
+    # Refuse the contract BEFORE running anything. A self_grading adapter grades itself and prints a
+    # human summary; this tool then failed to parse that as JSON and said "adapter output was not
+    # JSON", which is a true sentence about the wrong thing — the adapter did exactly what its
+    # declared contract says. Decided from the declaration, never inferred from the output shape,
+    # which is the same rule run_conformance applies (ADAPTER_CONTRACTS).
+    if not args.adapter_cmd and contract and contract != "reporter":
+        cannot_read(f"{profile} declares adapter.contract={contract!r}; this tool implements only "
+                    "'reporter' (vectors in on stdin -> {name: result} JSON out on stdout).\n"
+                    "    A self-grading adapter decides its own verdict, so there is no result map "
+                    "to compare.\n    Use tools/run_conformance.py, which dispatches on the contract.")
 
     print(f"suite: {profile}")
+    if spec.get("path") and not spec.get("sha256"):
+        # Say it rather than silently skipping: a spec nobody pinned cannot be verified here, and a
+        # skip that touches nothing is how "unverified" comes to look like "verified".
+        print(f"  note: spec {spec['path']}"
+              + (f" in {spec['repo']}" if spec.get("repo") else "")
+              + " carries no sha256 — a reference, not a pin; not verified here")
 
     # 1. hash-pin — recompute over the exact committed bytes, fail-closed on mismatch
     vbytes = vp.read_bytes()
@@ -78,8 +156,20 @@ def main():
         print(f"✓ spec     sha256 {got_s[:16]}… {'— matches declared' if ssha else '(informational)'}")
     print("─" * 60)
 
-    fixture = json.loads(vbytes)
-    vectors = fixture.get("vectors", fixture if isinstance(fixture, list) else [])
+    try:
+        fixture = json.loads(vbytes)
+    except json.JSONDecodeError as e:
+        cannot_read(f"{vp.name} is not valid JSON: {e}")
+    vectors = fixture.get("vectors", fixture if isinstance(fixture, list) else []) \
+        if isinstance(fixture, dict) else fixture
+    # Zero vectors reproduce zero vectors, and 0/0 printed "✓ CONFORMANT" and exited 0. The repo's
+    # own rule (#65/#67): zero evidence must not certify coverage. Not reachable from any manifest
+    # on main today — every `cases`-keyed corpus happens to be self_grading, which is refused
+    # above — so this is the guard for the first reporter suite that keys its corpus `cases`.
+    if not vectors:
+        cannot_read(f"{vp.name} declares no vectors to grade"
+                    + (f" (it has top-level keys {sorted(fixture)[:6]}; this tool reads `vectors`)"
+                       if isinstance(fixture, dict) and fixture else ""))
 
     # 2. run the candidate adapter (vectors in -> {name: result} out); adapter failure = unverifiable
     try:
