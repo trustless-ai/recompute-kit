@@ -58,6 +58,14 @@ jobs:
       # days, in two codebases, by the people who wrote it — once inside the fix for the
       # collapse itself. A written rule has no failure mode; it cannot go red. This is the
       # rule as something that can.
+      # A hash or address quoted in prose is a claim like any other, and two of the convention
+      # hashes in BASIS_POINTS_CUTOVER_MATRIX.md are DERIVED from mcp/conventions.py -- so editing a
+      # descriptor silently invalidates the document that quotes the old digest. Offline on purpose:
+      # CI must not go red because a public RPC rate-limited us, and a network failure must not be
+      # able to look like a stale document. On-chain facts are declared with where to check them.
+      - name: Documented identifiers — every hash and address in a .md must be accounted for
+        run: python3 tools/test_documented_identifiers.py
+
       - name: Collapsed-state check — a marker must not answer two questions
         run: python3 tools/check_collapsed_states.py tools bin mcp
 
