@@ -45,7 +45,8 @@
       },
       "expected_exit": 1,
       "expected_verdict": "verified-bad",
-      "note": "EXECUTION FRESHNESS control. Both mutants are same-byte-length edits to one file, so the source size never changes; the test command additionally stamps a fixed mtime, so mtime cannot discriminate either. CPython validates timestamp .pyc on (mtime, size), so without per-run isolation every run reuses the baseline's bytecode and BOTH mutants are misread. Pinning both rows is deliberate: pinning only the survivor would let a run that got the first mutant wrong still pass. Remove the Workspace isolation and this vector reds. (zexoverz, 2026-10-12.)"
+      "note": "EXECUTION FRESHNESS control. Both mutants are same-byte-length edits to one file, so the source size never changes; the test command additionally stamps a fixed mtime, so mtime cannot discriminate either. CPython validates timestamp .pyc on (mtime, size), so without per-run isolation every run reuses the baseline's bytecode and BOTH mutants are misread. Pinning both rows is deliberate: pinning only the survivor would let a run that got the first mutant wrong still pass. Remove the Workspace isolation and this vector reds. (zexoverz, 2026-10-12.) ⚠ This vector can only establish its own premise where CPython actually writes a .pyc. `requires_bytecode_cache` makes that a declared precondition: check.py probes for it and reports UNVERIFIABLE / exit 2 rather than running the vector vacuously. (babyblueviper1 and pipavlo82, 2026-10-14.)",
+      "requires_bytecode_cache": true
     },
     {
       "name": "zero-mutants",

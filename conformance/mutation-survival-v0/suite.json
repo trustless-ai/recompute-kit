@@ -2,7 +2,7 @@
   "profile": "mutation_survival.v0",
   "vectors": {
     "path": "mutation-survival-v0.vectors.json",
-    "sha256": "1f597ec8e9c00ff87e1b4cd316978b1b29353a3fd55dcfdcd1340c7970225190"
+    "sha256": "6379abddae69dcfd72ef8e8c308a114ca6ec6cb7ec23e3f0ee48d124f3fa7f2a"
   },
   "spec": {
     "path": "mutation-survival-v0.spec.md",
@@ -10,7 +10,7 @@
   },
   "checker": {
     "path": "check.py",
-    "sha256": "86a1d3c0a7a1faddfd5f45288d2ebfae6d6494d29f9875911aabd186214e9091"
+    "sha256": "0b83b07fb29f2ab4ada536aebed74f4244a204dbac83a97c77d7e6567b6a83fb"
   },
   "dependencies": [
     {

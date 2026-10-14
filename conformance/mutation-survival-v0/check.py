@@ -12,6 +12,7 @@
 # (tokens ending in .py/.mjs/.cjs/.js/.ts) cannot see, so the code deciding this suite's verdict
 # could change with every declared pin still matching. (pipavlo82, #17)
 import json, os, subprocess, sys, tempfile
+import pathlib
 here = os.path.dirname(os.path.abspath(__file__))
 bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
 # Exit codes are the kit's tri-state, kept apart on purpose (zexoverz, #17 review, check:13):
@@ -31,6 +32,18 @@ except Exception as e:
 if isinstance(spec.get("vectors"), list) and not spec["vectors"]:
     print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
     raise SystemExit(2)
+
+def _bytecode_cache_works():
+    """-> True iff importing a module here actually leaves a .pyc. Measured, not inferred from an
+    env var: -B, a read-only __pycache__ and hash-based pycs all defeat it in ways no flag names."""
+    with tempfile.TemporaryDirectory() as t:
+        pathlib.Path(t, "probe_bc.py").write_text("X = 1\n")
+        subprocess.run([sys.executable, "-c", "import probe_bc"], cwd=t,
+                       capture_output=True, env={k: x for k, x in os.environ.items()
+                                                 if k != "PYTHONDONTWRITEBYTECODE"})
+        return any(pathlib.Path(t, "__pycache__").glob("probe_bc*.pyc")) \
+            if pathlib.Path(t, "__pycache__").is_dir() else False
+
 fail = norun = 0
 def source_ref(d):
     # Derived here independently of the tool, so an artifact that drops or invents its ref goes red.
@@ -40,6 +53,14 @@ def source_ref(d):
     st = subprocess.run(["git", "-C", d, "status", "--porcelain", "--", "."], capture_output=True, text=True)
     return head.stdout.strip(), bool(st.stdout.strip())
 for v in spec["vectors"]:
+    if v.get("requires_bytecode_cache") and not _bytecode_cache_works():
+        # Pavlo's precondition: stripping the env var removes ONE way the premise fails. -B, a
+        # read-only __pycache__ or an unchecked-hash pyc remove it too. So PROVE the premise holds
+        # instead of enumerating what breaks it, and refuse as could-not-run rather than passing.
+        print(f"NORUN {v['name']:18} precondition absent: this environment writes no .pyc, "
+              "so the stale-cache premise cannot be established")
+        norun += 1
+        continue
     d = os.path.join(here, v["fixture"])
     want_ref = source_ref(d)
     # per-vector override: the execution-freshness vector has to run under a test command that
@@ -47,9 +68,14 @@ for v in spec["vectors"]:
     tc = v.get("test_cmd", spec["test_cmd"])
     with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as t:
         art = t.name
+    # Fede's strip: PYTHONDONTWRITEBYTECODE in the CALLER's environment (many CI images set it)
+    # silently removes the premise of the freshness vector — no .pyc is ever written, so the stale
+    # cache it exists to catch cannot form, and it reproduced vacuously while check still said
+    # CONFORMANT. The vector must run under the conditions it describes, not under the caller's.
+    env = {k: x for k, x in os.environ.items() if k != "PYTHONDONTWRITEBYTECODE"}
     rc = subprocess.run([sys.executable, bin_, "--dir", d, "--test-cmd", tc,
                          "--mutations", os.path.join(d, "mutations.json"), "--out", art],
-                        capture_output=True, text=True).returncode
+                        capture_output=True, text=True, env=env).returncode
     got_verdict = got_status = got_reason = None
     got = {}
     reasons = {}
