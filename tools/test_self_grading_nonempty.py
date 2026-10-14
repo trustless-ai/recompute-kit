@@ -95,6 +95,11 @@ SINGLE_ARTIFACT = {
 NO_DECLARED_CORPUS: set[str] = set()
 ENCODE = "encode-json-utf8-lf-v0"
 CASE_KEYS = ("cases", "vectors")
+# A probe case must be UNIQUE on whatever the corpus uses for identity, or the adapter reds for
+# the wrong reason: the first cut of this probe duplicated an id and encode-json-utf8-lf-v0 died
+# with "duplicate vector id", which proves nothing about grading. A control that reds for the
+# wrong reason is not a control.
+IDENTITY_KEYS = ("id", "name", "case_id", "vector_id", "case", "label", "title")
 
 
 def case_collection(document):
@@ -105,6 +110,14 @@ def case_collection(document):
         if isinstance(document.get(key), (list, dict)):
             return document[key]
     return None
+
+
+PROBE_SUFFIX = "__ungradeable_probe"
+
+
+def case_template(corpus):
+    """-> a representative case to copy, for either corpus shape."""
+    return next(iter(corpus.values())) if isinstance(corpus, dict) else corpus[0]
 
 
 def declaration_at(root, check):
@@ -275,6 +288,20 @@ class NonemptySelfGradingTests(unittest.TestCase):
                     document[key] = {} if isinstance(corpus, dict) else []
                 elif mode == "null":
                     document[key] = None
+                elif mode == "ungradeable":
+                    # One case the corpus ADMITS but the adapter cannot grade: a copy of a real
+                    # case, unique on every identity field, with the expectation REMOVED. The
+                    # corpus declares N+1; at most N can be checked. Nothing may call that a pass.
+                    extra = copy.deepcopy(case_template(corpus))
+                    graded = next(k for k in extra if "expect" in k.lower())
+                    extra.pop(graded)
+                    for field in list(extra):
+                        if field.lower() in IDENTITY_KEYS and isinstance(extra[field], str):
+                            extra[field] = extra[field] + PROBE_SUFFIX
+                    if isinstance(corpus, dict):
+                        document[key] = {**corpus, PROBE_SUFFIX: extra}
+                    else:
+                        document[key] = [*corpus, extra]
                 elif mode == "duplicate":
                     # One MORE case, still a passing one. Proves the expectation follows the
                     # corpus instead of a literal: the adapter must grade N+1 and the derived
@@ -350,6 +377,68 @@ class NonemptySelfGradingTests(unittest.TestCase):
             self.assertEqual(process.returncode, 0, process.stderr)
             self.assertIn(f"{after}/{after}".encode(), process.stdout)
             self.assertNotIn(f"{before}/{before}".encode(), process.stdout)
+
+    def test_every_admitted_case_must_be_checked(self):
+        """A non-empty declared corpus produces exactly one checked result per case.
+
+        @pipavlo82's invariant on #76, and the half the derived count alone does not reach. With a
+        derived expectation, an adapter that grades 7 of 8 and REPORTS 7/7 is already caught --
+        8 != 7. What is not caught is an adapter whose total comes from the corpus length rather
+        than from results it actually checked: it prints 8/8 while grading 7, and agrees with
+        itself. `cutoff_enforce.py` computes exactly that way
+        (`len(fx['cases']) - fails}/{len(fx['cases'])}`) and is saved today only by raising
+        KeyError on the missing field rather than skipping it.
+
+        So: admit a case the adapter CANNOT grade and require that nothing calls the run a pass.
+
+        The signal is the EXIT CODE, deliberately, and not a printed "a/b". A first cut also
+        rejected any `N+1/N+1` in stdout and went red on encode-json-utf8-lf-v0, whose
+        "Cross-language agreement: 49/49 vectors" line is two implementations agreeing they could
+        not classify the case -- not a grade claim. Telling those apart needs prose-matching, which
+        is the coupling this repo keeps getting bitten by. The removal control below shows the exit
+        code is sufficient: a skipping adapter exits 0.
+        """
+        for check in sorted(CHECKS):
+            with self.subTest(check=check):
+                admitted = declared_count(self.repo, check) + 1
+                with self.probe(check, "ungradeable"):
+                    self.assertEqual(declared_count(self.repo, check), admitted,
+                                     "the probe did not reach the corpus, so this proves nothing")
+                    # NOT controls=: --negative-controls is a different path that does not grade
+                    # the corpus at all, so it would pass here while establishing nothing.
+                    process = self.native(check)
+                    self.assertNotEqual(process.returncode, 0,
+                                        "a corpus case that cannot be graded was reported as a pass:\n"
+                                        + (process.stdout + process.stderr).decode(errors="replace"))
+
+    def test_an_adapter_that_skips_an_admitted_case_is_caught(self):
+        """Removal control for the test above, against a REAL adapter.
+
+        cutoff_enforce.py reports `len(cases) - fails` over `len(cases)`. Make its loop skip a case
+        it cannot grade -- the one-line change that turns its accidental safety into a silent
+        skip -- and it reports a full grade of a corpus it did not fully grade, and exits 0. The
+        test above must catch that, or it is only re-testing the KeyError.
+        """
+        check = "pq-key-binding-v0/rotation"
+        _, owner = self.paths(check)
+        source = owner.read_text(encoding="utf-8")
+        anchor = '        got, exp = admit(bindings, cutoff, c["artifact"]), c["expected"]\n'
+        self.assertEqual(source.count(anchor), 1,
+                         "control anchor not found exactly once; the skip was not introduced, "
+                         "so this control proves nothing")
+        admitted = declared_count(self.repo, check) + 1
+        with self.probe(check, "ungradeable"):
+            owner.write_text(source.replace(
+                anchor,
+                '        if "expected" not in c:\n'
+                '            continue\n' + anchor, 1), encoding="utf-8", newline="\n")
+            self.repin(owner)
+            process = self.native(check)
+            # the adapter now claims a full grade of a corpus it skipped a case in
+            self.assertEqual(process.returncode, 0, "the skip was not introduced as intended:\n"
+                             + (process.stdout + process.stderr).decode(errors="replace"))
+            self.assertIn(f"{admitted}/{admitted}".encode(), process.stdout,
+                          "expected the corpus-length count to overstate what was graded")
 
     def test_every_self_grading_check_is_declared(self):
         """No self-grading check may silently escape this file.
