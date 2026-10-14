@@ -85,6 +85,14 @@ SINGLE_ARTIFACT = {
     "pq-key-binding-v0/rotation-deep-recompute",
     "serializer-bindings/tsei-frozen-artifact",
 }
+
+# Self-grading checks that declare NO readable corpus at all -- no `vectors.path`, or a path that is
+# not there. EMPTY, and meant to stay empty: an adapter with nothing to grade against cannot be held
+# to any obligation above, so if one appears somebody has to say why in writing. Discovery used to
+# `continue` past these -- a silent exemption inside the guard against silent exemptions.
+# @pipavlo82 reproduced it on #77: a newcomer reporting 0/0 left all 11 tests green and the
+# canonical runner called it `PASS ... 0/0 cases reproduced`. (#77 F1.)
+NO_DECLARED_CORPUS: set[str] = set()
 ENCODE = "encode-json-utf8-lf-v0"
 CASE_KEYS = ("cases", "vectors")
 
@@ -112,19 +120,36 @@ def declaration_at(root, check):
 
 
 def discover_self_grading(root):
-    """-> {check: has_case_collection} for every self-grading check with a declared corpus.
+    """-> one record per declared self-grading check, in manifest order. Never skips one.
 
     Discovered from the MANIFEST -- not from a list kept in this file, and not by grepping the
-    adapter's source for a ZERO_CASES token. `adapter.contract` is a required field that the
-    runner refuses to infer (run_conformance.ADAPTER_CONTRACTS), which makes it the one
-    structural statement of who grades. Classifying on a token in source would reproduce the
-    prose-coupling defect found in run_conformance's own precondition guard on #52.
+    adapter's source for a ZERO_CASES token. `adapter.contract` is a required field the runner
+    refuses to infer (run_conformance.ADAPTER_CONTRACTS), which makes it the one structural
+    statement of who grades. Classifying on a token in source would reproduce the prose-coupling
+    defect found in run_conformance's own precondition guard on #52.
+
+    Each record is {"check", "corpus", "index"}, where `corpus` is:
+      "cases"  -- the declared corpus holds a collection of cases
+      "single" -- it holds one artifact, so there is nothing to count
+      "none"   -- no readable corpus: no `vectors.path`, or the declared path is absent
+
+    "none" is a CLASSIFICATION, not a skip. The first cut did
+    `if not path or not (...).exists(): continue`. (#77 F1, @pipavlo82.)
+
+    One record per `checks[]` ENTRY, carrying its index, so two entries sharing a name cannot
+    collapse -- a dict keyed on the name merged them while the canonical runner ran both.
+    (#77 F2, @pipavlo82.)
+
+    A check whose contract is missing or unrecognised is out of scope here and cannot pass
+    silently either: run_conformance:402 returns NOT COVERED, a failure, which lands in
+    UNDETERMINED (exit 2).
     """
-    found = {}
+    found = []
     for suite_json in sorted((root / "conformance").glob("*/suite.json")):
         manifest = json.loads(suite_json.read_text(encoding="utf-8"))
         directory = suite_json.parent
-        for entry in manifest.get("checks") or [manifest]:
+        entries = manifest.get("checks") or [manifest]
+        for index, entry in enumerate(entries):
             merged = {k: v for k, v in manifest.items() if k != "checks"}
             merged.update(entry)
             name = f"{directory.name}/{entry['name']}" if manifest.get("checks") else directory.name
@@ -132,9 +157,11 @@ def discover_self_grading(root):
                 continue
             path = (merged.get("vectors") or {}).get("path")
             if not path or not (directory / path).exists():
-                continue
-            document = json.loads((directory / path).read_text(encoding="utf-8"))
-            found[name] = case_collection(document) is not None
+                corpus = "none"
+            else:
+                document = json.loads((directory / path).read_text(encoding="utf-8"))
+                corpus = "cases" if case_collection(document) is not None else "single"
+            found.append({"check": name, "corpus": corpus, "index": index})
     return found
 
 
@@ -327,42 +354,120 @@ class NonemptySelfGradingTests(unittest.TestCase):
     def test_every_self_grading_check_is_declared(self):
         """No self-grading check may silently escape this file.
 
-        The three sets above are obligations, not an inventory: CHECKS reproduces a counted
-        corpus, REDS_ON_EMPTY must refuse an empty one, SINGLE_ARTIFACT has no corpus to count.
-        A new check must land in exactly one of them, and this is what makes that happen rather
-        than being remembered -- the same class as #57/#65/#66, where a sweep that enumerates
-        what exists exempts whatever is in flight. (@pipavlo82 on #76: "a newly discovered
-        self-grading suite must not silently escape this check.")
+        The four sets above are obligations, not an inventory: CHECKS reproduces a counted corpus,
+        REDS_ON_EMPTY must refuse an empty one, SINGLE_ARTIFACT has no corpus to count, and
+        NO_DECLARED_CORPUS has no corpus at all and has to be argued for. A new check must land in
+        exactly one, and this is what makes that happen rather than being remembered -- the same
+        class as #57/#65/#66, where a sweep that enumerates what exists exempts whatever is in
+        flight. (@pipavlo82 on #76: "a newly discovered self-grading suite must not silently escape
+        this check.")
         """
-        discovered = discover_self_grading(self.repo)
-        self.assertTrue(discovered, "discovered no self-grading checks at all -- the sweep is broken, "
-                                    "and a sweep that finds nothing proves nothing")
-        declared = CHECKS | REDS_ON_EMPTY | SINGLE_ARTIFACT
+        records = discover_self_grading(self.repo)
+        self.assertTrue(records, "discovered no self-grading checks at all -- the sweep is broken, "
+                                 "and a sweep that finds nothing proves nothing")
+        self.assert_partition(records, "the repo")
 
-        undeclared = sorted(set(discovered) - declared)
-        self.assertFalse(undeclared, "self-grading checks in none of the three sets: "
+    def assert_partition(self, records, where):
+        """Every record in exactly one declared set, and no two records sharing an identity."""
+        declared = CHECKS | REDS_ON_EMPTY | SINGLE_ARTIFACT | NO_DECLARED_CORPUS
+        names = [r["check"] for r in records]
+
+        # F2: two checks[] entries sharing a name produce two records here. A dict keyed on the
+        # name merged them, and the suite could not tell them apart, while the canonical runner ran
+        # both and labelled both results identically.
+        duplicates = sorted({n for n in names if names.count(n) > 1})
+        self.assertFalse(duplicates, f"{where}: duplicate self-grading check identities "
+                         f"{duplicates}. Two checks[] entries share a name, so their results are "
+                         "indistinguishable by label -- give each check a distinct name.")
+
+        undeclared = sorted(set(names) - declared)
+        self.assertFalse(undeclared, f"{where}: self-grading checks in none of the four sets: "
                          f"{undeclared}. Add each to CHECKS (if it reports N/N over a case "
-                         "corpus), REDS_ON_EMPTY (if it must refuse an empty corpus but reports "
-                         "no count), or SINGLE_ARTIFACT (if its corpus is one document).")
+                         "corpus), REDS_ON_EMPTY (if it must refuse an empty corpus but reports no "
+                         "count), SINGLE_ARTIFACT (if its corpus is one document), or "
+                         "NO_DECLARED_CORPUS (if it declares no readable corpus -- and say why).")
 
-        stale = sorted(declared - set(discovered))
-        self.assertFalse(stale, f"declared here but no longer a self-grading check with a corpus: {stale}")
-
-        for bucket_a, bucket_b, names in (("CHECKS", "REDS_ON_EMPTY", CHECKS & REDS_ON_EMPTY),
-                                          ("CHECKS", "SINGLE_ARTIFACT", CHECKS & SINGLE_ARTIFACT),
-                                          ("REDS_ON_EMPTY", "SINGLE_ARTIFACT", REDS_ON_EMPTY & SINGLE_ARTIFACT)):
-            self.assertFalse(names, f"{sorted(names)} declared in both {bucket_a} and {bucket_b}; "
-                                    "the obligations differ, so one check cannot carry both")
+        for a, b, overlap in (
+                ("CHECKS", "REDS_ON_EMPTY", CHECKS & REDS_ON_EMPTY),
+                ("CHECKS", "SINGLE_ARTIFACT", CHECKS & SINGLE_ARTIFACT),
+                ("CHECKS", "NO_DECLARED_CORPUS", CHECKS & NO_DECLARED_CORPUS),
+                ("REDS_ON_EMPTY", "SINGLE_ARTIFACT", REDS_ON_EMPTY & SINGLE_ARTIFACT),
+                ("REDS_ON_EMPTY", "NO_DECLARED_CORPUS", REDS_ON_EMPTY & NO_DECLARED_CORPUS),
+                ("SINGLE_ARTIFACT", "NO_DECLARED_CORPUS", SINGLE_ARTIFACT & NO_DECLARED_CORPUS)):
+            self.assertFalse(overlap, f"{sorted(overlap)} declared in both {a} and {b}; "
+                                      "the obligations differ, so one check cannot carry both")
 
         # And the split must match what the corpora actually are, not what we remember them to be.
-        for check, has_cases in sorted(discovered.items()):
-            with self.subTest(check=check):
-                if check in SINGLE_ARTIFACT:
-                    self.assertFalse(has_cases, f"{check} is declared SINGLE_ARTIFACT but its corpus "
-                                                f"now holds a case collection -- it owes a count")
+        for r in records:
+            with self.subTest(check=r["check"]):
+                if r["check"] in SINGLE_ARTIFACT:
+                    self.assertEqual(r["corpus"], "single", f"{r['check']} is declared "
+                                     f"SINGLE_ARTIFACT but its corpus is {r['corpus']!r}")
+                elif r["check"] in NO_DECLARED_CORPUS:
+                    self.assertEqual(r["corpus"], "none", f"{r['check']} is declared "
+                                     f"NO_DECLARED_CORPUS but its corpus is {r['corpus']!r} -- it "
+                                     "owes the matching obligation")
                 else:
-                    self.assertTrue(has_cases, f"{check} is declared with a case obligation but its "
-                                               f"corpus holds a single artifact")
+                    self.assertEqual(r["corpus"], "cases", f"{r['check']} carries a case "
+                                     f"obligation but its corpus is {r['corpus']!r}")
+
+    SELF_GRADING_ADAPTER = {"kind": "stdio", "cmd": "true", "contract": "self_grading"}
+
+    def _synthetic_repo(self, tmp, suites):
+        """A minimal tree holding only conformance/<name>/suite.json, to drive discovery alone.
+
+        Deliberately NOT self.repo: these controls add and break manifests, and self.repo is shared
+        with every other test in this class.
+        """
+        root = Path(tmp)
+        for name, manifest in suites.items():
+            d = root / "conformance" / name
+            d.mkdir(parents=True)
+            (d / "suite.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+        return root
+
+    def test_self_grading_without_a_corpus_is_classified_not_skipped(self):
+        """#77 F1 control. A newcomer with no vectors.path must be classified, then reported.
+
+        Reproduced by @pipavlo82 at 3ff9d09 and again here before the fix: such a suite was skipped
+        by discovery, left all 11 tests green, and the canonical runner reported
+        `PASS newcomer-noc-v0 0/0 cases reproduced` -- zero cases certifying conformance, which is
+        the exact failure this file exists to prevent.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._synthetic_repo(tmp, {"newcomer-no-corpus-v0": {
+                "profile": "newcomer-no-corpus-v0", "adapter": self.SELF_GRADING_ADAPTER}})
+            records = discover_self_grading(root)
+            self.assertEqual([r["check"] for r in records], ["newcomer-no-corpus-v0"],
+                             "a self-grading check with no vectors.path was dropped by discovery")
+            self.assertEqual(records[0]["corpus"], "none")
+            # classified is not enough: being in no declared set, it must then be REPORTED
+            with self.assertRaises(AssertionError) as caught:
+                self.assert_partition(records, "synthetic")
+            self.assertIn("none of the four sets", str(caught.exception))
+            self.assertIn("newcomer-no-corpus-v0", str(caught.exception))
+
+    def test_two_checks_sharing_a_name_do_not_collapse(self):
+        """#77 F2 control. Duplicate checks[] names must be reported, not merged.
+
+        Reproduced by @pipavlo82 at 3ff9d09: duplicating the rotation check left 11/11 green while
+        the canonical runner executed both.
+        """
+        vectors = {"path": "v.json", "sha256": "0" * 64}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._synthetic_repo(tmp, {"dup-v0": {
+                "profile": "dup-v0", "adapter": self.SELF_GRADING_ADAPTER,
+                "checks": [{"name": "same", "vectors": vectors},
+                           {"name": "same", "vectors": vectors}]}})
+            (root / "conformance" / "dup-v0" / "v.json").write_text(
+                json.dumps({"cases": [{"name": "a", "expected": {}}]}) + "\n", encoding="utf-8")
+            records = discover_self_grading(root)
+            self.assertEqual(len(records), 2, "two checks[] entries must produce two records")
+            self.assertEqual([r["index"] for r in records], [0, 1],
+                             "records must carry their manifest index or they cannot be told apart")
+            with self.assertRaises(AssertionError) as caught:
+                self.assert_partition(records, "synthetic")
+            self.assertIn("duplicate self-grading check identities", str(caught.exception))
 
     def test_repinned_empty_is_unverifiable(self):
         for check in CHECKS:
