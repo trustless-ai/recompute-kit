@@ -89,7 +89,13 @@ Five more vectors each exist to red if a specific guard is removed:
   before the first mutant is applied.
 
 `check.py` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
-self-grading check with nothing to grade reports CONFORMANT otherwise.
+self-grading check with nothing to grade reports CONFORMANT otherwise. It exits `1` when a vector
+does not reproduce and `2` when it could not run (no tool, no readable artifact, an exit outside the
+verdict contract), so a could-not-run is not delivered to the runner as a refuted vector.
+
+A vector pins why a run or a row was unverifiable, not only that it was: `expected_status` and
+`expected_reason` for the run, `expected_reasons` per row. `check.py` also derives `ref` and `dirty`
+itself and compares them to the artifact.
 
 ## Self-application (`self-check`) — are these vectors load-bearing?
 
@@ -126,6 +132,12 @@ with a name, not a passing check.
 (`tools/test_mutation_survival_self_check.py`): remove the vector that witnesses a guard, and that
 guard must come back SURVIVED with exit 1. A self-check that cannot fail is the decorative test it
 exists to detect, one level up.
+
+## The artifact
+
+`--out` records `ref` (the commit `--dir` was at) and `dirty` (whether the tree under `--dir` had
+uncommitted changes when the run started), read before anything is mutated. Outside a git tree both
+are null. `dir` alone is a path on one machine and lets nobody else re-derive the run.
 
 ## Run
 ```

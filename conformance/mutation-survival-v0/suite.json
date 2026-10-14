@@ -6,7 +6,7 @@
   },
   "spec": {
     "path": "mutation-survival-v0.spec.md",
-    "sha256": "e79bc4320fa1ee7a92ca0f8272ae4e8737c84f803227c3d2737dd93cd288976e"
+    "sha256": "13a9ee8597e0d34e0e5bee01656e9299c52dbaa8927551b83d1fb7b895861e8c"
   },
   "checker": {
     "path": "check.py",
