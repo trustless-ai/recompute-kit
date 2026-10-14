@@ -136,6 +136,37 @@ def exit_code_for_failures(failures: list[Result]) -> int:
     return 1 if any(result.kind in DETERMINATE for result in failures) else 2
 
 
+def check_units(d: pathlib.Path, m: dict) -> list:
+    """-> [(label, manifest)], one unit per declared check, in manifest order.
+
+    A suite may declare several independent checks (each with its own vectors, digest and adapter)
+    instead of one. Reported per check: "pq-key-binding-v0 failed" would hide WHICH of
+    grade/cutoff/rotation/revocation refuted, and a failure that cannot name itself is most of the
+    way back to the problem this runner exists to fix.
+
+    The merge is ASYMMETRIC, and that is load-bearing:
+      vectors  ALWAYS the child's, even when it declares none — a check without vectors has none,
+               it does not inherit the suite's.
+      adapter  the child's only when TRUTHY, so `adapter: {}` INHERITS the suite-level adapter.
+
+    It lives here, once, because anything that inventories what this runner runs has to agree with
+    it. tools/test_self_grading_nonempty.py restated the merge with dict.update() and therefore
+    omitted exactly the `adapter: {}` case the runner accepts — an inventory drifting from the
+    thing it inventories. Import this instead of restating it. (pipavlo82, #77 F3.)
+    """
+    if isinstance(m.get("checks"), list) and m["checks"]:
+        units = []
+        for c in m["checks"]:
+            sub = dict(m)
+            sub.pop("checks", None)
+            sub["vectors"] = c.get("vectors")
+            if c.get("adapter"):
+                sub["adapter"] = c["adapter"]
+            units.append((f"{d.name}/{c.get('name') or '?'}", sub))
+        return units
+    return [(d.name, m)]
+
+
 def run_suite(d: pathlib.Path) -> list:
     manifest = d / "suite.json"
     if not manifest.is_file():
@@ -146,23 +177,7 @@ def run_suite(d: pathlib.Path) -> list:
     except Exception as e:
         return [Result(d.name, False, "RUNNER", f"suite.json is not valid JSON: {e}")]
 
-    # A suite may declare several independent checks (each with its own vectors, digest and
-    # adapter) instead of one. Reported per check: "pq-key-binding-v0 failed" would hide
-    # WHICH of grade/cutoff/rotation/revocation refuted, and a failure that cannot name
-    # itself is most of the way back to the problem this runner exists to fix.
-    if isinstance(m.get("checks"), list) and m["checks"]:
-        out = []
-        for c in m["checks"]:
-            nm = f"{d.name}/{c.get('name') or '?'}"
-            sub = dict(m)
-            sub.pop("checks", None)
-            sub["vectors"] = c.get("vectors")
-            if c.get("adapter"):
-                sub["adapter"] = c["adapter"]
-            out.append(_run_one(d, sub, nm))
-        return out
-
-    return [_run_one(d, m, d.name)]
+    return [_run_one(d, sub, nm) for nm, sub in check_units(d, m)]
 
 
 _HEX64 = re.compile(r"[0-9a-f]{64}")

@@ -148,11 +148,11 @@ def discover_self_grading(root):
     for suite_json in sorted((root / "conformance").glob("*/suite.json")):
         manifest = json.loads(suite_json.read_text(encoding="utf-8"))
         directory = suite_json.parent
-        entries = manifest.get("checks") or [manifest]
-        for index, entry in enumerate(entries):
-            merged = {k: v for k, v in manifest.items() if k != "checks"}
-            merged.update(entry)
-            name = f"{directory.name}/{entry['name']}" if manifest.get("checks") else directory.name
+        # The merge comes from the RUNNER, not from a copy of it here. Restating it with
+        # dict.update() replaced a child's `adapter: {}` instead of inheriting, so a check the
+        # canonical runner accepts as self_grading was omitted from this inventory entirely.
+        # (#77 F3, @pipavlo82.) run_conformance.check_units is now the single definition.
+        for index, (name, merged) in enumerate(runner.check_units(directory, manifest)):
             if (merged.get("adapter") or {}).get("contract") != "self_grading":
                 continue
             path = (merged.get("vectors") or {}).get("path")
@@ -367,9 +367,21 @@ class NonemptySelfGradingTests(unittest.TestCase):
                                  "and a sweep that finds nothing proves nothing")
         self.assert_partition(records, "the repo")
 
-    def assert_partition(self, records, where):
-        """Every record in exactly one declared set, and no two records sharing an identity."""
-        declared = CHECKS | REDS_ON_EMPTY | SINGLE_ARTIFACT | NO_DECLARED_CORPUS
+    def assert_partition(self, records, where, declared=None, sets=None):
+        """Every record in exactly one declared set, and no two records sharing an identity.
+
+        `declared`/`sets` exist so a control can drive this rule over a SYNTHETIC manifest tree.
+        The repo call passes neither and gets the real four sets; a control over a one-suite
+        fixture passes its own, because otherwise the bidirectional stale check fires on the 36
+        real declarations the fixture does not contain and masks the property under test.
+        """
+        if sets is None:
+            sets = {"CHECKS": CHECKS, "REDS_ON_EMPTY": REDS_ON_EMPTY,
+                    "SINGLE_ARTIFACT": SINGLE_ARTIFACT, "NO_DECLARED_CORPUS": NO_DECLARED_CORPUS}
+        if declared is None:
+            declared = set().union(*sets.values()) if sets else set()
+        single = sets.get("SINGLE_ARTIFACT", set())
+        no_corpus = sets.get("NO_DECLARED_CORPUS", set())
         names = [r["check"] for r in records]
 
         # F2: two checks[] entries sharing a name produce two records here. A dict keyed on the
@@ -380,6 +392,15 @@ class NonemptySelfGradingTests(unittest.TestCase):
                          f"{duplicates}. Two checks[] entries share a name, so their results are "
                          "indistinguishable by label -- give each check a distinct name.")
 
+        # BIDIRECTIONAL. discovered-minus-declared below, and declared-minus-discovered here: a
+        # removed check leaves its declaration behind, and an inventory that only checks one
+        # direction slowly fills with names for things that no longer exist. This assertion was
+        # present at 3ff9d09 and I DELETED it while rewriting this method for F1/F2 — the test
+        # count did not change, so nothing flagged it. (#77 F4, @pipavlo82.)
+        stale = sorted(declared - set(names))
+        self.assertFalse(stale, f"{where}: declared here but no longer a discovered self-grading "
+                         f"check: {stale}. Remove the declaration, or restore the check.")
+
         undeclared = sorted(set(names) - declared)
         self.assertFalse(undeclared, f"{where}: self-grading checks in none of the four sets: "
                          f"{undeclared}. Add each to CHECKS (if it reports N/N over a case "
@@ -387,23 +408,19 @@ class NonemptySelfGradingTests(unittest.TestCase):
                          "count), SINGLE_ARTIFACT (if its corpus is one document), or "
                          "NO_DECLARED_CORPUS (if it declares no readable corpus -- and say why).")
 
-        for a, b, overlap in (
-                ("CHECKS", "REDS_ON_EMPTY", CHECKS & REDS_ON_EMPTY),
-                ("CHECKS", "SINGLE_ARTIFACT", CHECKS & SINGLE_ARTIFACT),
-                ("CHECKS", "NO_DECLARED_CORPUS", CHECKS & NO_DECLARED_CORPUS),
-                ("REDS_ON_EMPTY", "SINGLE_ARTIFACT", REDS_ON_EMPTY & SINGLE_ARTIFACT),
-                ("REDS_ON_EMPTY", "NO_DECLARED_CORPUS", REDS_ON_EMPTY & NO_DECLARED_CORPUS),
-                ("SINGLE_ARTIFACT", "NO_DECLARED_CORPUS", SINGLE_ARTIFACT & NO_DECLARED_CORPUS)):
+        pairs = [(a, b) for i, a in enumerate(sets) for b in list(sets)[i + 1:]]
+        for a, b in pairs:
+            overlap = sets[a] & sets[b]
             self.assertFalse(overlap, f"{sorted(overlap)} declared in both {a} and {b}; "
                                       "the obligations differ, so one check cannot carry both")
 
         # And the split must match what the corpora actually are, not what we remember them to be.
         for r in records:
             with self.subTest(check=r["check"]):
-                if r["check"] in SINGLE_ARTIFACT:
+                if r["check"] in single:
                     self.assertEqual(r["corpus"], "single", f"{r['check']} is declared "
                                      f"SINGLE_ARTIFACT but its corpus is {r['corpus']!r}")
-                elif r["check"] in NO_DECLARED_CORPUS:
+                elif r["check"] in no_corpus:
                     self.assertEqual(r["corpus"], "none", f"{r['check']} is declared "
                                      f"NO_DECLARED_CORPUS but its corpus is {r['corpus']!r} -- it "
                                      "owes the matching obligation")
@@ -443,7 +460,7 @@ class NonemptySelfGradingTests(unittest.TestCase):
             self.assertEqual(records[0]["corpus"], "none")
             # classified is not enough: being in no declared set, it must then be REPORTED
             with self.assertRaises(AssertionError) as caught:
-                self.assert_partition(records, "synthetic")
+                self.assert_partition(records, "synthetic", sets={})
             self.assertIn("none of the four sets", str(caught.exception))
             self.assertIn("newcomer-no-corpus-v0", str(caught.exception))
 
@@ -466,8 +483,55 @@ class NonemptySelfGradingTests(unittest.TestCase):
             self.assertEqual([r["index"] for r in records], [0, 1],
                              "records must carry their manifest index or they cannot be told apart")
             with self.assertRaises(AssertionError) as caught:
-                self.assert_partition(records, "synthetic")
+                self.assert_partition(records, "synthetic", sets={})
             self.assertIn("duplicate self-grading check identities", str(caught.exception))
+
+    def test_a_child_inheriting_the_adapter_is_discovered(self):
+        """#77 F3 control. `adapter: {}` inherits the suite-level adapter, as the runner does.
+
+        The runner's merge is asymmetric (run_conformance.check_units): the child's adapter wins
+        only when TRUTHY, so an empty one inherits. Restating that merge here with dict.update()
+        replaced it instead, and a check the canonical runner accepts as self_grading was omitted
+        from this inventory while all 13 tests stayed green. Discovery now calls the runner's own
+        merge, so the two cannot diverge again.
+        """
+        vectors = {"path": "v.json", "sha256": "0" * 64}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._synthetic_repo(tmp, {"inherit-v0": {
+                "profile": "inherit-v0",
+                "adapter": self.SELF_GRADING_ADAPTER,          # declared at suite level
+                "checks": [{"name": "child", "vectors": vectors, "adapter": {}}]}})
+            (root / "conformance" / "inherit-v0" / "v.json").write_text(
+                json.dumps({"cases": [{"name": "a", "expected": {}}]}) + "\n", encoding="utf-8")
+
+            # the runner treats it as self_grading ...
+            _, merged = runner.check_units(root / "conformance" / "inherit-v0",
+                                           json.loads((root / "conformance" / "inherit-v0"
+                                                       / "suite.json").read_text()))[0]
+            self.assertEqual((merged.get("adapter") or {}).get("contract"), "self_grading",
+                             "the runner's own merge no longer inherits a falsy child adapter; "
+                             "this control is testing the wrong thing")
+            # ... so discovery must too, and must then report it as undeclared
+            records = discover_self_grading(root)
+            self.assertEqual([r["check"] for r in records], ["inherit-v0/child"],
+                             "a child inheriting the suite adapter was dropped by discovery")
+            with self.assertRaises(AssertionError) as caught:
+                self.assert_partition(records, "synthetic", sets={})
+            self.assertIn("inherit-v0/child", str(caught.exception))
+
+    def test_a_declaration_with_no_discovered_check_is_reported(self):
+        """#77 F4 control. Coverage is bidirectional: a removed check must not leave a declaration.
+
+        This assertion existed at 3ff9d09 and I deleted it while rewriting the partition method for
+        F1/F2. The test-method count was unchanged, so nothing caught it.
+        """
+        records = [{"check": "real-v0", "corpus": "cases", "index": 0}]
+        with self.assertRaises(AssertionError) as caught:
+            self.assert_partition(records, "synthetic",
+                                 sets={"CHECKS": {"real-v0", "removed-v0"}})
+        self.assertIn("no longer a discovered self-grading check", str(caught.exception))
+        self.assertIn("removed-v0", str(caught.exception))
+        self.assertNotIn("real-v0'", str(caught.exception))
 
     def test_repinned_empty_is_unverifiable(self):
         for check in CHECKS:
