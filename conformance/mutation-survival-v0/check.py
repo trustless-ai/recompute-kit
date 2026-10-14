@@ -12,7 +12,7 @@
 # (tokens ending in .py/.mjs/.cjs/.js/.ts) cannot see, so the code deciding this suite's verdict
 # could change with every declared pin still matching. (pipavlo82, #17)
 import json, os, subprocess, sys, tempfile
-import pathlib
+import pathlib, shutil
 here = os.path.dirname(os.path.abspath(__file__))
 bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
 # Exit codes are the kit's tri-state, kept apart on purpose (zexoverz, #17 review, check:13):
@@ -33,16 +33,24 @@ if isinstance(spec.get("vectors"), list) and not spec["vectors"]:
     print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
     raise SystemExit(2)
 
-def _bytecode_cache_works():
-    """-> True iff importing a module here actually leaves a .pyc. Measured, not inferred from an
-    env var: -B, a read-only __pycache__ and hash-based pycs all defeat it in ways no flag names."""
+def _fixture_writes_pyc(d, tc, env):
+    """-> True iff the vector's OWN test command, run in a throwaway copy of the vector's OWN
+    fixture under the same env as the real run, actually leaves a .pyc behind.
+
+    Measured, not inferred from an env var: -B, a read-only __pycache__ and hash-based pycs all
+    defeat bytecode caching in ways no flag names. And measured HERE, on the fixture, not on a
+    synthetic module under sys.executable: the fixtures invoke `python3` through PATH, which can be
+    a different interpreter from the one running this checker, or the same one wrapped with -B. A
+    probe on sys.executable then reports a cache the fixture never gets, and the vector passes
+    having established nothing — the same vacuous pass one door along. Observe the artifact the
+    premise is actually about. (pipavlo82, #70, 2026-10-14.)"""
     with tempfile.TemporaryDirectory() as t:
-        pathlib.Path(t, "probe_bc.py").write_text("X = 1\n")
-        subprocess.run([sys.executable, "-c", "import probe_bc"], cwd=t,
-                       capture_output=True, env={k: x for k, x in os.environ.items()
-                                                 if k != "PYTHONDONTWRITEBYTECODE"})
-        return any(pathlib.Path(t, "__pycache__").glob("probe_bc*.pyc")) \
-            if pathlib.Path(t, "__pycache__").is_dir() else False
+        w = os.path.join(t, "fixture")
+        shutil.copytree(d, w)
+        for c in pathlib.Path(w).rglob("__pycache__"):
+            shutil.rmtree(c, ignore_errors=True)   # a .pyc that travelled with the copy proves nothing
+        subprocess.run(tc, cwd=w, shell=True, capture_output=True, env=env)
+        return any(pathlib.Path(w).rglob("*.pyc"))
 
 fail = norun = 0
 def source_ref(d):
@@ -53,26 +61,29 @@ def source_ref(d):
     st = subprocess.run(["git", "-C", d, "status", "--porcelain", "--", "."], capture_output=True, text=True)
     return head.stdout.strip(), bool(st.stdout.strip())
 for v in spec["vectors"]:
-    if v.get("requires_bytecode_cache") and not _bytecode_cache_works():
-        # Pavlo's precondition: stripping the env var removes ONE way the premise fails. -B, a
-        # read-only __pycache__ or an unchecked-hash pyc remove it too. So PROVE the premise holds
-        # instead of enumerating what breaks it, and refuse as could-not-run rather than passing.
-        print(f"NORUN {v['name']:18} precondition absent: this environment writes no .pyc, "
-              "so the stale-cache premise cannot be established")
-        norun += 1
-        continue
     d = os.path.join(here, v["fixture"])
-    want_ref = source_ref(d)
     # per-vector override: the execution-freshness vector has to run under a test command that
     # does NOT hide staleness, which is the opposite of what the others want.
     tc = v.get("test_cmd", spec["test_cmd"])
-    with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as t:
-        art = t.name
     # Fede's strip: PYTHONDONTWRITEBYTECODE in the CALLER's environment (many CI images set it)
     # silently removes the premise of the freshness vector — no .pyc is ever written, so the stale
     # cache it exists to catch cannot form, and it reproduced vacuously while check still said
     # CONFORMANT. The vector must run under the conditions it describes, not under the caller's.
+    # The precondition probe below uses this same env, so what it measures is what the run gets.
     env = {k: x for k, x in os.environ.items() if k != "PYTHONDONTWRITEBYTECODE"}
+    if v.get("requires_bytecode_cache") and not _fixture_writes_pyc(d, tc, env):
+        # Pavlo's precondition: stripping the env var removes ONE way the premise fails. -B, a
+        # read-only __pycache__, an unchecked-hash pyc or a `python3` on PATH that is not this
+        # interpreter remove it too. So PROVE the premise holds, on this fixture under this test
+        # command, instead of enumerating what breaks it — and refuse as could-not-run rather
+        # than passing. A control that cannot fail must not report success.
+        print(f"NORUN {v['name']:18} precondition absent: this fixture's own test command "
+              "leaves no .pyc, so the stale-cache premise cannot be established")
+        norun += 1
+        continue
+    want_ref = source_ref(d)
+    with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as t:
+        art = t.name
     rc = subprocess.run([sys.executable, bin_, "--dir", d, "--test-cmd", tc,
                          "--mutations", os.path.join(d, "mutations.json"), "--out", art],
                         capture_output=True, text=True, env=env).returncode

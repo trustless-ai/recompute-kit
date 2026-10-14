@@ -10,7 +10,7 @@
   },
   "checker": {
     "path": "check.py",
-    "sha256": "0b83b07fb29f2ab4ada536aebed74f4244a204dbac83a97c77d7e6567b6a83fb"
+    "sha256": "3de3769d2389deb9536080ec33bad781dc720ef17aa3209733d96bec82dbd60d"
   },
   "dependencies": [
     {
