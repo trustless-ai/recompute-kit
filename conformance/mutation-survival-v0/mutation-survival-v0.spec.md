@@ -75,7 +75,7 @@ the test differs:
 - `fixtures/decorative`  — the test asserts only the positive case, so the mutation **SURVIVES** → verified-bad.
 
 If the primitive returned the same verdict for both, it could not distinguish real coverage from
-decorative coverage and would be useless; `check` fails in that case.
+decorative coverage and would be useless; `check.py` fails in that case.
 
 Five more vectors each exist to red if a specific guard is removed:
 - `fixtures/crashing` — a mutant that dies without its witness is **CRASHED**, never a kill.
@@ -88,8 +88,14 @@ Five more vectors each exist to red if a specific guard is removed:
   mutant and every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE
   before the first mutant is applied.
 
-`check` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
-self-grading check with nothing to grade reports CONFORMANT otherwise.
+`check.py` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
+self-grading check with nothing to grade reports CONFORMANT otherwise. It exits `1` when a vector
+does not reproduce and `2` when it could not run (no tool, no readable artifact, an exit outside the
+verdict contract), so a could-not-run is not delivered to the runner as a refuted vector.
+
+A vector pins why a run or a row was unverifiable, not only that it was: `expected_status` and
+`expected_reason` for the run, `expected_reasons` per row. `check.py` also derives `ref` and `dirty`
+itself and compares them to the artifact.
 
 ## Self-application (`self-check`) — are these vectors load-bearing?
 
@@ -127,9 +133,15 @@ with a name, not a passing check.
 guard must come back SURVIVED with exit 1. A self-check that cannot fail is the decorative test it
 exists to detect, one level up.
 
+## The artifact
+
+`--out` records `ref` (the commit `--dir` was at) and `dirty` (whether the tree under `--dir` had
+uncommitted changes when the run started), read before anything is mutated. Outside a git tree both
+are null. `dir` alone is a path on one machine and lets nobody else re-derive the run.
+
 ## Run
 ```
-conformance/mutation-survival-v0/check
+python3 conformance/mutation-survival-v0/check.py
 ```
 
 ## Observation (normative)
