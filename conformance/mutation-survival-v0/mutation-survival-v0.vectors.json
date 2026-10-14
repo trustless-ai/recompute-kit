@@ -54,6 +54,8 @@
       "expected_no_results": true,
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
+      "expected_status": "ZERO_MUTANTS",
+      "expected_reason": "empty_inventory",
       "note": "An empty inventory certified coverage: killed 0 / survived 0 read as verified-good / exit 0. Same class as #65 ZERO_MUTANTS, but it has to be guarded at this tool's own boundary because #66 discovers suites by mutation_check.py and this suite has none. Remove the guard and this vector reds. (zexoverz, 2026-10-12.)"
     },
     {
@@ -73,6 +75,7 @@
       "expected_no_results": true,
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
+      "expected_status": "BASELINE_NOT_GREEN",
       "note": "The suite fails before any mutation, so no later failure can be attributed to a mutant: every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE before the first mutant is applied. Witnesses the baseline-green precondition, which until now no vector reached."
     },
     {
@@ -82,6 +85,8 @@
       "expected_no_results": true,
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
+      "expected_status": "ZERO_MUTANTS",
+      "expected_reason": "no_guard_mutations",
       "note": "Only a `guard` gates the verdict, so an inventory of probes alone certifies nothing — the first cut of the guard tested an empty list and this walked straight past it, returning verified-good / exit 0 with a decorative test and the probe surviving. `ZERO_MUTANTS` with reason `no_guard_mutations`. Remove the guard and this vector reds. (zexoverz, 2026-10-13.)"
     },
     {
@@ -92,6 +97,9 @@
       },
       "expected_exit": 2,
       "expected_verdict": "UNVERIFIABLE",
+      "expected_reasons": {
+        "is_even always-true": "not_observed"
+      },
       "note": "The suite imports a vendored COPY and never loads the mutated file, so the mutant survives trivially. SURVIVED would assert a gap in the suite's ASSERTIONS; the real finding is that it never read the file — and this test WOULD kill the mutant if it saw it. Per-run isolation cannot catch this because the copy travels with the workspace; the observation control can. Remove the observation control and this vector reds. (zexoverz, 2026-10-13.)"
     },
     {

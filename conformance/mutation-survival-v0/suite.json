@@ -2,7 +2,7 @@
   "profile": "mutation_survival.v0",
   "vectors": {
     "path": "mutation-survival-v0.vectors.json",
-    "sha256": "cd08d05378e4c6dec754a2ea101ff72849c418fe10b55b14ddf7323682b0dd2e"
+    "sha256": "c2c993f5014f6c9bc9bc65091bdb11fcd6044be6d94808a4530ea73e0918a7fc"
   },
   "spec": {
     "path": "mutation-survival-v0.spec.md",
