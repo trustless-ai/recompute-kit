@@ -1,7 +1,7 @@
 {
   "schema": "recompute-kit.mutation-survival.v0.vectors",
   "recipe": "recompute-mutation-survival",
-  "note": "Gates the gate: it MUST return verified-good on a load-bearing suite, verified-bad on a decorative one, UNVERIFIABLE when a mutant dies unobserved, UNVERIFIABLE on an empty inventory, and it MUST execute the bytes it wrote rather than a previous mutant's cached bytecode. `check` READS this file — inverting any expectation here reds the suite.",
+  "note": "Gates the gate: it MUST return verified-good on a load-bearing suite, verified-bad on a decorative one, UNVERIFIABLE when a mutant dies unobserved, UNVERIFIABLE on an empty inventory, and it MUST execute the bytes it wrote rather than a previous mutant's cached bytecode. `check.py` READS this file — inverting any expectation here reds the suite.",
   "test_cmd": "python3 test.py",
   "vectors": [
     {

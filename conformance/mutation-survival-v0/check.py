@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # Conformance for recompute-mutation-survival. The gate MUST tell load-bearing coverage from
 # decorative coverage, and must NOT accept a mutant that died unobserved as a kill.
 #
@@ -6,10 +6,13 @@
 # to be bash literals here, which meant the vectors asserted nothing: inverting every expected_exit
 # and expected_verdict, repinning the digest, and re-running still printed CONFORMANT — a decorative
 # vector set shipped with the tool for catching decorative tests. (zexoverz, check:10, 2026-08-26)
-here="$(cd "$(dirname "$0")" && pwd)"
-exec python3 - "$here" <<'PY'
+#
+# A .py file named by adapter.cmd and pinned as `checker`, with the tool it drives pinned under
+# `dependencies`. It was an extensionless bash wrapper, which the runner's executable inventory
+# (tokens ending in .py/.mjs/.cjs/.js/.ts) cannot see, so the code deciding this suite's verdict
+# could change with every declared pin still matching. (pipavlo82, #17)
 import json, os, subprocess, sys, tempfile
-here = sys.argv[1]
+here = os.path.dirname(os.path.abspath(__file__))
 bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
 # Exit codes are the kit's tri-state, kept apart on purpose (zexoverz, #17 review, check:13):
 #   1  a vector did not reproduce: the tool ran and answered differently from the expectation
@@ -97,4 +100,3 @@ for v in spec["vectors"]:
 print("mutation-survival-v0: " + ("NON-CONFORMANT" if fail else
                                   "UNVERIFIABLE (a vector could not run)" if norun else "CONFORMANT"))
 sys.exit(1 if fail else (2 if norun else 0))
-PY

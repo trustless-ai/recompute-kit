@@ -75,7 +75,7 @@ the test differs:
 - `fixtures/decorative`  — the test asserts only the positive case, so the mutation **SURVIVES** → verified-bad.
 
 If the primitive returned the same verdict for both, it could not distinguish real coverage from
-decorative coverage and would be useless; `check` fails in that case.
+decorative coverage and would be useless; `check.py` fails in that case.
 
 Five more vectors each exist to red if a specific guard is removed:
 - `fixtures/crashing` — a mutant that dies without its witness is **CRASHED**, never a kill.
@@ -88,7 +88,7 @@ Five more vectors each exist to red if a specific guard is removed:
   mutant and every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE
   before the first mutant is applied.
 
-`check` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
+`check.py` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
 self-grading check with nothing to grade reports CONFORMANT otherwise.
 
 ## Self-application (`self-check`) — are these vectors load-bearing?
@@ -129,7 +129,7 @@ exists to detect, one level up.
 
 ## Run
 ```
-conformance/mutation-survival-v0/check
+python3 conformance/mutation-survival-v0/check.py
 ```
 
 ## Observation (normative)
