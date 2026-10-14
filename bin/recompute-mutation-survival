@@ -118,13 +118,8 @@ def main():
         print(json.dumps({"status": "ZERO_MUTANTS", "reason": reason,
                           "total": len(muts), "guards": 0}))
         print(f"UNVERIFIABLE: {reason} — no guard mutation gates this run, so nothing is certified")
-        if a.out:
-            open(a.out, "w").write(json.dumps(
-                {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
-                 "test_cmd": a.test_cmd, "status": "ZERO_MUTANTS", "reason": reason,
-                 "total": len(muts), "guards": 0,
-                 "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
-                 "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
+        _write(a, {"status": "ZERO_MUTANTS", "reason": reason, "total": len(muts), "guards": 0,
+                   "results": [], "verdict": "UNVERIFIABLE"})
         sys.exit(2)
 
     # baseline MUST be green — a red baseline can't tell a kill from a pre-existing failure
@@ -132,12 +127,7 @@ def main():
         base_rc, base_out = run(a.test_cmd, w)
     if base_rc != 0:
         print("UNVERIFIABLE: baseline suite is not green (exit != 0) — cannot distinguish kills")
-        if a.out:
-            open(a.out, "w").write(json.dumps(
-                {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
-                 "test_cmd": a.test_cmd, "status": "BASELINE_NOT_GREEN",
-                 "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
-                 "results": [], "verdict": "UNVERIFIABLE"}, indent=2, sort_keys=True) + "\n")
+        _write(a, {"status": "BASELINE_NOT_GREEN", "results": [], "verdict": "UNVERIFIABLE"})
         sys.exit(2)
 
     # OBSERVATION CONTROL. A mutation result only means something if the suite READS the file. If it
@@ -253,14 +243,16 @@ def main():
     if survivors:
         print("SURVIVORS (coverage gaps — a fault the suite cannot see): " + ", ".join(survivors))
 
-    if a.out:
-        art = {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir,
-               "test_cmd": a.test_cmd,
-               "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(),
-               "results": results, "verdict": verdict}
-        open(a.out, "w").write(json.dumps(art, indent=2, sort_keys=True) + "\n")
+    _write(a, {"results": results, "verdict": verdict})
 
     sys.exit(1 if guard_survived else (2 if unverifiable else 0))
+
+def _write(a, body):
+    if not a.out:
+        return
+    art = {"schema": "recompute-kit.mutation-survival.v0", "dir": a.dir, "test_cmd": a.test_cmd,
+           "mutations_sha256": hashlib.sha256(open(a.mutations, "rb").read()).hexdigest(), **body}
+    open(a.out, "w").write(json.dumps(art, indent=2, sort_keys=True) + "\n")
 
 def _lbl(m):
     return {"label": m.get("label", f"{m['file']}: {m['find'][:30]}"),
