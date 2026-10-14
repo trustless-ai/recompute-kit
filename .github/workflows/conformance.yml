@@ -69,6 +69,15 @@ jobs:
       - name: mutation-survival self-check — positive and negative controls
         run: python3 tools/test_mutation_survival_self_check.py
 
+      # The stale-bytecode vector is a control that only means something where a .pyc is actually
+      # written; where none is, it reproduced its expected result trivially and check printed
+      # CONFORMANT having established nothing. So the premise is MEASURED before the result is
+      # accepted — and measured on the fixture's own test command, because the fixtures invoke
+      # `python3` through PATH and a probe on sys.executable certifies a cache the fixture never
+      # gets. Both halves have removal controls here, including the PATH-wrapper case.
+      - name: mutation-survival — the stale-bytecode premise must be measured, not assumed
+        run: python3 tools/test_mutation_survival_cache_precondition.py
+
       # The collapsed-state rule was written down on 4 Aug and reintroduced five times in two
       # days, in two codebases, by the people who wrote it — once inside the fix for the
       # collapse itself. A written rule has no failure mode; it cannot go red. This is the

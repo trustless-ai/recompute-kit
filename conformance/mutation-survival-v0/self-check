@@ -27,6 +27,6 @@ rm -rf "$stage/conformance/mutation-survival-v0/self" "$stage/conformance/mutati
 
 python3 "$tool" \
   --dir "$stage" \
-  --test-cmd "conformance/mutation-survival-v0/check" \
+  --test-cmd "python3 conformance/mutation-survival-v0/check.py" \
   --mutations "$here/self/mutations.json" \
   ${1:+--out "$1"}

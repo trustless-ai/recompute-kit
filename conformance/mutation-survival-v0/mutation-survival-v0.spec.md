@@ -30,10 +30,17 @@ mutant the suite must kill.
   a `guard` with no declared `kill_witness`, a `guard` that **CRASHED**, or an **empty mutation
   inventory**.
 
-An empty inventory MUST NOT be verified-good. With no mutants, "no guard survived" is vacuously true,
-so `killed 0 / survived 0` would certify coverage by the absence of any evidence about it. The tool
-refuses with `ZERO_MUTANTS` and exit `2`. The token is deliberately the same one the mutation
-harnesses use, so one condition has one name across the kit.
+An inventory with **no `guard`** MUST NOT be verified-good. Only a guard gates the verdict, so with
+no guard "no guard survived" is vacuously true and `killed 0 / survived 0` would certify coverage by
+the absence of any evidence about it. The tool refuses with `ZERO_MUTANTS` and exit `2`. The token is
+deliberately the same one the mutation harnesses use, so one condition has one name across the kit.
+
+⚠ **An empty list is not the only way to have no guard.** The first cut of this tested `not muts`,
+which an **all-probe** inventory walks straight past: a decorative test plus a surviving probe
+returned verified-good and exit 0. The condition is *no gating mutation*, not *no mutation*. One
+status carries a required **`reason`** — `empty_inventory` or `no_guard_mutations` — because a marker
+reachable from two causes with nothing distinguishing them is the collapse
+`tools/check_collapsed_states.py` exists to catch, and the fix for that is never a second marker.
 
 This guard lives at **this tool's own boundary** rather than in the repo-wide sweep, because that
 sweep discovers suites by the presence of a `mutation_check.py` and this suite does not have one — it
@@ -68,7 +75,7 @@ the test differs:
 - `fixtures/decorative`  — the test asserts only the positive case, so the mutation **SURVIVES** → verified-bad.
 
 If the primitive returned the same verdict for both, it could not distinguish real coverage from
-decorative coverage and would be useless; `check` fails in that case.
+decorative coverage and would be useless; `check.py` fails in that case.
 
 Five more vectors each exist to red if a specific guard is removed:
 - `fixtures/crashing` — a mutant that dies without its witness is **CRASHED**, never a kill.
@@ -81,8 +88,14 @@ Five more vectors each exist to red if a specific guard is removed:
   mutant and every mutation would score as KILLED by a failure it did not cause. UNVERIFIABLE
   before the first mutant is applied.
 
-`check` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
-self-grading check with nothing to grade reports CONFORMANT otherwise.
+`check.py` itself refuses an empty vector list with `ZERO_CASES` / exit 2, for the same reason: a
+self-grading check with nothing to grade reports CONFORMANT otherwise. It exits `1` when a vector
+does not reproduce and `2` when it could not run (no tool, no readable artifact, an exit outside the
+verdict contract), so a could-not-run is not delivered to the runner as a refuted vector.
+
+A vector pins why a run or a row was unverifiable, not only that it was: `expected_status` and
+`expected_reason` for the run, `expected_reasons` per row. `check.py` also derives `ref` and `dirty`
+itself and compares them to the artifact.
 
 ## Self-application (`self-check`) — are these vectors load-bearing?
 
@@ -120,10 +133,49 @@ with a name, not a passing check.
 guard must come back SURVIVED with exit 1. A self-check that cannot fail is the decorative test it
 exists to detect, one level up.
 
+## The artifact
+
+`--out` records `ref` (the commit `--dir` was at) and `dirty` (whether the tree under `--dir` had
+uncommitted changes when the run started), read before anything is mutated. Outside a git tree both
+are null. `dir` alone is a path on one machine and lets nobody else re-derive the run.
+
 ## Run
 ```
-conformance/mutation-survival-v0/check
+python3 conformance/mutation-survival-v0/check.py
 ```
+
+## Observation (normative)
+
+**A mutation result means nothing unless the suite READS the mutated file.** If it does not, the
+mutant survives trivially, and reporting SURVIVED asserts *"a fault the suite cannot see"* — a claim
+about the suite's **assertions**. The real finding is that the suite never loaded the file, and the
+very same test may be one that would kill the mutant the moment it saw it.
+
+Execution freshness does not reach this. The classic case is a test that imports a **vendored copy**,
+and per-run isolation cannot help because the copy travels with the workspace.
+
+So, once per file in the inventory, in its own throwaway copy: **destroy the file and run the suite.**
+
+| destroyed file → suite | conclusion |
+|---|---|
+| **RED** | the suite observes the file; grade its mutations normally |
+| **GREEN** | the suite never reads it; every mutation on it is `UNVERIFIABLE` / `not_observed` |
+
+`not_observed` is a **reason on UNVERIFIABLE**, not a fifth verdict, because the vocabulary already
+distinguishes causes by a reason travelling beside the marker and splitting it earns a sixth next
+month.
+
+The payload is NUL bytes — invalid in Python source, JSON and Solidity alike — so the control does
+not quietly assume the target is Python. A red for an unrelated reason reads as *observed* and
+grading proceeds, which is the conservative direction: it risks doing the work, not skipping it.
+
+## Precedence (normative)
+
+**`verified-bad` outranks `UNVERIFIABLE`.** A SURVIVED guard is a proven coverage gap; an
+UNVERIFIABLE row is the *absence* of a result, and absence must not outrank evidence. Before this was
+fixed, a guard that survived alongside a stale anchor reported UNVERIFIABLE and exit `2` **while
+printing the survivor underneath it** — the human-readable output carried the refutation and the
+machine-readable answer hid it. The UNVERIFIABLE rows stay in the artifact either way.
 
 ## Execution freshness (normative)
 
