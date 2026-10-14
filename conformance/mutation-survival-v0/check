@@ -11,14 +11,24 @@ exec python3 - "$here" <<'PY'
 import json, os, subprocess, sys, tempfile
 here = sys.argv[1]
 bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
-spec = json.load(open(os.path.join(here, "mutation-survival-v0.vectors.json")))
+# Exit codes are the kit's tri-state, kept apart on purpose (zexoverz, #17 review, check:13):
+#   1  a vector did not reproduce: the tool ran and answered differently from the expectation
+#   2  could not run: no vectors, no tool, or no readable artifact, so nothing was compared
+# One code for both delivers a could-not-run to run_conformance as returncode 1, which it classifies
+# SUITE (a refuted vector). A determinate mismatch outranks a could-not-run, as in exit_code_for_failures.
+try:
+    spec = json.load(open(os.path.join(here, "mutation-survival-v0.vectors.json")))
+    if not os.path.isfile(bin_): raise FileNotFoundError(bin_)
+except Exception as e:
+    print(f"mutation-survival-v0: UNVERIFIABLE (could not run: {type(e).__name__}: {e})")
+    raise SystemExit(2)
 # A self-grading check with nothing to grade prints CONFORMANT and exits 0 — the same
 # absence-of-evidence class as ZERO_MUTANTS below it and ZERO_CASES across the kit's other
 # self-graders. Same token, same exit, so the condition has one name everywhere.
 if isinstance(spec.get("vectors"), list) and not spec["vectors"]:
     print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
     raise SystemExit(2)
-fail = 0
+fail = norun = 0
 def source_ref(d):
     # Derived here independently of the tool, so an artifact that drops or invents its ref goes red.
     head = subprocess.run(["git", "-C", d, "rev-parse", "HEAD"], capture_output=True, text=True)
@@ -46,9 +56,13 @@ for v in spec["vectors"]:
         got_ref = (a.get("ref", "<absent>"), a.get("dirty", "<absent>"))
         got = {r.get("label"): r.get("verdict") for r in a.get("results", [])}
     except Exception as e:
-        got_verdict = f"<artifact unreadable: {e}>"
+        print(f"NORUN {v['name']:18} tool exit {rc}, artifact unreadable: {e}"); norun = 1
+        continue
     finally:
         os.unlink(art)
+    if rc not in (0, 1, 2):
+        print(f"NORUN {v['name']:18} tool exit {rc} is outside the verdict contract"); norun = 1
+        continue
     # expected_mutations pins EVERY mutant in the inventory, not one. A vector whose point is the
     # relation between consecutive mutants cannot be asserted one row at a time: pinning only the
     # second row lets a run that got the first row wrong still pass.
@@ -68,8 +82,7 @@ for v in spec["vectors"]:
     else:
         shown = ", ".join(f"{k}={vv}" for k, vv in sorted(got.items())) or "no mutants"
         print(f"OK   {v['name']:18} exit {rc}, {got_verdict}, {shown}")
-print("mutation-survival-v0: " + ("CONFORMANT" if not fail else "NON-CONFORMANT"))
-# NOTE: a single exit 1 for both "a vector did not reproduce" and "could not run" is zexoverz's
-# check:13 — left for that fixup so the two changes do not collide.
-sys.exit(fail)
+print("mutation-survival-v0: " + ("NON-CONFORMANT" if fail else
+                                  "UNVERIFIABLE (a vector could not run)" if norun else "CONFORMANT"))
+sys.exit(1 if fail else (2 if norun else 0))
 PY
