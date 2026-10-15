@@ -51,6 +51,13 @@ jobs:
           python3 --version
           bun --version
 
+      # Placed FIRST among the checks, and deliberately NOT inside the runner-unit-tests block
+      # below: this is a static check with no dependencies, so it is the cheapest signal available,
+      # and keeping it out of that block is the point — three PRs competing for one line in there
+      # on 15 Oct is what this exists to catch. Keep it on its own step.
+      - name: Wired tests — every test in tools/ must be invoked, every invocation must exist
+        run: python3 tools/test_wired_tests.py
+
       - name: Run all conformance suites
         run: python3 tools/run_conformance.py
 
