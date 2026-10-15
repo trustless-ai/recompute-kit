@@ -11,6 +11,9 @@ import sys
 from typing import Any
 
 
+import runpy as _runpy
+Grading = _runpy.run_path(str(pathlib.Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 HERE = pathlib.Path(__file__).resolve().parent
 SUITE_PATH = HERE / "suite.json"
 KNOWN_ERRORS = {
@@ -99,7 +102,20 @@ def run_adapter(name: str, command: list[str], vector_bytes: bytes) -> dict[str,
     return result
 
 
-def check_results(document: dict[str, Any], results: dict[str, Any], adapter: str) -> list[str]:
+def gradeable_expectation(grading: Grading, index: int, vector: dict[str, Any]) -> bool:
+    if not grading.expectation(index, vector, "expect", required=("status",), types={"status": "string"}):
+        return False
+    status = vector["expect"]["status"]
+    if status not in {"success", "rejection"}:
+        grading.ungradable(index, "expect.status must be success or rejection")
+        return False
+    types = ({"status": "string", "bytes_hex": "string", "byte_length": "integer", "sha256": "string"}
+             if status == "success" else {"status": "string", "error": "string"})
+    return grading.expectation(index, vector, "expect", required=tuple(types), types=types)
+
+
+def check_results(document: dict[str, Any], results: dict[str, Any], adapter: str,
+                  grading: Grading | None = None) -> list[str]:
     failures: list[str] = []
     vectors = document.get("vectors")
     if not isinstance(vectors, list) or not vectors:
@@ -115,17 +131,20 @@ def check_results(document: dict[str, Any], results: dict[str, Any], adapter: st
         failures.append(f"missing results: {', '.join(missing)}")
     if extra:
         failures.append(f"unknown results: {', '.join(extra)}")
-    for vector in vectors:
+    grading = grading if grading is not None else Grading(vectors)
+    for index, vector in enumerate(vectors):
+        before = len(failures)
         vector_id = vector["id"]
-        expected = vector.get("expect")
-        if not isinstance(expected, dict) or expected.get("status") not in {"success", "rejection"}:
-            failures.append(f"{vector_id}: unclassified vector")
+        if not gradeable_expectation(grading, index, vector):
             continue
+        expected = vector["expect"]
         actual = results.get(vector_id)
         if not isinstance(actual, dict):
+            grading.ungradable(index, f"{adapter}: missing or malformed result")
             continue
         if actual.get("status") not in {"success", "rejection"}:
             failures.append(f"{vector_id}: {adapter} returned unknown status")
+            grading.record(index, False)
             continue
         if actual.get("status") == "rejection" and actual.get("error") not in KNOWN_ERRORS:
             failures.append(f"{vector_id}: {adapter} returned unknown rejection category {actual.get('error')!r}")
@@ -134,6 +153,7 @@ def check_results(document: dict[str, Any], results: dict[str, Any], adapter: st
                 raw = bytes.fromhex(actual["bytes_hex"])
             except Exception:
                 failures.append(f"{vector_id}: {adapter} returned invalid bytes_hex")
+                grading.record(index, False)
                 continue
             if actual.get("bytes_hex") != raw.hex():
                 failures.append(f"{vector_id}: {adapter} bytes_hex is not lowercase canonical hex")
@@ -143,6 +163,7 @@ def check_results(document: dict[str, Any], results: dict[str, Any], adapter: st
                 failures.append(f"{vector_id}: {adapter} SHA-256 does not match its bytes")
         if actual != expected:
             failures.append(f"{vector_id}: {adapter} result differs from normative expectation")
+        grading.record(index, len(failures) == before)
     return failures
 
 
@@ -184,6 +205,9 @@ def main() -> int:
             print("UNVERIFIABLE encode-json-utf8-lf.v0: ZERO_CASES", file=sys.stderr)
             return 2
         if only_controls:
+            expectations = Grading(document["vectors"])
+            if not all([gradeable_expectation(expectations, i, v) for i, v in enumerate(document["vectors"])]):
+                return 2
             control_failures = negative_controls(vector_bytes, document)
             if control_failures:
                 raise GateFailure("; ".join(control_failures))
@@ -191,16 +215,24 @@ def main() -> int:
             return 0
         python_results = run_adapter("Python", [sys.executable, "encoder.py", "--grade"], vector_bytes)
         ts_results = run_adapter("TypeScript", ["bun", "encoder.ts", "--grade"], vector_bytes)
-        python_failures = check_results(document, python_results, "Python")
-        ts_failures = check_results(document, ts_results, "TypeScript")
+        python_grading, ts_grading = Grading(document["vectors"]), Grading(document["vectors"])
+        python_failures = check_results(document, python_results, "Python", python_grading)
+        ts_failures = check_results(document, ts_results, "TypeScript", ts_grading)
         agreement_failures = cross_check(document, python_results, ts_results)
-        print(f"Python adapter: {len(document['vectors']) - len(set(f.split(':', 1)[0] for f in python_failures))}/{len(document['vectors'])} vectors")
-        print(f"TypeScript adapter: {len(document['vectors']) - len(set(f.split(':', 1)[0] for f in ts_failures))}/{len(document['vectors'])} vectors")
+        print(f"Python adapter: {python_grading.reproduced}/{len(document['vectors'])} vectors")
+        print(f"TypeScript adapter: {ts_grading.reproduced}/{len(document['vectors'])} vectors")
         print(f"Cross-language agreement: {len(document['vectors']) - len(agreement_failures)}/{len(document['vectors'])} vectors")
         failures = python_failures + ts_failures + agreement_failures
-        failures.extend(negative_controls(vector_bytes, document))
+        # An unusable expectation cannot serve as a negative-control oracle.
+        if "ungradable" not in python_grading.outcomes.values() and "ungradable" not in ts_grading.outcomes.values():
+            failures.extend(negative_controls(vector_bytes, document))
         if failures:
-            raise GateFailure("\n".join(failures))
+            print("FAIL encode-json-utf8-lf.v0: " + "\n".join(failures), file=sys.stderr)
+        codes = (python_grading.finish(), ts_grading.finish())
+        if failures or 1 in codes:
+            return 1
+        if 2 in codes:
+            return 2
         success_count = sum(vector["expect"]["status"] == "success" for vector in document["vectors"])
         appendix = [vector for vector in document["vectors"] if vector.get("source") == "rfc8785-appendix-b"]
         appendix_success = sum(vector["expect"]["status"] == "success" for vector in appendix)

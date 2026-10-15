@@ -216,27 +216,42 @@ def grade(got, exp):
     return diffs
 
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     fx = json.load(open(path))
     baseB, baseR, baseC = fx.get("bindings", []), fx.get("revocations", []), fx["consumer_cutoff"]
     if isinstance(fx["cases"], list) and not fx["cases"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(fx["cases"])
     fails = 0
-    for c in fx["cases"]:
+    for i, c in enumerate(fx["cases"]):
+        if not grading.expectation(i, c, "expected",
+                required=(),
+                types={'resolved': 'nullable_string',
+                       'resolution_reason': 'string',
+                       'rule': 'string',
+                       'evidence': 'string',
+                       'decision': 'string',
+                       'refuted_because': 'string'}):
+            continue
         bindings = apply_revocations(c.get("bindings", baseB), c.get("revocations", baseR))
         got, exp = admit(bindings, c.get("consumer_cutoff", baseC), c["artifact"]), c["expected"]
         diffs = grade(got, exp)
         ok = not diffs
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {c['name']:<52} {got['evidence']:<12} {got['rule']:<34} -> {got['decision']}")
         for k, g, e in diffs:
             print(f"      {k}: got {g!r} != exp {e!r}")
-    print(f"{len(fx['cases']) - fails}/{len(fx['cases'])} cases reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(fx['cases'])} cases reproduced")
+    return grading.finish()
 
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(here, "pq-key-binding-v1.cutoff-vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(here, "pq-key-binding-v1.cutoff-vectors.json")))

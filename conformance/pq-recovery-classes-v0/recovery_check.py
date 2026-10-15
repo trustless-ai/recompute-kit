@@ -108,15 +108,23 @@ def check(case):
     ok = verdict == case["expected_verdict"]
     return ok, verdict, notes
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 if __name__ == "__main__":
     fx = json.load(open(sys.argv[1] if len(sys.argv) > 1 else "vectors.json"))
     if isinstance(fx["cases"], list) and not fx["cases"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(fx["cases"])
     fails = 0
-    for c in fx["cases"]:
+    for i, c in enumerate(fx["cases"]):
+        if not grading.expectation(i, c, "expected_verdict", kind="string"):
+            continue
         ok, verdict, notes = check(c)
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {c['case_id']:<52} → {verdict:<17} (want {c['expected_verdict']})  · {' · '.join(notes)}")
-    print(f"\n{len(fx['cases'])-fails}/{len(fx['cases'])} cases reproduced" + ("" if not fails else "  ← MISMATCH"))
-    sys.exit(1 if fails else 0)
+    print(f"\n{grading.reproduced}/{len(fx['cases'])} cases reproduced" + ("" if not fails else "  ← MISMATCH"))
+    sys.exit(grading.finish())
