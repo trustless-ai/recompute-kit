@@ -1,3 +1,4 @@
+import { Grading } from "../_self_grading.mjs";
 // profile-commitment-loop.v0 — executable reference for the WHOLE loop, chaining the two shipped gates over
 // the same task+escrow so the seam is a mechanical check, not a shared constant. Composition, not
 // reimplementation: it imports profileTransition (#40) and verdictBinding (#41) and feeds the amendment's
@@ -43,12 +44,28 @@ if (Array.isArray(doc.vectors) && doc.vectors.length === 0) {
   console.error("UNVERIFIABLE: ZERO_CASES");
   process.exit(2);
 }
-let fails = 0;
-for (const v of doc.vectors) {
+const grading = new Grading(doc.vectors);
+for (const [i, v] of doc.vectors.entries()) {
+  if (!grading.expectation(i, v, "expect", {
+    "required": [
+      "transition_status",
+      "resolution_status",
+      "effective_profile_commitment",
+      "bound_profile_commitment",
+      "loop_status"
+    ],
+    "types": {
+      "transition_status": "string",
+      "resolution_status": "string",
+      "effective_profile_commitment": "string",
+      "bound_profile_commitment": "nullable_string",
+      "loop_status": "string"
+    }
+  })) continue;
   const got = loop(v), exp = v.expect;
   const ok = KEYS.every((k) => got[k] === exp[k]);
-  if (!ok) fails++;
+  grading.record(i, ok);
   console.log(`${ok ? "OK " : "BAD"} ${v.name.padEnd(34)} loop=${String(got.loop_status).padEnd(7)} transition=${String(got.transition_status).padEnd(10)} resolution=${got.resolution_status}`);
 }
-console.log(`${doc.vectors.length - fails}/${doc.vectors.length} vectors reproduced (JS reference == loop_gate.py; composes #40 + #41)`);
-process.exit(fails ? 1 : 0);
+console.log(`${grading.reproduced}/${doc.vectors.length} vectors reproduced (JS reference == loop_gate.py; composes #40 + #41)`);
+process.exit(grading.finish());

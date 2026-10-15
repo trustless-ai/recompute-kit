@@ -30,5 +30,15 @@
   "spec": {
     "path": "profile-commitment-loop-v0.spec.md",
     "sha256": "ae3bfbeca7ec895e88c69cec3d3245346260c9834ce207516380620f6a7c98b5"
-  }
+  },
+  "dependencies": [
+    {
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646"
+    },
+    {
+      "path": "../_self_grading.py",
+      "sha256": "dabe56129aa30b54d544165106e85d29da9f9dcf98d2d41db5b926efc71dd003"
+    }
+  ]
 }

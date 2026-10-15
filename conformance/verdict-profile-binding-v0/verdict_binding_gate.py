@@ -56,22 +56,34 @@ def verdict_binding(v):
 
 KEYS = ("verdict_core_cc", "resolution_status", "bound_profile_commitment")
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     doc = json.load(open(path))
     if isinstance(doc["vectors"], list) and not doc["vectors"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(doc["vectors"])
     fails = 0
-    for v in doc["vectors"]:
+    for i, v in enumerate(doc["vectors"]):
+        if not grading.expectation(i, v, "expect",
+                required=('verdict_core_cc', 'resolution_status', 'bound_profile_commitment'),
+                types={'verdict_core_cc': 'string',
+                       'resolution_status': 'string',
+                       'bound_profile_commitment': 'nullable_string'}):
+            continue
         got, exp = verdict_binding(v), v["expect"]
         ok = all(got[k] == exp[k] for k in KEYS)
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {v['name']:<34} status={got['resolution_status']:<10} "
               f"verdict_core_cc={got['verdict_core_cc'][:12]}")
-    print(f"{len(doc['vectors']) - fails}/{len(doc['vectors'])} vectors reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(doc['vectors'])} vectors reproduced")
+    return grading.finish()
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(here, "verdict-profile-binding-v0.vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(here, "verdict-profile-binding-v0.vectors.json")))

@@ -53,5 +53,11 @@
     "missing_terminal_lf",
     "permit_lone_surrogate"
   ],
-  "laneHint": "recomputable"
+  "laneHint": "recomputable",
+  "dependencies": [
+    {
+      "path": "../_self_grading.py",
+      "sha256": "dabe56129aa30b54d544165106e85d29da9f9dcf98d2d41db5b926efc71dd003"
+    }
+  ]
 }

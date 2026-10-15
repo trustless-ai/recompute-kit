@@ -90,5 +90,11 @@
   "spec": {
     "path": "pq-key-binding-v0.spec.md",
     "sha256": "877499e8dae1d20e6e3f056cc48337f08755af63fef0c66d58ca44e628928af0"
-  }
+  },
+  "dependencies": [
+    {
+      "path": "../_self_grading.py",
+      "sha256": "dabe56129aa30b54d544165106e85d29da9f9dcf98d2d41db5b926efc71dd003"
+    }
+  ]
 }

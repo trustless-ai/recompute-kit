@@ -12,7 +12,7 @@
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",
-    "sha256": "fc76aae43a35fa3f8548802c832c4d923f02a0a28c1cf5888016855fe43882b0",
+    "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
     "note": "frozen core, reused UNMODIFIED \u2014 no checker code in this directory"
   },
   "laneHint": "recomputable",
@@ -20,5 +20,11 @@
     "repo": "trustless-ai/pq-agent-binding",
     "path": "spec/v1-temporal-authority.md",
     "pr": 1
-  }
+  },
+  "dependencies": [
+    {
+      "path": "../_self_grading.py",
+      "sha256": "dabe56129aa30b54d544165106e85d29da9f9dcf98d2d41db5b926efc71dd003"
+    }
+  ]
 }

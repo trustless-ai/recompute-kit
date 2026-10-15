@@ -1,3 +1,4 @@
+import { Grading } from "../_self_grading.mjs";
 // verdict-profile-binding.v0 — executable reference for the RESOLUTION-end binding: did the resolver's
 // verdict actually commit, in its signed preimage, to the verification profile it resolved under?
 // The companion of profile-amendment-v0 (amendment end). Cross-language control for verdict_binding_gate.py:
@@ -47,13 +48,25 @@ if (Array.isArray(doc.vectors) && doc.vectors.length === 0) {
   console.error("UNVERIFIABLE: ZERO_CASES");
   process.exit(2);
 }
-let fails = 0;
-for (const v of doc.vectors) {
+const grading = new Grading(doc.vectors);
+for (const [i, v] of doc.vectors.entries()) {
+  if (!grading.expectation(i, v, "expect", {
+    "required": [
+      "verdict_core_cc",
+      "resolution_status",
+      "bound_profile_commitment"
+    ],
+    "types": {
+      "verdict_core_cc": "string",
+      "resolution_status": "string",
+      "bound_profile_commitment": "nullable_string"
+    }
+  })) continue;
   const got = verdictBinding(v), exp = v.expect;
   const ok = KEYS.every((k) => got[k] === exp[k]);
-  if (!ok) fails++;
+  grading.record(i, ok);
   console.log(`${ok ? "OK " : "BAD"} ${v.name.padEnd(34)} status=${String(got.resolution_status).padEnd(10)} verdict_core_cc=${got.verdict_core_cc.slice(0, 12)}`);
 }
-console.log(`${doc.vectors.length - fails}/${doc.vectors.length} vectors reproduced (JS reference == verdict_binding_gate.py)`);
-process.exit(fails ? 1 : 0);
+console.log(`${grading.reproduced}/${doc.vectors.length} vectors reproduced (JS reference == verdict_binding_gate.py)`);
+process.exit(grading.finish());
 }
