@@ -165,6 +165,18 @@ def evaluate(name, c, pub, toy):
           all(got[k] == e[k] for k in ("result_only_check", "subject_bound_check", "evidence_grade") if k in e))
     return got, ok
 
+# Fields a case's expectation must declare before it can be graded at all (Pavlo, #82): a nonempty expect that names none
+# of them (or, for c0, not all three) has no expected-result relation to check, so it is ungradable, not reproduced.
+C0_EXPECT = ("signatures", "answer_A", "answer_B")
+GRADED_EXPECT = ("result_only_check", "subject_bound_check", "evidence_grade", "replay_failures")
+def gradable(name, c):
+    e = c.get("expect") if isinstance(c, dict) else None
+    if not isinstance(e, dict) or not e:
+        return False
+    if name.startswith("c0"):
+        return all(k in e for k in C0_EXPECT)
+    return any(k in e for k in GRADED_EXPECT)
+
 def main():
     V, pub, toy = load(sys.argv[1] if len(sys.argv) > 1 else HERE / "vectors.json")
     if isinstance(V["cases"], dict) and not V["cases"]:
@@ -172,9 +184,9 @@ def main():
         raise SystemExit(2)
     results, ungradable = [], []
     for name, c in sorted(V["cases"].items()):
-        # A case with no expectation was never graded, so it cannot be reported as refuted (recompute-kit#79):
+        # A case with no usable expectation was never graded, so it is neither refuted nor reproduced (recompute-kit#79, #82):
         # name it and exit 2 (could-not-grade). A graded mismatch elsewhere in the corpus still outranks it (exit 1).
-        if not isinstance(c, dict) or not isinstance(c.get("expect"), dict) or not c["expect"]:
+        if not gradable(name, c):
             ungradable.append(name)
             continue
         got, ok = evaluate(name, c, pub, toy)
@@ -183,7 +195,7 @@ def main():
     print(json.dumps({"profile": PROFILE, "results": results, "total": len(results), "reproduced": reproduced,
                       "ungradable": ungradable, "admitted": len(V["cases"])}, sort_keys=True, indent=2))
     for name in ungradable:
-        print(f"UNVERIFIABLE: {name}: no expectation to grade against", file=sys.stderr)
+        print(f"UNVERIFIABLE: {name}: no usable expectation to grade against", file=sys.stderr)
     if reproduced < len(results):
         return 1
     return 2 if ungradable else 0

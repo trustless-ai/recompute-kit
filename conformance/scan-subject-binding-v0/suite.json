@@ -6,7 +6,7 @@
   },
   "checker": {
     "path": "scan_check.py",
-    "sha256": "cb4fcc1d4a5fad9009f6990b0614f673edcc55131135b5d88de19fca71491d1b"
+    "sha256": "0cfe367fb7dd0d9aa8d0e8a560cf57971165c6822624b3c91cde9cfdaae0c733"
   },
   "mutation_checker": {
     "path": "mutation_check.py",

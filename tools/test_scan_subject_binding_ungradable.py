@@ -4,7 +4,9 @@ Controls (Pavlo's boundary on #79):
 1. missing expectation -> exit 2 (UNVERIFIABLE), never SUITE;
 2. a genuine mismatch -> exit 1 (SUITE);
 3. mixed: a mismatch plus an ungradable case -> exit 1, both named in the output;
-4. removing the guard restores the old wrong classification (SUITE from a KeyError).
+4. removing the guard restores the old wrong classification (SUITE from a KeyError);
+5. a c0 case whose nonempty expect lacks its answer fields -> exit 2, not a KeyError (Pavlo, #82);
+6. a non-c0 case whose nonempty expect names no graded field -> exit 2, not counted as reproduced (Pavlo, #82).
 Runs on a disposable copy of the suite; the real corpus is untouched.
 """
 from __future__ import annotations
@@ -22,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_conformance as runner
 
 SUITE = Path(__file__).resolve().parent.parent / "conformance" / "scan-subject-binding-v0"
-GUARD = 'if not isinstance(c, dict) or not isinstance(c.get("expect"), dict) or not c["expect"]:'
+GUARD = "if not gradable(name, c):"
 
 
 class UngradableCase(unittest.TestCase):
@@ -75,7 +77,7 @@ class UngradableCase(unittest.TestCase):
         doc = json.loads(out)
         self.assertEqual(len(doc["ungradable"]), 1)
         self.assertLess(doc["reproduced"], doc["total"])
-        self.assertIn("no expectation to grade against", err)
+        self.assertIn("no usable expectation to grade against", err)
 
     def test_4_guard_is_load_bearing(self):
         src = (self.dir / "scan_check.py").read_text()
@@ -85,6 +87,30 @@ class UngradableCase(unittest.TestCase):
         rc, kind, _, err = self._run()
         self.assertEqual((rc, kind), (1, "SUITE"))
         self.assertIn("KeyError", err)
+
+    def _probe_expect(self, *, c0, expect):
+        v = copy.deepcopy(self.vectors)
+        name = next(n for n in sorted(v["cases"]) if n.startswith("c0") == c0)
+        probe = copy.deepcopy(v["cases"][name])
+        probe["expect"] = expect
+        v["cases"][name + "__probe"] = probe
+        (self.dir / "vectors.json").write_text(json.dumps(v))
+        return name + "__probe"
+
+    def _assert_ungradable(self, probe):
+        rc, kind, out, err = self._run()
+        self.assertEqual((rc, kind), (2, "UNVERIFIABLE"), err)
+        doc = json.loads(out)
+        self.assertEqual(doc["ungradable"], [probe])
+        self.assertEqual(doc["reproduced"], doc["total"])
+        self.assertEqual(doc["total"] + 1, doc["admitted"])
+        self.assertNotIn("KeyError", err)
+
+    def test_5_c0_expect_without_answers_is_unverifiable(self):
+        self._assert_ungradable(self._probe_expect(c0=True, expect={"signatures": "valid"}))
+
+    def test_6_metadata_only_expect_is_not_reproduced(self):
+        self._assert_ungradable(self._probe_expect(c0=False, expect={"reason": "metadata only"}))
 
     def test_real_corpus_still_passes(self):
         rc, _, out, _ = self._run()
