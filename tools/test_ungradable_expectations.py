@@ -145,6 +145,7 @@ class UngradableExpectations(unittest.TestCase):
                     self.assertIn(b"UNGRADABLE_CASE", p.stderr)
                     self.assertIn(b"refuted=1 ungradable=1", p.stderr)
                     self.assertTrue(b"BAD" in p.stdout or b"differs from normative expectation" in p.stderr)
+                    self.assertIn("refuted=1 ungradable=1", self.fx.canonical(check).detail)
 
     def test_stale_pin_is_separate_drift(self):
         for check in CHECKS:

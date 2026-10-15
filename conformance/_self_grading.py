@@ -76,6 +76,8 @@ class Grading:
         return sum(v == "refuted" for v in self.outcomes.values())
 
     def finish(self):
+        # Keep the final evidence summary last when a runner combines both streams.
+        sys.stdout.flush()
         for i in range(self.admitted):
             if i not in self.outcomes:
                 self.ungradable(i, "no grading outcome recorded")
