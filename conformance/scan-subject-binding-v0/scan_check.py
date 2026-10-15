@@ -170,14 +170,23 @@ def main():
     if isinstance(V["cases"], dict) and not V["cases"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
-    results = []
+    results, ungradable = [], []
     for name, c in sorted(V["cases"].items()):
+        # A case with no expectation was never graded, so it cannot be reported as refuted (recompute-kit#79):
+        # name it and exit 2 (could-not-grade). A graded mismatch elsewhere in the corpus still outranks it (exit 1).
+        if not isinstance(c, dict) or not isinstance(c.get("expect"), dict) or not c["expect"]:
+            ungradable.append(name)
+            continue
         got, ok = evaluate(name, c, pub, toy)
         results.append({"case_id": name, "reproduced": ok, "result": got})
     reproduced = sum(r["reproduced"] for r in results)
-    print(json.dumps({"profile": PROFILE, "results": results, "total": len(results), "reproduced": reproduced},
-                     sort_keys=True, indent=2))
-    return 0 if reproduced == len(results) else 1
+    print(json.dumps({"profile": PROFILE, "results": results, "total": len(results), "reproduced": reproduced,
+                      "ungradable": ungradable, "admitted": len(V["cases"])}, sort_keys=True, indent=2))
+    for name in ungradable:
+        print(f"UNVERIFIABLE: {name}: no expectation to grade against", file=sys.stderr)
+    if reproduced < len(results):
+        return 1
+    return 2 if ungradable else 0
 
 if __name__ == "__main__":
     sys.exit(main())
