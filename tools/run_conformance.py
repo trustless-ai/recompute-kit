@@ -90,8 +90,11 @@ ENVIRONMENT_FAILURE_SIGNATURES = (
 
 
 class Result:
-    def __init__(self, name: str, ok: bool, kind: str, detail: str):
+    # adapter_ran=False marks a result produced before the adapter executed (a runtime precondition stop).
+    # It is structural on purpose: consumers must not infer "never ran" from the wording of `detail`.
+    def __init__(self, name: str, ok: bool, kind: str, detail: str, adapter_ran: bool = True):
         self.name, self.ok, self.kind, self.detail = name, ok, kind, detail
+        self.adapter_ran = adapter_ran
 
 
 @dataclass(frozen=True)
@@ -422,7 +425,7 @@ def _run_one(d: pathlib.Path, m: dict, label: str) -> Result:
 
     runtime_failure = _check_runtime(d, m, cmd)
     if runtime_failure is not None:
-        return Result(label, False, runtime_failure[0], runtime_failure[1])
+        return Result(label, False, runtime_failure[0], runtime_failure[1], adapter_ran=False)
 
     stdin_data = b""
     if vec_path:
@@ -585,6 +588,48 @@ def _run_reporter(d: pathlib.Path, cmd: str, label: str, stdin_data: bytes, vec_
     if extra:
         return Result(label, False, "REPORT_CONTRACT", f"EXTRA_RESULT: undeclared result(s) {extra[:5]}")
     return Result(label, True, "SUITE", f"{len(vectors)}/{len(vectors)} reproduced (runner-graded reporter)")
+
+
+def suite_dir(label: str) -> str:
+    """The suite directory a result label belongs to. A suite that declares several checks
+    reports one result per check, labelled "<dir>/<check>" (e.g. "permission-consumption-
+    boundary-v0/conformance"); a single-check suite reports the bare "<dir>"."""
+    return label.split("/", 1)[0]
+
+
+def _precondition_unrun(r) -> bool:
+    """True for the RUNNER result _check_runtime() returns when it stops a suite before its adapter runs."""
+    return r.kind == "RUNNER" and r.adapter_ran is False
+
+
+def classify_declared_uncovered(results, declared, declared_undeclared_vectors) -> list[str]:
+    """Relabel results the uncovered list excuses, and return the suite directories whose
+    entry is STALE (declared uncovered, yet the suite now runs).
+
+    Match on the suite DIRECTORY, not the full result label: `declared` holds directory
+    names, and a multi-check suite's results are labelled "<dir>/<check>", which never
+    equal a bare directory name. Matching the label meant an uncovered entry for any
+    multi-check suite could never be reported stale, so it stayed on the list after the
+    suite started running — the exact drift this list's own header says it must catch.
+    A suite a runtime precondition stopped before its adapter ran is not stale either: it is
+    still unrun. Returned once per directory, in first-seen order."""
+    stale: list[str] = []
+    for r in results:
+        if r.kind == "UNDECLARED" and r.name in declared_undeclared_vectors:
+            r.kind = "DECLARED UNCOVERED"
+            continue
+        d = suite_dir(r.name)
+        if d in declared:
+            if r.kind == "NOT COVERED":
+                r.kind = "DECLARED UNCOVERED"
+            elif _precondition_unrun(r):
+                # a runtime precondition stopped the adapter before it ran: still unrun, so the entry
+                # is not stale, and the RUNNER failure is left as it is (an excuse for "not run" is not
+                # an excuse for a missing dependency)
+                continue
+            elif d not in stale:
+                stale.append(d)
+    return stale
 
 
 def load_declared_uncovered() -> dict[str, str]:
@@ -766,16 +811,7 @@ def main() -> int:
 
     # A declared-uncovered suite is still printed and still counted as not-run. It just
     # does not fail the build, because someone signed their name to it being unrun.
-    stale = []
-    for r in results:
-        if r.kind == "UNDECLARED" and r.name in declared_undeclared_vectors:
-            r.kind = "DECLARED UNCOVERED"
-            continue
-        if r.name in declared:
-            if r.kind == "NOT COVERED":
-                r.kind = "DECLARED UNCOVERED"
-            else:
-                stale.append(r.name)
+    stale = classify_declared_uncovered(results, declared, declared_undeclared_vectors)
 
     # an EXPIRED requires_live exclusion is a deterministic NOT COVERED whatever the suite did (before any status/exit is computed)
     apply_overdue(results, live_exclusion_lifecycle()[1])
