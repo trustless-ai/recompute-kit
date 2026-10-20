@@ -45,7 +45,7 @@ class UngradableExpectations(unittest.TestCase):
             extra[identity] += "__issue79_unique_probe"
             if mode in ("missing", "mixed", "mixed-first"):
                 del extra[field]
-            elif mode == "malformed":
+            elif mode in ("malformed", "expectation"):
                 extra[field] = value
             elif mode == "partial":
                 del extra[field][next(iter(extra[field]))]
@@ -125,11 +125,53 @@ class UngradableExpectations(unittest.TestCase):
             field = next(k for k in ("expect", "expected", "expected_verdict") if k in c)
             if not isinstance(c[field], dict):
                 continue
-            # v1 grades any declared nonempty subset, rather than imposing five fields.
-            modes = ("bad-field-type",) if check == "pq-key-binding-v1/cutoff" else ("partial", "bad-field-type")
-            for mode in modes:
+            for mode in ("partial", "bad-field-type"):
                 with self.subTest(check=check, mode=mode), self.corpus(check, mode):
                     self.classified(check, 2, "UNVERIFIABLE")
+
+    def test_pq_v1_core_expectations_are_required(self):
+        check = "pq-key-binding-v1/cutoff"
+        vector, _ = self.fx.paths(check)
+        expected = json.loads(vector.read_bytes())["cases"][0]["expected"]
+        # The profile asserts resolution, rule, evidence AND decision. A matching
+        # diagnostic alone cannot establish that this whole result reproduced.
+        core = ("resolved", "resolution_reason", "rule", "evidence", "decision")
+        probes = [(key, {k: v for k, v in expected.items() if k != key}, key)
+                  for key in core]
+        probes.append(("evidence-only", {"evidence": expected["evidence"]}, None))
+        for label, partial, missing in probes:
+            with self.subTest(missing=label), self.corpus(check, "expectation", partial) as (n, _):
+                p = self.classified(check, 2, "UNVERIFIABLE")
+                self.assert_counts(p, n - 1, n)
+                self.assertIn(b"UNGRADABLE_CASE", p.stderr)
+                self.assertIn(b"refuted=0 ungradable=1", p.stderr)
+                if missing:
+                    self.assertIn(f"missing expected.{missing}".encode(), p.stderr)
+
+    def test_pq_v1_decision_refutation_survives_partial_expectation(self):
+        check = "pq-key-binding-v1/cutoff"
+        vector, _ = self.fx.paths(check)
+        expected = json.loads(vector.read_bytes())["cases"][0]["expected"]
+        wrong = dict(expected, decision="REJECT" if expected["decision"] == "ADMIT" else "ADMIT")
+        with self.corpus(check, "expectation", wrong) as (n, _):
+            p = self.classified(check, 1, "SUITE")
+            self.assert_counts(p, n - 1, n)
+            self.assertIn(b"decision: got", p.stdout)
+            self.assertNotIn(b"UNGRADABLE_CASE", p.stderr)
+        for first in (False, True):
+            with self.subTest(ungradable_first=first), self.corpus(
+                    check, "expectation", {"evidence": expected["evidence"]}) as (n, _):
+                doc = json.loads(vector.read_bytes())
+                doc["cases"][0]["expected"] = wrong
+                if first:
+                    doc["cases"].insert(0, doc["cases"].pop())
+                vector.write_text(json.dumps(doc), encoding="utf-8", newline="\n")
+                self.fx.repin(vector)
+                p = self.classified(check, 1, "SUITE")
+                self.assert_counts(p, n - 2, n)
+                self.assertIn(b"decision: got", p.stdout)
+                self.assertIn(b"UNGRADABLE_CASE", p.stderr)
+                self.assertIn("refuted=1 ungradable=1", self.fx.canonical(check).detail)
 
     def test_real_refutation_remains_determinate(self):
         for check in CHECKS:

@@ -230,7 +230,7 @@ def run(path):
     fails = 0
     for i, c in enumerate(fx["cases"]):
         if not grading.expectation(i, c, "expected",
-                required=(),
+                required=("resolved", "resolution_reason", "rule", "evidence", "decision"),
                 types={'resolved': 'nullable_string',
                        'resolution_reason': 'string',
                        'rule': 'string',
