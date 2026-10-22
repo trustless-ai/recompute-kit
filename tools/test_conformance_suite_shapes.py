@@ -40,6 +40,12 @@ UNPINNED_SPEC = "pq-key-binding-v1-profile"
 fails = []
 
 
+def tool_traceback(out: str) -> bool:
+    """True only if a traceback in `out` has a frame inside bin/conformance-suite."""
+    return any(line.lstrip().startswith('File "') and str(TOOL) in line
+               for line in out.splitlines())
+
+
 def run(*args, tool=TOOL, cwd=ROOT):
     p = subprocess.run([sys.executable, str(tool), *args], capture_output=True, text=True,
                        cwd=cwd, env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
@@ -57,7 +63,10 @@ suites = sorted(p.parent for p in CONFORMANCE.glob("*/suite.json"))
 check("sweep found manifests", len(suites) >= 10, f"only found {len(suites)}")
 for d in suites:
     rc, out = run("--suite", str(d.relative_to(ROOT)))
-    check(f"no traceback for {d.name}", "Traceback" not in out, out[-400:])
+    # Only a traceback raised *in the tool* is the tool's failure. fail_closed relays the adapter's
+    # stderr, so on a box missing a suite's declared python_modules the adapter's own ImportError
+    # traceback appears here while the tool correctly exits 2 — that is the environment, not this tool.
+    check(f"no traceback for {d.name}", not tool_traceback(out), out[-400:])
     if "cannot grade this suite" in out:
         check(f"{d.name} refusal exits 2, not 1", rc == 2,
               f"a declaration it cannot read must be could-not-run (2), got {rc}")
