@@ -16,6 +16,12 @@
   },
   "checker": {
     "path": "recovery_check.py",
-    "sha256": "d9d12dfb31cf342f7eba57740a484eec43b38c9726ceb802241344c9cdafad5f"
-  }
+    "sha256": "8586e6dbd2cabebb2c198c8e398a530cafca3bb2dfca22ddcd559e8f99b4bee8"
+  },
+  "dependencies": [
+    {
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd"
+    }
+  ]
 }

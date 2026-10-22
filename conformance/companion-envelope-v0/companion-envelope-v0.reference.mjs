@@ -1,3 +1,4 @@
+import { Grading } from "../_self_grading.mjs";
 // companion-envelope.v0 — executable reference for the HASHING-RELEVANT logic of the gateway's
 // companionEnvelope (vertice-gateway src/lib/pqAgent.ts: jcs, attestationContentAddress, companionEnvelope).
 //
@@ -61,12 +62,26 @@ if (Array.isArray(doc.vectors) && doc.vectors.length === 0) {
   console.error("UNVERIFIABLE: ZERO_CASES");
   process.exit(2);
 }
-let fails = 0;
-for (const v of doc.vectors) {
+const grading = new Grading(doc.vectors);
+for (const [i, v] of doc.vectors.entries()) {
+  if (!grading.expectation(i, v, "expect", {
+    "required": [
+      "verdict_core_cc",
+      "companion_cc",
+      "companion_status",
+      "envelope_cc"
+    ],
+    "types": {
+      "verdict_core_cc": "string",
+      "companion_cc": "nullable_string",
+      "companion_status": "string",
+      "envelope_cc": "string"
+    }
+  })) continue;
   const got = companionEnvelope(v.core, v.companion ?? null), exp = v.expect;
   const ok = ["verdict_core_cc", "companion_cc", "companion_status", "envelope_cc"].every((k) => got[k] === exp[k]);
-  if (!ok) fails++;
+  grading.record(i, ok);
   console.log(`${ok ? "OK " : "BAD"} ${v.name.padEnd(34)} status=${String(got.companion_status).padEnd(10)} companion_cc=${String(got.companion_cc).slice(0, 12)}`);
 }
-console.log(`${doc.vectors.length - fails}/${doc.vectors.length} vectors reproduced (TS/JS reference == gateway companionEnvelope)`);
-process.exit(fails ? 1 : 0);
+console.log(`${grading.reproduced}/${doc.vectors.length} vectors reproduced (TS/JS reference == gateway companionEnvelope)`);
+process.exit(grading.finish());

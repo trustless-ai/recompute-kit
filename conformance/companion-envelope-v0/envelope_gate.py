@@ -36,21 +36,34 @@ def companion_envelope(core, companion):
     envelope = {"schema": "companion-envelope.v0", "verdict_core_cc": vcc, "companion_cc": cc}
     return {"verdict_core_cc": vcc, "companion_cc": cc, "companion_status": status, "envelope_cc": sha(jcs(envelope))}
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     doc = json.load(open(path))
     if isinstance(doc["vectors"], list) and not doc["vectors"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(doc["vectors"])
     fails = 0
-    for v in doc["vectors"]:
+    for i, v in enumerate(doc["vectors"]):
+        if not grading.expectation(i, v, "expect",
+                required=('verdict_core_cc', 'companion_cc', 'companion_status', 'envelope_cc'),
+                types={'verdict_core_cc': 'string',
+                       'companion_cc': 'nullable_string',
+                       'companion_status': 'string',
+                       'envelope_cc': 'string'}):
+            continue
         got, exp = companion_envelope(v["core"], v.get("companion")), v["expect"]
         ok = all(got[k] == exp[k] for k in ("verdict_core_cc", "companion_cc", "companion_status", "envelope_cc"))
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {v['name']:<32} status={got['companion_status']:<10} companion_cc={str(got['companion_cc'])[:12]}")
-    print(f"{len(doc['vectors']) - fails}/{len(doc['vectors'])} vectors reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(doc['vectors'])} vectors reproduced")
+    return grading.finish()
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(here, "companion-envelope-v0.vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(here, "companion-envelope-v0.vectors.json")))

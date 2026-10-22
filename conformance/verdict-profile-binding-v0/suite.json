@@ -13,5 +13,15 @@
     }
   ],
   "laneHint": "recomputable",
-  "spec": { "path": "verdict-profile-binding-v0.spec.md", "sha256": "a58aa6f4e88043b10c385f75368fd8f7429234d947a3f7c1122d67a19f41c309" }
+  "spec": { "path": "verdict-profile-binding-v0.spec.md", "sha256": "a58aa6f4e88043b10c385f75368fd8f7429234d947a3f7c1122d67a19f41c309" },
+  "dependencies": [
+    {
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646"
+    },
+    {
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd"
+    }
+  ]
 }
