@@ -36,6 +36,10 @@ MUTATIONS=[
  ('manifest-leaf','external:'+NATIVE,"!equal(evidence.leaf,receiptLeaf(receiptRoot))","false",'VALID_PROOF_OTHER_RECEIPT'),
  ('merkle-verification','external:'+NATIVE,"!verifyInclusion(evidence.leaf,evidence.proof,c.body.merkle_root)","false",'CORRUPT_SIBLING'),
  ('slot-chain-continuity','slot_bridge.py',"slot.check_chain(h, lines, data['previous'].encode('utf-8'))","pass",'BROKEN_PREV_ROOT'),
+ ('log-id-admission','adapter.mjs',"typeof e.log_id!=='string'||!e.log_id||typeof p.body.log_id!=='string'||!p.body.log_id","false",'NUMERIC_LOG_ID'),
+ ('selected-policy','adapter.mjs',"id!==context.policy_id","false",'POLICY_NOT_SELECTED'),
+ ('policy-reference','adapter.mjs',"e.policy_ref!==p.id","false",'POLICY_REF_WRONG'),
+ ('policy-proof-profile','adapter.mjs',"p.body.proof_profile!==e.proof_profile","false",'POLICY_PROFILE_DIFFERENT'),
 ]
 
 def run(inventory=None):

@@ -2,7 +2,22 @@
 
 SPECIFICATION CANDIDATE; not normative or production-ready. Audited base `b9d4fc13a7b945dc7030360f7d39fe7c8484bef3`. This is author-executed evidence with independently specified expected relations, not an independent-review approval.
 
-## Final isolated Linux replay before commit
+## Same-PR corrections after self-review
+
+Current replay: `evidence/pr85-corrections/replay/`, 31 commands, all exit 0.
+
+- 43/43 complete vector results; all original 39 input/expected objects and their results are unchanged.
+- Proof validity: 5 VERIFIED / 18 REFUTED / 20 UNVERIFIABLE; assurance: 2 CHAIN_CONSISTENT / 41 ANCHOR_UNCHECKED.
+- 14 research tests normal/repeat/Python -O; 15 RVR entries now include a literal scalar-order assertion.
+- 20/20 targeted physical proof mutations KILLED; zero survived/crashed/not-covered/control failures; five positives preserved.
+- Separate scalar assertion removal: one expected assertion failure, zero errors; restoration passes normal and -O; native positive output unchanged. This is not added to the 20 proof-mutation count.
+- 36 independent probes: 34 full results unchanged; numeric and missing log_id now explicitly UNVERIFIABLE / LOG_IDENTITY_MALFORMED.
+- Five complete machine-output families are byte-identical normal/repeat/-O. Canonical remains 46 PASS / 6 NOT RUN / 2 SKIPPED, byte-identical to a fresh main run.
+- Historical regression counts remain 105 runner, 9 inventory, 15 nonempty, 14 ungradable and 7 scan-binding; the last four normal/-O.
+
+See [REVIEW_CORRECTIONS.md](REVIEW_CORRECTIONS.md) for the exact boundary and removal evidence. The earlier 15-control wording below included an unasserted scalar-order observation at db11904; the correction makes that comparison load-bearing. Earlier finite 16-mutation results remain historical facts, not an exhaustive-coverage claim. All prior evidence directories remain byte-identical.
+
+## Original db11904 replay (retained history)
 
 The final complete run is in `evidence/complete/`: 31 command executions, all exit 0, including the historical regressions. Its five full machine-output families match the preceding `evidence/verified/` run byte-for-byte. `evidence/runtime-environment.json` records actual runtime versions and the independent RFC8785 test dependency hashes.
 
@@ -81,3 +96,7 @@ Post-commit replay and GitHub CI cannot be self-hashed into this same commit. Th
 | SAFE_BOUNDARIES_UNICODE | VERIFIED | ANCHOR_UNCHECKED | BOUNDED_INCLUSION_VERIFIED | safe boundary, Unicode values and ordering |
 | A_CHAIN_VALID | VERIFIED | CHAIN_CONSISTENT | BOUNDED_INCLUSION_VERIFIED | native count-bound full-manifest extension |
 | A_CHAIN_CONFLICT | REFUTED | ANCHOR_UNCHECKED | CONSISTENCY_CHECKPOINT_CONFLICT | signed current checkpoint does not waive supplied history conflict |
+| NUMERIC_LOG_ID | UNVERIFIABLE | ANCHOR_UNCHECKED | LOG_IDENTITY_MALFORMED | authenticated policy bytes do not waive the nonempty-string log identity contract |
+| POLICY_NOT_SELECTED | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_SELECTION_MISMATCH | a valid policy signature cannot replace caller-selected policy identity |
+| POLICY_REF_WRONG | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_BINDING_MISMATCH | envelope references the exact selected authenticated policy |
+| POLICY_PROFILE_DIFFERENT | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_BINDING_MISMATCH | authenticated policy selects the same proof profile as the envelope |

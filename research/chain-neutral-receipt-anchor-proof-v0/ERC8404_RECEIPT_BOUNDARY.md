@@ -66,6 +66,8 @@ Safe-integer subject bytes may be an RVR evidence **payload**: raw payloads are 
 
 Positive byte intersection: `{"a":[true,null,"π"]}` has identical canonical bytes in both domains. Negative witnesses: `{"n":1}` is in the action byte domain but rejected by RVR canonicalization; non-ASCII object keys are admitted and scalar-sorted by RVR but refused by the selected ReceiptOS byte domain. A well-formed surrogate pair is a scalar; a lone surrogate and duplicate decoded key are refused by both. These witnesses are executable in `rvr_boundary.py`.
 
+The scalar-order witness explicitly compares native bytes for U+E000 and U+1F600 keys with literal expected UTF-8 bytes, placing U+E000 first. It is not merely a recorded observation. `test_scalar_order_is_asserted` substitutes a wrong-order native result for this witness only and requires rejection. Removing just the comparison restores false acceptance and makes that regression fail; the frozen native RVR implementation is never edited.
+
 ## Verification Profile identity and dependency closure are reused intact
 
 The native manifest, its bootstrap schema and profile-specific constraints, profile digest, claim and evidence identity, result identity and projections, dependency resolver, and recomputation procedure are directly reused. The adapter implementation is not added to RVR profile identity.

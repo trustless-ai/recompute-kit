@@ -8,6 +8,8 @@ The executable adapter composes unchanged, exact-pinned ReceiptOS and invinoveri
 
 Read [SPECIFICATION_CANDIDATE.md](SPECIFICATION_CANDIDATE.md), [TRUST_POLICY.md](TRUST_POLICY.md), [PROOF_PROFILES.md](PROOF_PROFILES.md), and [LIMITATIONS.md](LIMITATIONS.md). Measured results and failed attempts are recorded in [CONFORMANCE_RESULTS.md](CONFORMANCE_RESULTS.md) and `evidence/`. Frozen upstream artifacts are never rewritten.
 
+The same-PR self-review corrections are documented in [REVIEW_CORRECTIONS.md](REVIEW_CORRECTIONS.md): log-identity type admission, separately witnessed policy bindings, and an asserted RVR scalar-order boundary. Original evidence remains preserved as history; current counts are reported separately.
+
 ## Replay
 
 Python 3.12+, Node 20+, Git, and Python `rfc8785` for the independent cross-runtime test. The adapters and native RVR/slot bridges otherwise use standard libraries. From the repository root, with an isolated Python environment activated:

@@ -9,7 +9,7 @@ profile = chain-neutral.anchor-proof-envelope.v0
 subject_profile = agent-action.subject-record.v0
 subject_id = 0x-prefixed lowercase SHA-256
 proof_profile = receiptos.manifest-proof.v0 | invinoveritas.decision_receipt.slot_log.v1
-log_id
+log_id = nonempty string
 checkpoint_id = proof-profile-specific lowercase SHA-256
 anchor_mechanism = local-ed25519 | snapshot-digest
 policy_ref = lowercase SHA-256 of the authenticated policy body
@@ -20,6 +20,8 @@ timestamp = null | supplied timestamp evidence
 Additional transport members have no authority and are not interpreted. A control deliberately supplies `untrusted_authorities`; it cannot establish trust. Unknown profile versions fail closed.
 
 The caller supplies the selected policy digest and accepted authority map separately from this envelope. The policy and its signature travel alongside it, but cannot authenticate themselves. Log identity is a policy-selected identifier; the slot protocol has no native authenticated log-ID field, so only the independently selected snapshot digest binds this external name.
+
+Both the envelope and authenticated policy must supply a nonempty string log identity. Malformed values reaching this admission check produce UNVERIFIABLE / LOG_IDENTITY_MALFORMED before identity comparison or native proof execution. An earlier policy admission/signature refusal remains distinct. A signature authenticates policy bytes; it does not waive their type requirements.
 
 ReceiptOS proof evidence includes its exact leaf record, native count/index/sibling proof and signed checkpoint; optional full-manifest consistency retains native semantics. Slot proof evidence includes the exact snapshot and optional previous snapshot bytes, native inclusion object, selected index and count. The bounded wrapper checks snapshot/index/count association as well as original native inclusion/chain checks.
 

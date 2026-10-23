@@ -73,7 +73,9 @@ def run():
     try:r.strict_json_loads('{"a":1,"a":2}')
     except r.StrictJsonError:results['duplicate-key']={'rejected':True}
     else:raise RuntimeError('duplicate accepted')
-    results['scalar-key-domain']={'bytes_hex':r.canonical_bytes({'\ue000':None,'😀':None}).hex()}
+    # Literal UTF-8 oracle: U+E000 precedes U+1F600 in scalar order (not UTF-16).
+    require('scalar-key-domain',{'bytes_hex':r.canonical_bytes({'\ue000':None,'😀':None}).hex()},
+            {'bytes_hex':'7b22ee8080223a6e756c6c2c22f09f9880223a6e756c6c7d'})
     return {'profile_digest':pd,'receipt':bundle['receipt'],'canonical_result':bundle['canonicalResult'],'checks':results,'count':len(results),'scope':'SUBJECT_BYTE_IDENTITY_ONLY; NO_ACTION_EXECUTION'}
 
 if __name__=='__main__':

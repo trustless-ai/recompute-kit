@@ -115,5 +115,10 @@ function manifestChain(v,conflict=false) {
 }
 add('A_CHAIN_VALID',A,v=>manifestChain(v),expected('VERIFIED','BOUNDED_INCLUSION_VERIFIED',nativeA(),'CHAIN_CONSISTENT'),'native count-bound full-manifest extension');
 add('A_CHAIN_CONFLICT',A,v=>manifestChain(v,true),expected('REFUTED','CONSISTENCY_CHECKPOINT_CONFLICT',nativeA('REFUTED','CONSISTENCY_CHECKPOINT_CONFLICT')),'signed current checkpoint does not waive supplied history conflict');
+// Self-review witnesses: literal expected refusals, independent of the verifier.
+add('NUMERIC_LOG_ID',B,v=>{v.env.log_id=7;v.policy.body.log_id=7;authorize(v);},expected('UNVERIFIABLE','LOG_IDENTITY_MALFORMED'),'authenticated policy bytes do not waive the nonempty-string log identity contract');
+add('POLICY_NOT_SELECTED',A,v=>v.context.policy_id=z,expected('UNVERIFIABLE','POLICY_SELECTION_MISMATCH'),'a valid policy signature cannot replace caller-selected policy identity');
+add('POLICY_REF_WRONG',A,v=>v.env.policy_ref=z,expected('UNVERIFIABLE','POLICY_BINDING_MISMATCH'),'envelope references the exact selected authenticated policy');
+add('POLICY_PROFILE_DIFFERENT',A,v=>{v.policy.body.proof_profile=B;authorize(v);},expected('UNVERIFIABLE','POLICY_BINDING_MISMATCH'),'authenticated policy selects the same proof profile as the envelope');
 writeFileSync(resolve(HERE,'vectors.json'),JSON.stringify({profile:'chain-neutral.research-vectors.v0',vectors},null,2)+'\n');
 console.log('Authored '+vectors.length+' expectations without invoking a verifier.');

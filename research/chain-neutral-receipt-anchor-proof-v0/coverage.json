@@ -1,20 +1,20 @@
 {
   "profile": "chain-neutral.coverage.v0",
   "base": "b9d4fc13a7b945dc7030360f7d39fe7c8484bef3",
-  "cases": 39,
-  "reproduced": 39,
+  "cases": 43,
+  "reproduced": 43,
   "proof_validity": {
     "VERIFIED": 5,
     "REFUTED": 18,
-    "UNVERIFIABLE": 16
+    "UNVERIFIABLE": 20
   },
   "anchor_assurance": {
-    "ANCHOR_UNCHECKED": 37,
+    "ANCHOR_UNCHECKED": 41,
     "CHAIN_CONSISTENT": 2
   },
   "rvr_boundary_controls": 15,
   "mutation_counts": {
-    "KILLED": 16
+    "KILLED": 20
   },
   "not_covered": [
     "public-authority-provisioning",
@@ -1490,6 +1490,107 @@
         ]
       },
       "reproduced": true
+    },
+    {
+      "case": "NUMERIC_LOG_ID",
+      "guarantee": "authenticated policy bytes do not waive the nonempty-string log identity contract",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "ed027cf5c7c4078a1447349ea931562dba8be5230dbfbfd52e7989d00b6d8251",
+        "policy_sha256": "cf6197a49aeaa9ecb8816e668cafe2e37c1271dee18a6abb89b989364e9b3b5a"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MALFORMED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MALFORMED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_NOT_SELECTED",
+      "guarantee": "a valid policy signature cannot replace caller-selected policy identity",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SELECTION_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SELECTION_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_REF_WRONG",
+      "guarantee": "envelope references the exact selected authenticated policy",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "482ed36d2fb25f446206ff7e486960c0040f0203f58e87496ac1ae2b261c8fab",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_PROFILE_DIFFERENT",
+      "guarantee": "authenticated policy selects the same proof profile as the envelope",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7eb3d504c68696a55af7b402fb7a0ea4fe5d0849bcac19d2c060b89487f0e83b",
+        "policy_sha256": "418b8f6356ff94113b241274a84a1238833fe7296a5e09041fe68fca671ea9a0"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
     }
-  ]
+  ],
+  "previous_evidence_head": "db119044a99a6297f3aae283dc15e928b195f551"
 }

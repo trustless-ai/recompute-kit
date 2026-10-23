@@ -6,15 +6,15 @@
   },
   "vectors": {
     "path": "vectors.json",
-    "sha256": "3c4e9a342e8ac30c5737b27ce6f32ea934b594084db3cd22bfb269ed03555bf5"
+    "sha256": "844a7ad383cbb81b724bed7019a52ba1a6adb0b02feaf828fe4563dcbd5e1700"
   },
   "checker": {
     "path": "adapter.mjs",
-    "sha256": "0639606fddbea598cc7e66036e362d8ad03f9b7f03e4f4dfb4050838105c48b7"
+    "sha256": "3282fa47f77826ef1955c6e02110b90d343312be323326fb5ad79ad7625c2de2"
   },
   "mutation_checker": {
     "path": "mutations.py",
-    "sha256": "f847b270b351b1e5b670aa137b0874952de776fa66b2cc76360f031d52b9a2a8"
+    "sha256": "cf628ae8d0366948ba5c846cb1791dd45d7f9dcc49931d7d0e014cc86ef74f70"
   },
   "dependencies": [
     {
@@ -43,7 +43,7 @@
     },
     {
       "path": "rvr_boundary.py",
-      "sha256": "0c2d24e793d908ebe6054daca9451baf132a1d065d8bf54ee1c1a9f69ea627ce"
+      "sha256": "0e3343ca67a11456ea60569130cfdeb605d9097d7f773692574c3a85f95b557f"
     },
     {
       "path": "replay.py",
@@ -51,11 +51,11 @@
     },
     {
       "path": "test_research.py",
-      "sha256": "bb8b178441fd05b2ceb0c45d7d5649fe914c5bf24dee15b324355ee1f4d4339a"
+      "sha256": "894b4dd3ebb3214da7f46cb1d8d4426040876e71f67e227da276aa22817305b0"
     },
     {
       "path": "define_vectors.mjs",
-      "sha256": "c967d8ebfbfbe79dcfcf5d64bce645c315f2098edbbeceb67fdfec232dfef8da"
+      "sha256": "35f0a4ae6de07db14ec766364402fc7c6ed0bb6d9ef69f621e14819027cf449f"
     },
     {
       "path": "validate.py",
@@ -67,7 +67,7 @@
     },
     {
       "path": "ANCHOR_PROOF_ENVELOPE.md",
-      "sha256": "f81646fa443e047152f175161be11fd4bf3da7d954eca03ae573da7302aa37a2"
+      "sha256": "38165791e7247aafd01f61ede194a2168a2aa14dca26666bb84cd86256d1a4da"
     },
     {
       "path": "PROOF_PROFILES.md",
@@ -79,11 +79,11 @@
     },
     {
       "path": "TRUST_POLICY.md",
-      "sha256": "e57be186a516f365baad8e1b594583c0da8a7b95a11bc235a82a95f7066ac8d8"
+      "sha256": "7cdc4cec35ce7f0ccbf36668c47a0c604ec6f4655535bc09a92fee008c913bea"
     },
     {
       "path": "ERC8404_RECEIPT_BOUNDARY.md",
-      "sha256": "8ffe83fe43a9a9c456e67e42bb909d296870ca01dbb450c1d85c791654f9c0ba"
+      "sha256": "640aac24376262b1c56123aa8312548f1f76842dc1464a940173f7d84a83d7bf"
     },
     {
       "path": "../../tools/run_conformance.py",

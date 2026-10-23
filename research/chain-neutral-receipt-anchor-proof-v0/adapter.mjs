@@ -57,6 +57,9 @@ export function evaluate(input,context) {
     if(e.subject_profile!==SUBJECT||e.subject_id!==id) // GUARD receipt-identity
       return answer('REFUTED','RECEIPT_IDENTITY_MISMATCH');
     const p=authenticate(input.policy,context);
+    // Authentication does not establish schema admission of the signed value.
+    if(typeof e.log_id!=='string'||!e.log_id||typeof p.body.log_id!=='string'||!p.body.log_id) // GUARD log-id-admission
+      return answer('UNVERIFIABLE','LOG_IDENTITY_MALFORMED');
     if(e.policy_ref!==p.id||p.body.proof_profile!==e.proof_profile) return answer('UNVERIFIABLE','POLICY_BINDING_MISMATCH');
     if(e.log_id!==p.body.log_id) // GUARD log-identity
       return answer('REFUTED','LOG_IDENTITY_MISMATCH');

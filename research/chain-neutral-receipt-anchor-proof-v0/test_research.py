@@ -128,5 +128,54 @@ class ResearchTests(unittest.TestCase):
         self.assertEqual(result['count'],15)
         self.assertEqual(len(result['receipt']),6)
 
+    def test_log_identity_admission(self):
+        original=next(v for v in self.doc['vectors'] if v['name']=='B_VALID_CHAIN')
+        cases=[]
+        # The signed policy remains valid; only the envelope identifier is malformed.
+        for i,value in enumerate((None,False,0,7,[],{},'')):
+            v=copy.deepcopy(original);v['name']='malformed-log-'+str(i)
+            envelope=json.loads(base64.b64decode(v['input']['envelope_base64']))
+            envelope['log_id']=value
+            v['input']['envelope_base64']=base64.b64encode(json.dumps(envelope).encode()).decode()
+            cases.append(v)
+        # Independently valid signature over a numeric policy log id must also fail
+        # admission when the envelope's own log id is a valid string.
+        v=copy.deepcopy(next(v for v in self.doc['vectors'] if v['name']=='NUMERIC_LOG_ID'))
+        v['name']='malformed-policy-log'
+        envelope=json.loads(base64.b64decode(v['input']['envelope_base64']))
+        envelope['log_id']='lab/slot'
+        v['input']['envelope_base64']=base64.b64encode(json.dumps(envelope).encode()).decode()
+        cases.append(v)
+        p=execute({'vectors':cases});self.assertEqual(p.returncode,0,p.stderr.decode())
+        expected={'projection':'chain-neutral.result.v0','proof_validity':'UNVERIFIABLE',
+                  'anchor_assurance':'ANCHOR_UNCHECKED','reason':'LOG_IDENTITY_MALFORMED','native':None}
+        self.assertEqual(json.loads(p.stdout),{v['name']:expected for v in cases})
+
+    def test_scalar_order_is_asserted(self):
+        import rvr_boundary
+        original_spec=rvr_boundary.importlib.util.spec_from_file_location
+        target={'\ue000':None,'😀':None}
+        calls=[]
+        def wrong_order_spec(*args,**kwargs):
+            spec=original_spec(*args,**kwargs)
+            execute_module=spec.loader.exec_module
+            def instrument(module):
+                execute_module(module)
+                canonical=module.canonical_bytes
+                def wrong_order(value):
+                    if value==target:
+                        calls.append('scalar-order-witness')
+                        return '{"😀":null,"\ue000":null}'.encode('utf-8')
+                    return canonical(value)
+                module.canonical_bytes=wrong_order
+            spec.loader.exec_module=instrument
+            return spec
+        # No frozen source edit: substitute a wrong-order native result only for
+        # this witness and require the boundary assertion to notice it.
+        with patch.object(rvr_boundary.importlib.util,'spec_from_file_location',side_effect=wrong_order_spec):
+            with self.assertRaisesRegex(RuntimeError,'scalar-key-domain: native result contradicts'):
+                rvr_boundary.run()
+        self.assertEqual(calls,['scalar-order-witness'])
+
 if __name__=='__main__':
     unittest.main(verbosity=2)
