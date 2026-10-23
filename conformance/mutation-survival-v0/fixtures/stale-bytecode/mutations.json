@@ -1,0 +1,20 @@
+[
+  {
+    "file": "mod.py",
+    "find": "n % 2 == 0",
+    "replace": "n % 2 >= 0",
+    "class": "guard",
+    "label": "is_even always-true",
+    "kill_witness": "AssertionError",
+    "must": "runs FIRST and is genuinely KILLED — it is what poisons the bytecode cache for the next one"
+  },
+  {
+    "file": "mod.py",
+    "find": "n + 1",
+    "replace": "n + 2",
+    "class": "guard",
+    "label": "unreached arithmetic",
+    "kill_witness": "AssertionError",
+    "must": "nothing observes unreached(), so this MUST be SURVIVED. Same byte length as the mutant above, so without per-run isolation it reuses that mutant's .pyc, fails with the same witness and is scored KILLED — a coverage gap laundered into a pass. Regression control for execution freshness."
+  }
+]

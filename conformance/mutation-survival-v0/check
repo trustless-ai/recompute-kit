@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Conformance for recompute-mutation-survival. The gate MUST tell load-bearing coverage from
+# decorative coverage, and must NOT accept a mutant that died unobserved as a kill.
+#
+# The expectations live in mutation-survival-v0.vectors.json and this script READS them. They used
+# to be bash literals here, which meant the vectors asserted nothing: inverting every expected_exit
+# and expected_verdict, repinning the digest, and re-running still printed CONFORMANT — a decorative
+# vector set shipped with the tool for catching decorative tests. (zexoverz, check:10, 2026-08-26)
+here="$(cd "$(dirname "$0")" && pwd)"
+exec python3 - "$here" <<'PY'
+import json, os, subprocess, sys, tempfile
+here = sys.argv[1]
+bin_ = os.path.join(here, "..", "..", "bin", "recompute-mutation-survival")
+spec = json.load(open(os.path.join(here, "mutation-survival-v0.vectors.json")))
+# A self-grading check with nothing to grade prints CONFORMANT and exits 0 — the same
+# absence-of-evidence class as ZERO_MUTANTS below it and ZERO_CASES across the kit's other
+# self-graders. Same token, same exit, so the condition has one name everywhere.
+if isinstance(spec.get("vectors"), list) and not spec["vectors"]:
+    print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
+    raise SystemExit(2)
+fail = 0
+for v in spec["vectors"]:
+    d = os.path.join(here, v["fixture"])
+    # per-vector override: the execution-freshness vector has to run under a test command that
+    # does NOT hide staleness, which is the opposite of what the others want.
+    tc = v.get("test_cmd", spec["test_cmd"])
+    with tempfile.NamedTemporaryFile("r", suffix=".json", delete=False) as t:
+        art = t.name
+    rc = subprocess.run([sys.executable, bin_, "--dir", d, "--test-cmd", tc,
+                         "--mutations", os.path.join(d, "mutations.json"), "--out", art],
+                        capture_output=True, text=True).returncode
+    got_verdict = None
+    got = {}
+    try:
+        a = json.load(open(art))
+        got_verdict = a.get("verdict")
+        got = {r.get("label"): r.get("verdict") for r in a.get("results", [])}
+    except Exception as e:
+        got_verdict = f"<artifact unreadable: {e}>"
+    finally:
+        os.unlink(art)
+    # expected_mutations pins EVERY mutant in the inventory, not one. A vector whose point is the
+    # relation between consecutive mutants cannot be asserted one row at a time: pinning only the
+    # second row lets a run that got the first row wrong still pass.
+    want = v.get("expected_mutations") or ({v["mutation"]: v["expected_mutation"]}
+                                           if v.get("mutation") else {})
+    bad = []
+    if rc != v["expected_exit"]:            bad.append(f"exit {rc} != {v['expected_exit']}")
+    if got_verdict != v["expected_verdict"]: bad.append(f"verdict {got_verdict!r} != {v['expected_verdict']!r}")
+    for label, exp in want.items():
+        if got.get(label) != exp:
+            bad.append(f"mutation {label!r} {got.get(label)!r} != {exp!r}")
+    if v.get("expected_no_results") and got:
+        bad.append(f"expected no mutation results, got {sorted(got)}")
+    if bad:
+        print(f"FAIL {v['name']:18} " + "; ".join(bad)); fail = 1
+    else:
+        shown = ", ".join(f"{k}={vv}" for k, vv in sorted(got.items())) or "no mutants"
+        print(f"OK   {v['name']:18} exit {rc}, {got_verdict}, {shown}")
+print("mutation-survival-v0: " + ("CONFORMANT" if not fail else "NON-CONFORMANT"))
+# NOTE: a single exit 1 for both "a vector did not reproduce" and "could not run" is zexoverz's
+# check:13 — left for that fixup so the two changes do not collide.
+sys.exit(fail)
+PY
