@@ -1,0 +1,1 @@
+Attempt to reuse /tmp/chain-neutral-final.7UbZGH failed before tests: prior temporary checkout no longer exists. No semantic result inferred. Replaced with a new isolated ext4 clone and exact external-source bootstrap under /home/msi/codex-audits.

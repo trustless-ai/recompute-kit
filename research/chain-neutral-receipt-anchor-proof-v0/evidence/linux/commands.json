@@ -1,0 +1,364 @@
+[
+  {
+    "name": "source-pins",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/bootstrap.py",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/sources"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-slot-vectors",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/sources/invino/examples/decision-receipt/slot_log_check.py",
+      "--vectors",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/sources/invino/examples/decision-receipt/slot_log_vectors.json"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-rvr",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/sources/rvr/conformance/rvr-v0/adapter.py",
+      "--check"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-report",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "fa18b10891f5247b2f3d772a6a977b9d16d40da5a4c975a7fa19baa5bc178a7f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-native",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "072e1e9925a5b5f47a7aa20474edb4c2606e3ff59eef1d1eebe2f3ec1ef9a93e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "179e9ac0d6b508b0a9a775cc89399657bdb1a439f54ab363a9e8009316dbc924"
+  },
+  {
+    "name": "normal-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "364552687cc60adfa3cc962072be2a82d6067a64c5b60724b9a375adc4fa4a87",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "946292758555bb941b86d74f6e9c1bce56f07b3f4a5326e60f2c6a7a5e7516f5",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 2,
+    "stdout_sha256": "a11fc58bc498dc96b645ab601fde001b36171f05e3d507628bc71edb6d5f3df4",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-report",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "fa18b10891f5247b2f3d772a6a977b9d16d40da5a4c975a7fa19baa5bc178a7f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-native",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "072e1e9925a5b5f47a7aa20474edb4c2606e3ff59eef1d1eebe2f3ec1ef9a93e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "f18bb5dafb705cdde13ae2d8302b37a26aebc1aa64b5d912626dd32087f275c8"
+  },
+  {
+    "name": "repeat-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "364552687cc60adfa3cc962072be2a82d6067a64c5b60724b9a375adc4fa4a87",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "946292758555bb941b86d74f6e9c1bce56f07b3f4a5326e60f2c6a7a5e7516f5",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 2,
+    "stdout_sha256": "a11fc58bc498dc96b645ab601fde001b36171f05e3d507628bc71edb6d5f3df4",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-report",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "fa18b10891f5247b2f3d772a6a977b9d16d40da5a4c975a7fa19baa5bc178a7f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-native",
+    "argv": [
+      "node",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "072e1e9925a5b5f47a7aa20474edb4c2606e3ff59eef1d1eebe2f3ec1ef9a93e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "39df30e283473bd72c3597f1e1b6d3cc09a72a9a107f55c8480be38e29c6c9c7"
+  },
+  {
+    "name": "optimized-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "364552687cc60adfa3cc962072be2a82d6067a64c5b60724b9a375adc4fa4a87",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "946292758555bb941b86d74f6e9c1bce56f07b3f4a5326e60f2c6a7a5e7516f5",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 2,
+    "stdout_sha256": "a11fc58bc498dc96b645ab601fde001b36171f05e3d507628bc71edb6d5f3df4",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "canonical",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/run_conformance.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "runner-unit-tests",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools",
+      "-p",
+      "test_run_conformance_*.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "17e25819eab99803571c6eb6301bb18a917b39c672f5b9c2b93d0f283f49b803"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "4475f7925599c7d74578011db8ff2e84da50610a85af8cf6867605f7cc7aa1b9"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "fe5893eb2f83f7324706ea5f3cc4d0c5908fb3787e66e91acf6119d61b6c694d"
+  },
+  {
+    "name": "test_self_grading_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "63b888d6f6247f5fc75c3b76baad5a165ef017bbfa61623296533b0b289f4681"
+  },
+  {
+    "name": "test_self_grading_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "c13ef24c7d83b0b7a4b8ba131a07a41f0297ab2e104842695c5b318bbaac8440"
+  },
+  {
+    "name": "test_ungradable_expectations-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "47d0011da43bde61af3b22877fcf30e3b91173da09c7bea1f7b738078f3c2c46"
+  },
+  {
+    "name": "test_ungradable_expectations-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/mnt/d/PAVLO HQ/Workspaces/chain-neutral-receipt-anchor-v0/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "c2583e8acd913f979c614f1ab41230128c54ba3e28384e3cb0cd1f9ee11dada5"
+  }
+]
