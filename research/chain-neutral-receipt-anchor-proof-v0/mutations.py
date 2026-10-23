@@ -40,6 +40,12 @@ MUTATIONS=[
  ('selected-policy','adapter.mjs',"id!==context.policy_id","false",'POLICY_NOT_SELECTED'),
  ('policy-reference','adapter.mjs',"e.policy_ref!==p.id","false",'POLICY_REF_WRONG'),
  ('policy-proof-profile','adapter.mjs',"p.body.proof_profile!==e.proof_profile","false",'POLICY_PROFILE_DIFFERENT'),
+ ('slot-checkpoint-envelope','adapter.mjs',"s.inclusion.log_root!==e.checkpoint_id","false",'SLOT_UNSELECTED_ROOT'),
+ ('policy-schema','adapter.mjs',"!body||body.profile!==POLICY","!body",'POLICY_SCHEMA_WRONG'),
+ ('policy-mechanism-allowlist','adapter.mjs',"!['local-ed25519','snapshot-digest'].includes(body.anchor_mechanism)","false",'POLICY_MECHANISM_UNKNOWN'),
+ ('envelope-mechanism-binding','adapter.mjs',"e.anchor_mechanism!==p.body.anchor_mechanism","false",'ENVELOPE_MECHANISM_MISMATCH'),
+ ('timestamp-boolean','adapter.mjs',"typeof body.require_timestamp!=='boolean'","false",'POLICY_TIMESTAMP_NOT_BOOLEAN'),
+ ('proof-supplied-checkpoint-keys','adapter.mjs',"trusted_keys:p.body.checkpoint_keys","trusted_keys:e.untrusted_checkpoint_keys??p.body.checkpoint_keys",'PROOF_SUPPLIED_CHECKPOINT_KEYS'),
 ]
 
 def run(inventory=None):

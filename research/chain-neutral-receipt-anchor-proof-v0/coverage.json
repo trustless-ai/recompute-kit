@@ -1,20 +1,20 @@
 {
   "profile": "chain-neutral.coverage.v0",
   "base": "b9d4fc13a7b945dc7030360f7d39fe7c8484bef3",
-  "cases": 43,
-  "reproduced": 43,
+  "cases": 49,
+  "reproduced": 49,
   "proof_validity": {
     "VERIFIED": 5,
-    "REFUTED": 18,
-    "UNVERIFIABLE": 20
+    "REFUTED": 19,
+    "UNVERIFIABLE": 25
   },
   "anchor_assurance": {
-    "ANCHOR_UNCHECKED": 41,
+    "ANCHOR_UNCHECKED": 47,
     "CHAIN_CONSISTENT": 2
   },
   "rvr_boundary_controls": 15,
   "mutation_counts": {
-    "KILLED": 20
+    "KILLED": 26
   },
   "not_covered": [
     "public-authority-provisioning",
@@ -1590,7 +1590,423 @@
       },
       "native_result": null,
       "reproduced": true
+    },
+    {
+      "case": "SLOT_UNSELECTED_ROOT",
+      "guarantee": "self-consistent proof cannot replace the independently selected checkpoint; refuse before native execution",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "8ab0fa96ea22a999922022d2e7dab82b43e385cc36016490a10e2e5868e8ee3d",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_COMMITMENT_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_COMMITMENT_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_SCHEMA_WRONG",
+      "guarantee": "authenticated bytes do not establish an accepted policy schema",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "78f77bb82d4f1b1d68ac21ec38d49f27da5fdf5253840208f4869d605509da17",
+        "policy_sha256": "a1e4220434dff2d46a9b2e50a04b8059c4e59ee0f12c5d916de9b2a185f77b44"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_MECHANISM_UNKNOWN",
+      "guarantee": "policy mechanism allowlist is independent of envelope equality",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7efe178babeeffa374bd806c9db1ae5f78cc9129391462ad68f16af9beb80ea6",
+        "policy_sha256": "dbf18fd71d6e7eaebc371ed5b683bb422651bceb296cefddd13e486435ffb868"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "ENVELOPE_MECHANISM_MISMATCH",
+      "guarantee": "supported mechanism label must still match selected policy",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "e45ca883caef49f722ae5b72f030b914ef79733317f5d2094c903aeb267fe9ab",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "ANCHOR_MECHANISM_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "ANCHOR_MECHANISM_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_TIMESTAMP_NOT_BOOLEAN",
+      "guarantee": "falsey nonboolean does not waive policy type admission",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "813327f7bf1e460e25696f4fad99d7e935e4cd77706e7be28ae71414dbdeeca0",
+        "policy_sha256": "e1edab496e02926eba469b3d55e9fd4175cda8a7af7b101715d03fee9ea71ab8"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "PROOF_SUPPLIED_CHECKPOINT_KEYS",
+      "guarantee": "envelope keys cannot become independently configured checkpoint trust",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7d0df6040ef4ffef530c563e83684dd4c83a46e076f4b608bee1a6709129f1d7",
+        "policy_sha256": "7a20ffeec3ff9f08e09b44757b8a559c5c68d025009b451daa97ff8353f4f6d2"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "UNVERIFIABLE",
+          "reason": "LOG_TRUST_ROOT_MISSING"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "UNVERIFIABLE",
+          "reason": "LOG_TRUST_ROOT_MISSING"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "UNVERIFIABLE",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "UNVERIFIABLE",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
     }
   ],
-  "previous_evidence_head": "db119044a99a6297f3aae283dc15e928b195f551"
+  "previous_evidence_head": "1afc4ab3e3649e3d987d54006a3f3508c9fd159f",
+  "mutation_difference_scopes": [
+    {
+      "mutation": "profile-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "subject-identity",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-authentication",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-authority",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "log-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "checkpoint-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-leaf-binding",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "chain-required",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "timestamp-evidence",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "raw-admission",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "native-result",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "assurance-separation",
+      "different_fields": [
+        "proof_validity"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "case-attribution",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "manifest-leaf",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "merkle-verification",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-chain-continuity",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "log-id-admission",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "selected-policy",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-reference",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-proof-profile",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-checkpoint-envelope",
+      "different_fields": [
+        "native"
+      ],
+      "class": "EVIDENCE_WITNESS"
+    },
+    {
+      "mutation": "policy-schema",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-mechanism-allowlist",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "envelope-mechanism-binding",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "timestamp-boolean",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "proof-supplied-checkpoint-keys",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    }
+  ],
+  "additional_controls": [
+    "native-checkpoint report fault + guard removal",
+    "symlink entrypoint removal",
+    "existing runtime-refusal removal",
+    "existing scalar-order assertion removal"
+  ]
 }

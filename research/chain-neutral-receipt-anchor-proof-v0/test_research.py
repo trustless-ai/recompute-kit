@@ -11,6 +11,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from unittest.mock import patch
 
 HERE=Path(__file__).resolve().parent
@@ -20,6 +21,31 @@ import run_conformance as runner
 def execute(doc, native=False):
     cmd=['node',str(HERE/'adapter.mjs')]+(['--native'] if native else [])
     return subprocess.run(cmd,input=json.dumps(doc).encode(),capture_output=True,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'})
+
+@contextmanager
+def linked_directory(target, link):
+    # Windows directory junctions require no symlink privilege; both exercise
+    # realpath versus lexical argv. Linux/macOS use actual symbolic links.
+    kind='symlink'
+    try:
+        link.symlink_to(target,target_is_directory=True)
+    except OSError:
+        if os.name!='nt':raise
+        made=subprocess.run(['cmd','/c','mklink','/J',str(link),str(target)],capture_output=True)
+        if made.returncode:raise RuntimeError(made.stderr.decode('utf8','replace'))
+        kind='junction'
+    try:yield kind
+    finally:
+        if kind=='junction':os.rmdir(link)
+        else:link.unlink()
+
+def copy_adapter(target):
+    for name in ('adapter.mjs','sources.mjs','SOURCE_PINS.json','slot_bridge.py'):
+        shutil.copyfile(HERE/name,target/name)
+
+def run_adapter(path, doc, options=()):
+    return subprocess.run(['node',*options,str(path)],input=json.dumps(doc).encode(),capture_output=True,
+                          env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'},timeout=60)
 
 class ResearchTests(unittest.TestCase):
     @classmethod
@@ -176,6 +202,110 @@ class ResearchTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,'scalar-key-domain: native result contradicts'):
                 rvr_boundary.run()
         self.assertEqual(calls,['scalar-order-witness'])
+
+    def test_symlink_entrypoint_and_removal(self):
+        expected={v['name']:v['expected'] for v in self.doc['vectors']}
+        with tempfile.TemporaryDirectory(prefix='chain proof path ') as td:
+            root=Path(td);work=root/'physical';work.mkdir();copy_adapter(work)
+            source=work/'adapter.mjs';saved=source.read_bytes()
+            old=b'realpathSync(process.argv[1])===realpathSync(fileURLToPath(import.meta.url))'
+            self.assertEqual(saved.count(old),1)
+            with linked_directory(work,root/'linked') as kind:
+                path=root/'linked'/'adapter.mjs'
+                for options in ((),('--preserve-symlinks-main',)):
+                    result=run_adapter(path,self.doc,options)
+                    self.assertEqual(result.returncode,0,result.stderr.decode())
+                    self.assertTrue(result.stdout.strip(),'CLI must emit a report through a linked path')
+                    self.assertEqual(json.loads(result.stdout),expected)
+                empty=run_adapter(path,{'vectors':[]})
+                self.assertEqual(empty.returncode,2);self.assertIn(b'ZERO_CASES',empty.stderr)
+                try:
+                    source.write_bytes(saved.replace(old,b'resolve(process.argv[1])===fileURLToPath(import.meta.url)'))
+                    real=run_adapter(source,self.doc)
+                    self.assertEqual(real.returncode,0);self.assertEqual(json.loads(real.stdout),expected)
+                    removed=run_adapter(path,self.doc)
+                    self.assertEqual(removed.returncode,0);self.assertEqual(removed.stdout,b'')
+                finally:source.write_bytes(saved)
+                restored=run_adapter(path,self.doc)
+                self.assertEqual(restored.returncode,0);self.assertEqual(json.loads(restored.stdout),expected)
+                self.assertEqual(source.read_bytes(),saved)
+                print(json.dumps({'entrypoint_removal':{'link_kind':kind,'removed_exit':removed.returncode,
+                      'removed_stdout_bytes':len(removed.stdout),'restored':True,'positive_controls_preserved':True,
+                      'applications':1,'original_sha256':hashlib.sha256(saved).hexdigest(),
+                      'mutant_sha256':hashlib.sha256(saved.replace(old,b'resolve(process.argv[1])===fileURLToPath(import.meta.url)')).hexdigest()}},sort_keys=True))
+
+    def test_import_is_not_cli_and_empty_report_refuses(self):
+        # Programmatic evaluate/report imports must not consume stdin or emit CLI output.
+        module=(HERE/'adapter.mjs').as_uri()
+        imported=subprocess.run(['node','--input-type=module','-e','await import('+json.dumps(module)+');'],capture_output=True)
+        self.assertEqual(imported.returncode,0,imported.stderr.decode());self.assertEqual(imported.stdout,b'')
+        with tempfile.TemporaryDirectory() as td:
+            work=Path(td);copy_adapter(work);source=work/'adapter.mjs';saved=source.read_bytes()
+            self.assertEqual(saved.count(b'return results;'),1)
+            source.write_bytes(saved.replace(b'return results;',b'return undefined;'))
+            result=run_adapter(source,self.doc)
+            self.assertEqual(result.returncode,2);self.assertEqual(result.stdout,b'');self.assertIn(b'REPORT_EMPTY',result.stderr)
+            source.write_bytes(saved);self.assertEqual(source.read_bytes(),saved)
+
+    def test_unselected_slot_is_internally_valid(self):
+        v=next(v for v in self.doc['vectors'] if v['name']=='SLOT_UNSELECTED_ROOT')
+        e=json.loads(base64.b64decode(v['input']['envelope_base64']))
+        self.assertEqual(e['checkpoint_id'],v['input']['policy']['body']['checkpoint_id'])
+        self.assertNotEqual(e['proof']['inclusion']['log_root'],e['checkpoint_id'])
+        native=subprocess.run([os.environ.get('CHAIN_PYTHON',sys.executable),'-B',str(HERE/'slot_bridge.py')],
+                              input=json.dumps(e['proof']).encode(),capture_output=True)
+        self.assertEqual(native.returncode,0,native.stderr.decode())
+        self.assertEqual(json.loads(native.stdout),{'status':'VERIFIED','reason':'SLOT_NATIVE_VERIFIED',
+                         'stage':'complete','log_root':e['proof']['inclusion']['log_root']})
+        actual=execute({'vectors':[v]},True);self.assertEqual(actual.returncode,0)
+        result=json.loads(actual.stdout)[v['name']]
+        self.assertEqual(result['result'],{'projection':'chain-neutral.result.v0','proof_validity':'REFUTED',
+                         'anchor_assurance':'ANCHOR_UNCHECKED','reason':'CHECKPOINT_COMMITMENT_MISMATCH','native':None})
+        self.assertIsNone(result['native_details'])
+
+    def test_native_checkpoint_binding_and_removal(self):
+        # A controlled native-report fault exercises the independent second check.
+        # It is not described as an authentic alternate proof or upstream defect.
+        v=copy.deepcopy(next(v for v in self.doc['vectors'] if v['name']=='B_VALID_CHAIN'))
+        v['name']='NATIVE_CHECKPOINT_REPORT_FAULT';doc={'vectors':[v]}
+        expected={'projection':'chain-neutral.result.v0','proof_validity':'REFUTED','anchor_assurance':'ANCHOR_UNCHECKED',
+                  'reason':'CHECKPOINT_COMMITMENT_MISMATCH','native':{'profile':'invinoveritas.decision_receipt.slot_log.v1',
+                  'status':'VERIFIED','reason':'SLOT_NATIVE_VERIFIED'}}
+        with tempfile.TemporaryDirectory() as td:
+            work=Path(td);copy_adapter(work);source=work/'adapter.mjs';bridge=work/'slot_bridge.py'
+            saved=source.read_bytes();original_bridge=bridge.read_bytes()
+            guard=b'native.log_root!==e.checkpoint_id';root=b"'log_root':root"
+            self.assertEqual(saved.count(guard),1);self.assertEqual(original_bridge.count(root),1)
+            baseline=run_adapter(source,self.doc)
+            self.assertEqual(baseline.returncode,0)
+            try:
+                bridge.write_bytes(original_bridge.replace(root,b"'log_root':'0'*64"))
+                guarded=run_adapter(source,doc);self.assertEqual(guarded.returncode,0)
+                self.assertEqual(json.loads(guarded.stdout),{v['name']:expected})
+                source.write_bytes(saved.replace(guard,b'false'))
+                removed=run_adapter(source,doc);self.assertEqual(removed.returncode,0)
+                self.assertEqual(json.loads(removed.stdout)[v['name']],v['expected'])
+                # All ordinary positives and negative cases remain unchanged when
+                # the bridge fault is absent, even with this one guard removed.
+                bridge.write_bytes(original_bridge)
+                positive=run_adapter(source,self.doc)
+                self.assertEqual(positive.returncode,0);self.assertEqual(positive.stdout,baseline.stdout)
+                source.write_bytes(saved);bridge.write_bytes(original_bridge.replace(root,b"'log_root':'0'*64"))
+                restored=run_adapter(source,doc);self.assertEqual(restored.stdout,guarded.stdout)
+                bridge.write_bytes(original_bridge.replace(root,b"'log_root':None"))
+                malformed=run_adapter(source,doc)
+                self.assertEqual(malformed.returncode,2);self.assertIn(b'NATIVE_REPORT_MALFORMED',malformed.stderr)
+                self.assertEqual(malformed.stdout,b'')
+            finally:
+                source.write_bytes(saved);bridge.write_bytes(original_bridge)
+            final=run_adapter(source,self.doc);self.assertEqual(final.stdout,baseline.stdout)
+            self.assertEqual(source.read_bytes(),saved);self.assertEqual(bridge.read_bytes(),original_bridge)
+            print(json.dumps({'native_checkpoint_removal':{'guarded':expected,'removed':v['expected'],
+                  'positive_controls_preserved':True,'source_restored':True,'status':'KILLED_BY_SEMANTIC_WITNESS',
+                  'applications':1,'original_sha256':hashlib.sha256(saved).hexdigest(),
+                  'mutant_sha256':hashlib.sha256(saved.replace(guard,b'false')).hexdigest(),
+                  'bridge_fault_sha256':hashlib.sha256(original_bridge.replace(root,b"'log_root':'0'*64")).hexdigest(),
+                  'input_sha256':hashlib.sha256(json.dumps(doc).encode()).hexdigest()}},sort_keys=True))
 
 if __name__=='__main__':
     unittest.main(verbosity=2)

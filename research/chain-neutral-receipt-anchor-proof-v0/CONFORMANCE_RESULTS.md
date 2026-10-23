@@ -100,3 +100,7 @@ Post-commit replay and GitHub CI cannot be self-hashed into this same commit. Th
 | POLICY_NOT_SELECTED | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_SELECTION_MISMATCH | a valid policy signature cannot replace caller-selected policy identity |
 | POLICY_REF_WRONG | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_BINDING_MISMATCH | envelope references the exact selected authenticated policy |
 | POLICY_PROFILE_DIFFERENT | UNVERIFIABLE | ANCHOR_UNCHECKED | POLICY_BINDING_MISMATCH | authenticated policy selects the same proof profile as the envelope |
+
+## Echo-review follow-up (parent 1afc4ab)
+
+Current 49/49 vectors, 18 research tests per normal/repeat/-O, 26/26 corpus mutants; five positives preserved, no crashes/survivors/not-covered credited as kills. One new mutation asserts early native evidence rather than a verdict change. Native-checkpoint and symlink removals are separately executed controls. Original 43 complete native results are unchanged. Windows and actual WSL Linux research runs pass; canonical Linux baseline/candidate byte-identical: 46 PASS / 6 NOT RUN / 2 SKIPPED. Historical105/9/15/14/7 test families pass. Exact evidence and the intentional distinction between byte equality and cross-platform JSON equality are in evidence/echo-review/summary.json; see ECHO_REVIEW_REPAIRS.md. Earlier sections remain historical measurements, not overwritten results.

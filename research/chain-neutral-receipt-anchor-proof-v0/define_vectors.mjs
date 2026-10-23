@@ -120,5 +120,12 @@ add('NUMERIC_LOG_ID',B,v=>{v.env.log_id=7;v.policy.body.log_id=7;authorize(v);},
 add('POLICY_NOT_SELECTED',A,v=>v.context.policy_id=z,expected('UNVERIFIABLE','POLICY_SELECTION_MISMATCH'),'a valid policy signature cannot replace caller-selected policy identity');
 add('POLICY_REF_WRONG',A,v=>v.env.policy_ref=z,expected('UNVERIFIABLE','POLICY_BINDING_MISMATCH'),'envelope references the exact selected authenticated policy');
 add('POLICY_PROFILE_DIFFERENT',A,v=>{v.policy.body.proof_profile=B;authorize(v);},expected('UNVERIFIABLE','POLICY_BINDING_MISMATCH'),'authenticated policy selects the same proof profile as the envelope');
+// Echo review: roots bind even when a replacement snapshot is internally valid.
+add('SLOT_UNSELECTED_ROOT',B,v=>{const p=v.env.proof;const h=clone(p.inclusion.header);h.rules+=' Alternate informative header.';p.snapshot=C(h)+'\n'+p.snapshot.split('\n').slice(1).join('\n');p.inclusion.header=h;p.inclusion.log_root=H(C(h));},expected('REFUTED','CHECKPOINT_COMMITMENT_MISMATCH'),'self-consistent proof cannot replace the independently selected checkpoint; refuse before native execution');
+add('POLICY_SCHEMA_WRONG',A,v=>{v.policy.body.profile=P+'.unsupported';authorize(v);},expected('UNVERIFIABLE','POLICY_PROFILE_UNSUPPORTED'),'authenticated bytes do not establish an accepted policy schema');
+add('POLICY_MECHANISM_UNKNOWN',A,v=>{v.policy.body.anchor_mechanism='unknown-mechanism';v.env.anchor_mechanism='unknown-mechanism';authorize(v);},expected('UNVERIFIABLE','POLICY_SHAPE'),'policy mechanism allowlist is independent of envelope equality');
+add('ENVELOPE_MECHANISM_MISMATCH',A,v=>v.env.anchor_mechanism='snapshot-digest',expected('UNVERIFIABLE','ANCHOR_MECHANISM_UNSUPPORTED'),'supported mechanism label must still match selected policy');
+add('POLICY_TIMESTAMP_NOT_BOOLEAN',A,v=>{v.policy.body.require_timestamp=0;authorize(v);},expected('UNVERIFIABLE','POLICY_SHAPE'),'falsey nonboolean does not waive policy type admission');
+add('PROOF_SUPPLIED_CHECKPOINT_KEYS',A,v=>{v.env.untrusted_checkpoint_keys=clone(v.policy.body.checkpoint_keys);v.policy.body.checkpoint_keys=[];authorize(v);},expected('UNVERIFIABLE','LOG_TRUST_ROOT_MISSING',nativeA('UNVERIFIABLE','LOG_TRUST_ROOT_MISSING')),'envelope keys cannot become independently configured checkpoint trust');
 writeFileSync(resolve(HERE,'vectors.json'),JSON.stringify({profile:'chain-neutral.research-vectors.v0',vectors},null,2)+'\n');
 console.log('Authored '+vectors.length+' expectations without invoking a verifier.');

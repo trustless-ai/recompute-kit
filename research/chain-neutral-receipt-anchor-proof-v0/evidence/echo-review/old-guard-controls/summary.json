@@ -1,0 +1,200 @@
+{
+  "old_head": "1afc4ab3e3649e3d987d54006a3f3508c9fd159f",
+  "cases_before": 43,
+  "cases_after": 49,
+  "old_code_baselines_reproduce": true,
+  "mutations": [
+    {
+      "mutation": "slot-checkpoint-envelope",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "SLOT_UNSELECTED_ROOT",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_COMMITMENT_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "anchor_assurance",
+        "reason",
+        "native"
+      ]
+    },
+    {
+      "mutation": "policy-schema",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "POLICY_SCHEMA_WRONG",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "reason",
+        "native"
+      ]
+    },
+    {
+      "mutation": "policy-mechanism-allowlist",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "POLICY_MECHANISM_UNKNOWN",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "reason",
+        "native"
+      ]
+    },
+    {
+      "mutation": "envelope-mechanism-binding",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "ENVELOPE_MECHANISM_MISMATCH",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "ANCHOR_MECHANISM_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "reason",
+        "native"
+      ]
+    },
+    {
+      "mutation": "timestamp-boolean",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "POLICY_TIMESTAMP_NOT_BOOLEAN",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "reason",
+        "native"
+      ]
+    },
+    {
+      "mutation": "proof-supplied-checkpoint-keys",
+      "applications": 1,
+      "old_43": "SURVIVED",
+      "expanded_49": "KILLED",
+      "required_killer": "PROOF_SUPPLIED_CHECKPOINT_KEYS",
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "UNVERIFIABLE",
+          "reason": "LOG_TRUST_ROOT_MISSING"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "positive_controls_preserved": true,
+      "different_fields": [
+        "proof_validity",
+        "reason",
+        "native"
+      ]
+    }
+  ],
+  "restored": true
+}

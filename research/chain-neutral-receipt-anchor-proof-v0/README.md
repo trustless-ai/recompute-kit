@@ -10,6 +10,8 @@ Read [SPECIFICATION_CANDIDATE.md](SPECIFICATION_CANDIDATE.md), [TRUST_POLICY.md]
 
 The same-PR self-review corrections are documented in [REVIEW_CORRECTIONS.md](REVIEW_CORRECTIONS.md): log-identity type admission, separately witnessed policy bindings, and an asserted RVR scalar-order boundary. Original evidence remains preserved as history; current counts are reported separately.
 
+The later [Echo review repairs](ECHO_REVIEW_REPAIRS.md) add linked-path CLI admission, an independent native slot-checkpoint check and six policy/checkpoint witnesses. Current corpus: 49 cases; mutation inventory: 26, with the early native-evidence assertion distinguished from a verdict bypass. Original 43 vectors and prior captured evidence are retained unchanged.
+
 ## Replay
 
 Python 3.12+, Node 20+, Git, and Python `rfc8785` for the independent cross-runtime test. The adapters and native RVR/slot bridges otherwise use standard libraries. From the repository root, with an isolated Python environment activated:

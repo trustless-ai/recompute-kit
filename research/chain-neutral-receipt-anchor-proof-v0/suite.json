@@ -6,15 +6,15 @@
   },
   "vectors": {
     "path": "vectors.json",
-    "sha256": "844a7ad383cbb81b724bed7019a52ba1a6adb0b02feaf828fe4563dcbd5e1700"
+    "sha256": "739e8e96e9604b9889baeda9ae8990bc27175558603e05e0a29c0ba6c3ed4df7"
   },
   "checker": {
     "path": "adapter.mjs",
-    "sha256": "3282fa47f77826ef1955c6e02110b90d343312be323326fb5ad79ad7625c2de2"
+    "sha256": "b3f4e8b3f5b551c06dc4592ba1415a1ee5ea2bbd56e57cf6788c8063a0d956e4"
   },
   "mutation_checker": {
     "path": "mutations.py",
-    "sha256": "cf628ae8d0366948ba5c846cb1791dd45d7f9dcc49931d7d0e014cc86ef74f70"
+    "sha256": "be5e123e956107b221138027a81549fe08614d1cc1f0994d29d7984d17e2c068"
   },
   "dependencies": [
     {
@@ -51,11 +51,11 @@
     },
     {
       "path": "test_research.py",
-      "sha256": "894b4dd3ebb3214da7f46cb1d8d4426040876e71f67e227da276aa22817305b0"
+      "sha256": "e057985e63f1c80e9cc867290b0a238c37c8608ea8d0598d88ddaef5508b89df"
     },
     {
       "path": "define_vectors.mjs",
-      "sha256": "35f0a4ae6de07db14ec766364402fc7c6ed0bb6d9ef69f621e14819027cf449f"
+      "sha256": "b823ae40b106f213607d02847d45d172bc1e8ed14db304268601a33ec9c61bb6"
     },
     {
       "path": "validate.py",
@@ -79,7 +79,7 @@
     },
     {
       "path": "TRUST_POLICY.md",
-      "sha256": "7cdc4cec35ce7f0ccbf36668c47a0c604ec6f4655535bc09a92fee008c913bea"
+      "sha256": "7ac85cb8968b41ef5e8c5863c3e324194e81d9e9c805cfbfdb81d62d28d52217"
     },
     {
       "path": "ERC8404_RECEIPT_BOUNDARY.md",

@@ -1,0 +1,8 @@
+[
+  {
+    "detail": "vectors.json sha256 739e8e96e9604b98\u2026 != pinned 844a7ad383cbb81b\u2026",
+    "kind": "DRIFT",
+    "name": "chain-neutral-receipt-anchor-proof-v0",
+    "ok": false
+  }
+]

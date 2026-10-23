@@ -1,9 +1,9 @@
 // Thin finite-profile composition. Cryptography/Merkle algorithms remain upstream.
-import {readFileSync} from 'node:fs';
+import {readFileSync,realpathSync} from 'node:fs';
 import {createPublicKey,verify} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath} from 'node:url';
 import {strict,anchor,HERE} from './sources.mjs';
 const {parseStrict,canonicalize,sha256}=strict;
 export const SUBJECT='agent-action.subject-record.v0';
@@ -82,6 +82,12 @@ export function evaluate(input,context) {
       if(proc.error||proc.status!==0) throw Object.assign(new Error('NATIVE_PROCESS_UNAVAILABLE'),{executionFailure:true});
       try {native={profile:SLOT,...JSON.parse(proc.stdout)};}
       catch {throw Object.assign(new Error('NATIVE_REPORT_MALFORMED'),{executionFailure:true});}
+      if(native.status==='VERIFIED') {
+        if(!hex(native.log_root)) throw Object.assign(new Error('NATIVE_REPORT_MALFORMED'),{executionFailure:true});
+        // Internal inclusion consistency is not binding to the caller's checkpoint.
+        if(native.log_root!==e.checkpoint_id) // GUARD native-slot-checkpoint
+          return answer('REFUTED','CHECKPOINT_COMMITMENT_MISMATCH');
+      }
     }
     if(native.status!=='VERIFIED') // GUARD native-proof-validity
       return answer(native.status,native.reason);
@@ -107,7 +113,14 @@ export function report(corpus,withNative=false) {
   }
   return results;
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
-  try { console.log(JSON.stringify(report(JSON.parse(readFileSync(0,'utf8')),process.argv.includes('--native')))); }
-  catch(error) {console.error(error.code||error.message);process.exitCode=2;}
+// Compare physical paths on BOTH sides (also works with --preserve-symlinks-main).
+// Imports remain side-effect free. Unresolvable entry paths refuse, never exit 0.
+try {
+  if(process.argv[1]&&realpathSync(process.argv[1])===realpathSync(fileURLToPath(import.meta.url))) {
+    const output=JSON.stringify(report(JSON.parse(readFileSync(0,'utf8')),process.argv.includes('--native')));
+    if(typeof output!=='string'||output.length===0) throw new Error('REPORT_EMPTY');
+    console.log(output);
+  }
+} catch(error) {
+  console.error(error.code||error.message);process.exitCode=2;
 }

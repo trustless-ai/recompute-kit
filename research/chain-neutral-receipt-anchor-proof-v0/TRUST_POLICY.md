@@ -8,4 +8,6 @@ The policy carries authority_id and an Ed25519 signature over UTF8(`chain-neutra
 
 The fixture caller context is independently selected **within the laboratory test**, not obtained from the proof. Its deterministic keys are publicly known; they establish no real-world identity, public-log authority, organizational independence, Bitcoin consensus, payment authority or trustworthy judgment. A deployment must supply independently authenticated policy authorities. This draft has no deployment provisioning mechanism and does not claim one.
 
+Accepted policy profile, anchor-mechanism membership, envelope/policy mechanism equality and strict boolean `require_timestamp` are separately witnessed. Envelope keys stay untrusted even if they verify a checkpoint signature. For slot proofs, both the claimed inclusion root and the bridge's returned `log_root` must bind to the selected checkpoint. See [Echo review repairs](ECHO_REVIEW_REPAIRS.md) for the distinct removal controls and their limits.
+
 The policy is an application trust input, not a new RVR Verification Profile. The native RVR SHA256_EQUALS example does not consume it. If a future RVR anchor-verification profile depends on policy, the policy, selected authority and all outcome-affecting inputs must enter that profile's existing committed closure. No ambient authority is introduced into RVR.
