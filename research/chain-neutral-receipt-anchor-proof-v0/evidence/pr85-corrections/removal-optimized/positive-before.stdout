@@ -1,0 +1,102 @@
+{
+  "canonical_result": {
+    "evaluation": {
+      "evidenceMember": "action-subject",
+      "expectedDigest": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+      "observedDigest": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+      "operation": "SHA256_EQUALS"
+    },
+    "outcome": "VERIFIED",
+    "reasonCode": "rvr.v0.digest_match",
+    "schema": "rvr.canonical-result.v0"
+  },
+  "checks": {
+    "canonical-intersection": {
+      "bytes_hex": "7b2261223a5b747275652c6e756c6c2c22cf80225d7d"
+    },
+    "contradictory-projection": {
+      "gate": "REJECTED",
+      "reasonCode": "rvr.gate.result_projection_mismatch"
+    },
+    "duplicate-key": {
+      "rejected": true
+    },
+    "lone-surrogate": {
+      "rejected": true
+    },
+    "negative-result-reproduced": {
+      "canonicalResultDigest": "9ea5b06615864d53e9f366cac54dcfad53c3add9bffbfcea5930ef908f981291",
+      "evaluationPerformed": true,
+      "reasonCode": "rvr.recompute.identical",
+      "recomputationStatus": "REPRODUCED",
+      "verificationOutcome": "REFUTED",
+      "verificationReasonCode": "rvr.v0.digest_mismatch"
+    },
+    "normative-dependency-missing": {
+      "dependencyFailureKind": "UNRESOLVED",
+      "dependencyId": "verification-specification",
+      "evaluationPerformed": false,
+      "reasonCode": "rvr.recompute.normative_dependency_unavailable",
+      "recomputationStatus": "CANNOT_RECOMPUTE"
+    },
+    "normative-dependency-wrong": {
+      "dependencyFailureKind": "IDENTITY_MISMATCH",
+      "dependencyId": "verification-specification",
+      "evaluationPerformed": false,
+      "reasonCode": "rvr.recompute.normative_dependency_identity_mismatch",
+      "recomputationStatus": "CANNOT_RECOMPUTE"
+    },
+    "number-not-RVR": {
+      "rejected": true
+    },
+    "optional-envelope-independent": {
+      "unchanged": true
+    },
+    "safe-integers-in-raw-payload": {
+      "canonicalResultDigest": "fb2f97fc53c15f0bcaada7ddb39ac94c7f2dc57b0e6106cefc9436e511b5f3f0",
+      "evaluationPerformed": true,
+      "reasonCode": "rvr.recompute.identical",
+      "recomputationStatus": "REPRODUCED",
+      "verificationOutcome": "VERIFIED",
+      "verificationReasonCode": "rvr.v0.digest_match"
+    },
+    "scalar-key-domain": {
+      "bytes_hex": "7b22ee8080223a6e756c6c2c22f09f9880223a6e756c6c7d"
+    },
+    "seventh-field": {
+      "gate": "REJECTED",
+      "reasonCode": "rvr.gate.schema_invalid"
+    },
+    "subject-identity": {
+      "canonicalResultDigest": "a7b1be625a769f641f72bb0c439cff57a1ca4dffa50a2312ce477c6f8e8f40a7",
+      "evaluationPerformed": true,
+      "reasonCode": "rvr.recompute.identical",
+      "recomputationStatus": "REPRODUCED",
+      "verificationOutcome": "VERIFIED",
+      "verificationReasonCode": "rvr.v0.digest_match"
+    },
+    "subject-is-not-RVR": {
+      "gate": "REJECTED",
+      "reasonCode": "rvr.gate.schema_invalid"
+    },
+    "unverifiable-reproduced": {
+      "canonicalResultDigest": "2c2699fbcdf18fefe089ae89d5b8d6cb73c8960ef9cffd6263bf313ec16cbd67",
+      "evaluationPerformed": true,
+      "reasonCode": "rvr.recompute.identical",
+      "recomputationStatus": "REPRODUCED",
+      "verificationOutcome": "UNVERIFIABLE",
+      "verificationReasonCode": "rvr.v0.required_evidence_unavailable"
+    }
+  },
+  "count": 15,
+  "profile_digest": "51f79442e96339ca45e9e6cc0c8232833efbee20e7480df00987dbc97da72948",
+  "receipt": {
+    "claimDigest": "3515031ca176819a66e1368afb06f97547cb8e091cf7e79470c54dc5bb2a568f",
+    "evidenceSetDigest": "b436ba233e499ac91d439f2570aefac0e23b1001077c36a737fe26d13de286c9",
+    "outcome": "VERIFIED",
+    "reasonCode": "rvr.v0.digest_match",
+    "resultDigest": "a7b1be625a769f641f72bb0c439cff57a1ca4dffa50a2312ce477c6f8e8f40a7",
+    "verificationProfileDigest": "51f79442e96339ca45e9e6cc0c8232833efbee20e7480df00987dbc97da72948"
+  },
+  "scope": "SUBJECT_BYTE_IDENTITY_ONLY; NO_ACTION_EXECUTION"
+}

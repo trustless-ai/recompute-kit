@@ -1,0 +1,11 @@
+{
+  "applications": 1,
+  "status": "KILLED_BY_ASSERTION_WITNESS",
+  "original_refusal_guard_exit": 0,
+  "removed_guard_test_exit": 1,
+  "test_failure": "RuntimeError not raised; 1 assertion failure, 0 errors",
+  "restored_guard_exit": 0,
+  "positive_native_output_byte_identical": true,
+  "source_restored": true,
+  "not_part_of_proof_mutation_count": true
+}

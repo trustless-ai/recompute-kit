@@ -1,0 +1,4 @@
+Linux DESKTOP-T3HF4I6 5.15.167.4-microsoft-standard-WSL2 #1 SMP Tue Nov 5 00:21:55 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+Python 3.12.3
+v20.19.5
+1.3.14

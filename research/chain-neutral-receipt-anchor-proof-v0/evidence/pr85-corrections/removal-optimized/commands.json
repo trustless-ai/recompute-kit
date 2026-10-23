@@ -1,0 +1,65 @@
+[
+  {
+    "name": "guard-present",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/pr85-scalar-removal-xe88i_ha/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py",
+      "ResearchTests.test_scalar_order_is_asserted"
+    ],
+    "cwd": "/tmp/pr85-scalar-removal-xe88i_ha/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "bd64d256244cd7c031fb6ba0d47968822ab9c31d08d1a4f8d9988b6dec2e2103"
+  },
+  {
+    "name": "positive-before",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/pr85-scalar-removal-xe88i_ha/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/tmp/pr85-scalar-removal-xe88i_ha/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "guard-removed",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/pr85-scalar-removal-xe88i_ha/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py",
+      "ResearchTests.test_scalar_order_is_asserted"
+    ],
+    "cwd": "/tmp/pr85-scalar-removal-xe88i_ha/repo",
+    "exit": 1,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "4449430aed2abf57644ada16b2e4304895778722f238bcc7fa6dffbbc18639f9"
+  },
+  {
+    "name": "positive-without-guard",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/pr85-scalar-removal-xe88i_ha/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/tmp/pr85-scalar-removal-xe88i_ha/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "guard-restored",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/pr85-scalar-removal-xe88i_ha/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py",
+      "ResearchTests.test_scalar_order_is_asserted"
+    ],
+    "cwd": "/tmp/pr85-scalar-removal-xe88i_ha/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "3679b1756f1b8d364e36863daca32590c450b67b99afed4eb93cf56161fa043f"
+  }
+]

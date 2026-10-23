@@ -1,0 +1,19 @@
+test_cross_runtime_canonical_bytes (__main__.ResearchTests.test_cross_runtime_canonical_bytes) ... ok
+test_drift_distinct (__main__.ResearchTests.test_drift_distinct) ... ok
+test_empty_and_duplicate_cases (__main__.ResearchTests.test_empty_and_duplicate_cases) ... ok
+test_every_complete_result (__main__.ResearchTests.test_every_complete_result) ... ok
+test_exact_commitments (__main__.ResearchTests.test_exact_commitments) ... ok
+test_log_identity_admission (__main__.ResearchTests.test_log_identity_admission) ... ok
+test_missing_runtime_is_runner (__main__.ResearchTests.test_missing_runtime_is_runner) ... ok
+test_mutation_classifications (__main__.ResearchTests.test_mutation_classifications) ... ok
+test_native_process_failure_is_not_a_case_refutation (__main__.ResearchTests.test_native_process_failure_is_not_a_case_refutation) ... ok
+test_raw_size_limit (__main__.ResearchTests.test_raw_size_limit) ... ok
+test_repeat_and_native_retention (__main__.ResearchTests.test_repeat_and_native_retention) ... ok
+test_report_contract_and_refutation (__main__.ResearchTests.test_report_contract_and_refutation) ... ok
+test_rvr_boundary (__main__.ResearchTests.test_rvr_boundary) ... ok
+test_scalar_order_is_asserted (__main__.ResearchTests.test_scalar_order_is_asserted) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 3.092s
+
+OK

@@ -1,0 +1,6 @@
+# Captured process streams and diagnostic artifacts retain their exact bytes.
+# Source/specification files outside this directory retain repository LF rules.
+* -text
+# These two historical Windows captures contain literal CRLF bytes.
+mutations-first.json whitespace=cr-at-eol
+rvr-baseline.stdout whitespace=cr-at-eol
