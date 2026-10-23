@@ -1,0 +1,23 @@
+test_symlink_entrypoint_and_removal (test_research.ResearchTests.test_symlink_entrypoint_and_removal) ... ERROR
+
+======================================================================
+ERROR: test_symlink_entrypoint_and_removal (test_research.ResearchTests.test_symlink_entrypoint_and_removal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py", line 225, in test_symlink_entrypoint_and_removal
+    self.assertEqual(real.returncode,0);self.assertEqual(json.loads(real.stdout),expected)
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+----------------------------------------------------------------------
+Ran 1 test in 0.936s
+
+FAILED (errors=1)

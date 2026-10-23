@@ -206,7 +206,7 @@ class ResearchTests(unittest.TestCase):
     def test_symlink_entrypoint_and_removal(self):
         expected={v['name']:v['expected'] for v in self.doc['vectors']}
         with tempfile.TemporaryDirectory(prefix='chain proof path ') as td:
-            root=Path(td);work=root/'physical';work.mkdir();copy_adapter(work)
+            root=Path(td).resolve();work=root/'physical';work.mkdir();copy_adapter(work)
             source=work/'adapter.mjs';saved=source.read_bytes()
             old=b'realpathSync(process.argv[1])===realpathSync(fileURLToPath(import.meta.url))'
             self.assertEqual(saved.count(old),1)
