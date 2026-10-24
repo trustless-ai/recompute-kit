@@ -385,9 +385,10 @@ class NonemptySelfGradingTests(unittest.TestCase):
         derived expectation, an adapter that grades 7 of 8 and REPORTS 7/7 is already caught --
         8 != 7. What is not caught is an adapter whose total comes from the corpus length rather
         than from results it actually checked: it prints 8/8 while grading 7, and agrees with
-        itself. `cutoff_enforce.py` computes exactly that way
-        (`len(fx['cases']) - fails}/{len(fx['cases'])}`) and is saved today only by raising
-        KeyError on the missing field rather than skipping it.
+        itself. `cutoff_enforce.py` used to compute exactly that way
+        (`len(fx['cases']) - fails}/{len(fx['cases'])}`), saved only by raising KeyError on the
+        missing field; since #82/#83 the adapters count graded outcomes via `Grading`, and this test
+        guards against that accounting being removed again.
 
         So: admit a case the adapter CANNOT grade and require that nothing calls the run a pass.
 
@@ -414,31 +415,41 @@ class NonemptySelfGradingTests(unittest.TestCase):
     def test_an_adapter_that_skips_an_admitted_case_is_caught(self):
         """Removal control for the test above, against a REAL adapter.
 
-        cutoff_enforce.py reports `len(cases) - fails` over `len(cases)`. Make its loop skip a case
-        it cannot grade -- the one-line change that turns its accidental safety into a silent
-        skip -- and it reports a full grade of a corpus it did not fully grade, and exits 0. The
-        test above must catch that, or it is only re-testing the KeyError.
+        Since #82/#83 the adapters keep completeness accounting themselves: `Grading.expectation`
+        records a case with no expectation as ungradable and `Grading.finish` turns any ungradable
+        case into exit 2. So a one-line skip no longer produces a false pass, and the original
+        control (which expected one) went stale -- @pipavlo82's composition audit of #78 + #82 + #83.
+
+        Two halves, both against cutoff_enforce.py:
+        1. Unchanged adapter: the probe case stays UNVERIFIABLE (exit 2, named in stderr).
+        2. Completeness enforcement removed (`finish()` replaced by a refutation-only exit): the
+           same probe now exits 0 -- the false pass the test above refuses.
+        Without (2) the test above would only be re-testing the adapter's own accounting.
         """
         check = "pq-key-binding-v0/rotation"
         _, owner = self.paths(check)
         source = owner.read_text(encoding="utf-8")
-        anchor = '        got, exp = admit(bindings, cutoff, c["artifact"]), c["expected"]\n'
+        anchor = "    return grading.finish()\n"
         self.assertEqual(source.count(anchor), 1,
-                         "control anchor not found exactly once; the skip was not introduced, "
+                         "control anchor not found exactly once; enforcement was not removed, "
                          "so this control proves nothing")
-        admitted = declared_count(self.repo, check) + 1
         with self.probe(check, "ungradeable"):
-            owner.write_text(source.replace(
-                anchor,
-                '        if "expected" not in c:\n'
-                '            continue\n' + anchor, 1), encoding="utf-8", newline="\n")
+            process = self.native(check)
+            output = (process.stdout + process.stderr).decode(errors="replace")
+            self.assertEqual(process.returncode, 2,
+                             "an ungradable case must stay UNVERIFIABLE (exit 2):\n" + output)
+            self.assertIn(b"UNVERIFIABLE: UNGRADABLE_CASE", process.stderr, output)
+            self.assertIn(PROBE_SUFFIX.encode(), process.stderr,
+                          "the UNVERIFIABLE line must name the probe case, not some other case")
+        with self.probe(check, "ungradeable"):
+            owner.write_text(source.replace(anchor, "    return 1 if grading.refuted else 0\n", 1),
+                             encoding="utf-8", newline="\n")
             self.repin(owner)
             process = self.native(check)
-            # the adapter now claims a full grade of a corpus it skipped a case in
-            self.assertEqual(process.returncode, 0, "the skip was not introduced as intended:\n"
+            # completeness gone: the adapter calls a corpus with an ungraded case a pass
+            self.assertEqual(process.returncode, 0,
+                             "removing completeness enforcement did not restore the false pass:\n"
                              + (process.stdout + process.stderr).decode(errors="replace"))
-            self.assertIn(f"{admitted}/{admitted}".encode(), process.stdout,
-                          "expected the corpus-length count to overstate what was graded")
 
     def test_every_self_grading_check_is_declared(self):
         """No self-grading check may silently escape this file.
