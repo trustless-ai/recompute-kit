@@ -1,0 +1,8 @@
+[
+  {
+    "detail": "dependencies test_research.py sha256 e057985e63f1c80e\u2026 != pinned 063b7ace1406176c\u2026",
+    "kind": "DRIFT",
+    "name": "chain-neutral-receipt-anchor-proof-v0",
+    "ok": false
+  }
+]

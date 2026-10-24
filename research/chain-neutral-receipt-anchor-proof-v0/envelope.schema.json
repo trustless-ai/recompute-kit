@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Optional proof envelope; NOT a seventh RVR field",
+  "type": "object",
+  "required": [
+    "profile",
+    "subject_profile",
+    "subject_id",
+    "proof_profile",
+    "log_id",
+    "checkpoint_id",
+    "anchor_mechanism",
+    "policy_ref",
+    "proof",
+    "timestamp"
+  ],
+  "properties": {
+    "profile": {
+      "const": "chain-neutral.anchor-proof-envelope.v0"
+    },
+    "subject_profile": {
+      "const": "agent-action.subject-record.v0"
+    },
+    "subject_id": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "proof_profile": {
+      "enum": [
+        "receiptos.manifest-proof.v0",
+        "invinoveritas.decision_receipt.slot_log.v1"
+      ]
+    },
+    "log_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "anchor_mechanism": {
+      "enum": [
+        "local-ed25519",
+        "snapshot-digest"
+      ]
+    },
+    "policy_ref": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "proof": {
+      "type": "object"
+    },
+    "timestamp": {}
+  },
+  "additionalProperties": true,
+  "$comment": "Extra transport metadata has no authority; native proof admission and policy signature/selection are additional executable requirements."
+}

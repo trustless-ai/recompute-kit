@@ -1,0 +1,16 @@
+{
+  "commands": 29,
+  "nonzero": [
+    "normal-replay",
+    "repeat-replay",
+    "optimized-replay"
+  ],
+  "complete_machine_outputs_byte_identical": {
+    "report": true,
+    "native": true,
+    "rvr_boundary": true,
+    "mutations": true,
+    "replay": true
+  },
+  "note": "Unittest stderr includes measured timing; byte equality applies only to the named machine reports."
+}

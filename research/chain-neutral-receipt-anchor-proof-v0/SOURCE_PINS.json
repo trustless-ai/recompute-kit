@@ -1,0 +1,83 @@
+{
+  "schema": "chain-neutral.source-pins.v0",
+  "base": "b9d4fc13a7b945dc7030360f7d39fe7c8484bef3",
+  "repositories": [
+    {
+      "directory": "receiptos",
+      "url": "https://github.com/pipavlo82/receiptos-verify.git",
+      "commit": "ac82f93b81559b4da61ae766824bb5fcf54388f4",
+      "runtime": true,
+      "license": "Apache-2.0",
+      "files": {
+        "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "src/core/strict-json.mjs": "4efcb72608603d84c17e3f4cae080964ecd216e36fd1953aee43d66ee11bc4db",
+        "src/core/common.mjs": "f487a9cf1b4f2e90374d05fe5e3790cef729b0d751f3f5ca280a9e0f6abd2265",
+        "src/core/capsule.mjs": "3090851bf2a137dae432b3e38ef0c2b48d5e368eef9c7375d6279eaf9288b5a5",
+        "research/agent-action-browser-verify-v0/lib/anchor.mjs": "1e4995e0b70d037f6c77b5c0e66cfee2f20783064a96e2e3b1991c8ab6e6416b",
+        "research/agent-action-browser-verify-v0/AGENT_ACTION_RECEIPT_PROFILE.md": "56cfa34aaf8fdeb846fc5efbb4bdf48abd1fd489b5bfc1f72e84b697ee04a6ed",
+        "research/agent-action-browser-verify-v0/ANCHOR_CHECK_CONTRACT.md": "4bbc1ea345264b634c8d377c87da8db9b690125ac3f88297423f2296c707dac8",
+        "research/agent-action-browser-verify-v0/CANONICALIZATION_COMPATIBILITY.md": "e95a3bd33a2484fa460803c2e65a6b571156b5de18b1cde6e893d03a55b82ea9",
+        "research/agent-action-browser-verify-v0/ARCHITECTURE.md": "65154644a24a3fd0d8888fe87b0cb77fa0dcf85c94bc40941efbf458d6d38307",
+        "research/agent-action-browser-verify-v0/RESULTS.md": "b299a201eb7e54560da86122d824b0a79d80fb3422ce8e60780259a1972a94dd",
+        "research/agent-action-browser-verify-v0/lib/profile.mjs": "0afc8639a4236e3282fc9b7676e3582dbae77a0295aab9fe5e4ce528eae09d74",
+        "vendor/crystal/src/receiptos/canon/canonicalize.ts": "fca18d1642e6fe47d26ae2eb9f4bf15cf305653d6a7a08a5a0a09e2d6a716c81",
+        "vendor/crystal/src/receiptos/canon/receipt-root.ts": "519e532b155f3c1f4720337d09bc2a8503e4546682695e798b8597ad8d187bf0"
+      }
+    },
+    {
+      "directory": "invino",
+      "url": "https://github.com/babyblueviper1/invinoveritas.git",
+      "commit": "ce8c504f2ae4d9b389b53823fe16afec7fcf3bb3",
+      "runtime": true,
+      "license": "Apache-2.0",
+      "files": {
+        "LICENSE": "7d61ebc2444480f145943d2b611d82ed616e1750972878c6eea99f25c7fb90ea",
+        "examples/decision-receipt/SLOT_LOG_PROFILE.md": "1d27aad971b07d373137c1e4efd691116a0f2071592a7f8dc14d1b8007601cfa",
+        "examples/decision-receipt/slot_log_check.py": "3dc3523eb75388b20653b65625e604513da6161971319bff43c0532e5e3ac6fe",
+        "examples/decision-receipt/slot_log_vectors.json": "a43e4ccf0493945607ab7df35dfd57ec078c4c895d10ade33ed9b4eb62b7df6d"
+      }
+    },
+    {
+      "directory": "lens",
+      "url": "https://github.com/trustless-ai/recompute-lens.git",
+      "commit": "70b44d854a32c867b756fa1272b194d4ae8f1ce0",
+      "runtime": false,
+      "license": "NOASSERTION; do not redistribute",
+      "files": {
+        "package.json": "d2811b719007f06b1a35b177cde3c7f464055b7bbb142b5757654d2cf01a50f3",
+        "src/recipes.ts": "e2cfa423bb4dddac28badc7640b21bd80d15f3085b3ee0a32da06fbeed8071de",
+        "src/types.ts": "5d69bc5fc31791a9527b041bbfa99152fba4e25b8817f228c8654c1b7300fea8",
+        "src/recompute/receiptos-c14n-v0.ts": "ec85b664699203e3147438230d967639243a9c34659c3fb8324c4401c1c8c2ef"
+      }
+    },
+    {
+      "directory": "rvr",
+      "url": "https://github.com/pipavlo82/recomputable-verification-receipts.git",
+      "commit": "9dd36e882dd372f264b77b179130948aa5adcbde",
+      "runtime": true,
+      "license": "Apache-2.0",
+      "files": {
+        "LICENSE": "fa7fe2e14249d2da31c0d2a0bbefc17a1994a93b42ae652a3dab450b6f1c0251",
+        "conformance/rvr-v0/README.md": "d963e6126d066c621865e8b86f6fda3fd89a4c6c31c0f7afa495aca3d01c56ad",
+        "conformance/rvr-v0/adapter.py": "03505efc8ee993f118fad2c71f706870d25de0da61a393a1f18f7b310bded235",
+        "conformance/rvr-v0/adapter.ts": "368955fae7a1c1153822e4e58ac9807f69eaddf4e91740eaf231f374154b3e58",
+        "conformance/rvr-v0/expected.json": "0ed23ee3530df93dde2f879981d28ddb3f60fc250c8652d109dd65fdb22193ce",
+        "conformance/rvr-v0/manifest.json": "7559d380bf3ddd228b135f9f785b40dba063d0ededcb61ba156f1bb3ad3211f8",
+        "conformance/rvr-v0/mutants.json": "d5d16cc53ec0d9be53968d7ffc01fe019cb8b2630390c04431f6ee9f54edf847",
+        "conformance/rvr-v0/rvr-generic-sha256-equals-v0.profile.schema.json": "ecded96c5f58f7057e2c5c0b6d9789942a9a7bf600f4a453387e99f8406e7baf",
+        "conformance/rvr-v0/rvr.schema.json": "97799403d8eb96c046930396c39e0f1c3e76d6c35fd0435937446ce844bd4dae",
+        "conformance/rvr-v0/vectors.json": "170fc62576fa8edb22073f73b28d9ac0deff26451ef651378839cd458da7312f",
+        "conformance/rvr-v0/verification-profile-manifest.schema.json": "148afeb484d3866c1caae82e574182c1b748dd461dfaeb1d8095ecf4905690c1",
+        "conformance/rvr-v0/verification-profile.json": "23cac7eb86aca7a8cc0422985f598b67dd3fe758bd2321f6bcbc5ab2f1c2d8ab",
+        "docs/spec/RECOMPUTABLE_VERIFICATION_RECEIPTS_V0.md": "81077ddbf50624bc70941cf53a4f542604e926a653d7fcb3a36310ff5430b973"
+      }
+    }
+  ],
+  "erc8404_draft": {
+    "repository": "pipavlo82/ERCs",
+    "commit": "7a9e63a80bce04db53c6550103c1d41eca35f3d1",
+    "path": "ERCS/erc-8404.md",
+    "sha256": "63f1ad56b6a8a5099a12afbacd511c1271f50b1af6ef674a12b7aeb28850ad85",
+    "status": "Draft PR1980; not a final standard"
+  }
+}

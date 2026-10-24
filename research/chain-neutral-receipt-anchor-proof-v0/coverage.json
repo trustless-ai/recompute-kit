@@ -1,0 +1,2012 @@
+{
+  "profile": "chain-neutral.coverage.v0",
+  "base": "b9d4fc13a7b945dc7030360f7d39fe7c8484bef3",
+  "cases": 49,
+  "reproduced": 49,
+  "proof_validity": {
+    "VERIFIED": 5,
+    "REFUTED": 19,
+    "UNVERIFIABLE": 25
+  },
+  "anchor_assurance": {
+    "ANCHOR_UNCHECKED": 47,
+    "CHAIN_CONSISTENT": 2
+  },
+  "rvr_boundary_controls": 15,
+  "mutation_counts": {
+    "KILLED": 26
+  },
+  "not_covered": [
+    "public-authority-provisioning",
+    "OTS-authentication",
+    "ANCHORED_VERIFIED",
+    "action-execution",
+    "claim-truth",
+    "execution-permission",
+    "new-normative-RVR-anchor-profile"
+  ],
+  "results": [
+    {
+      "case": "A_VALID",
+      "guarantee": "native count-bound binary Merkle inclusion",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "VERIFIED",
+        "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": "LOCAL_MANIFEST_INCLUSION_UNDER_CALLER_SELECTED_KEY",
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "B_VALID_CHAIN",
+      "guarantee": "native slot inclusion and two snapshots",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "18b6adedd0bc702a38508d8a6ca7075f37522e25250fe6b91634941e1db90def",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "VERIFIED",
+        "reason": "SLOT_NATIVE_VERIFIED",
+        "stage": "complete",
+        "log_root": "9259f8546badc74654ad3e211756ea22292e84d4850f9a06500ca5e39c3b5dae"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_RECEIPT",
+      "guarantee": "receipt identity",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "aa323861a6c1c2b90523bd36910c5a0016a26e2e23cba9c7e3ee236e52127380",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_IDENTITY_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_IDENTITY_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_LEAF",
+      "guarantee": "leaf binding",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "5b146c9348feee29dc4b35203426d3d3b0bccaa9d42dd06579587132f7d519f8",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "RECEIPT_LOG_LEAF_MISMATCH"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "RECEIPT_LOG_LEAF_MISMATCH"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "leaf_binding": "NOT_CHECKED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_ROOT",
+      "guarantee": "root",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "58c1d6b6c6376536cc39bfff91e625a05c88ae2207381510abaa5d4f97c4a72a",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "CORRUPT_SIBLING",
+      "guarantee": "path",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "e26d0ba91193c2fb0611ac3b4b6dc29ca0650489d31920d430da32c357a68067",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_INDEX",
+      "guarantee": "position",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "509aa6f66298b82ddb4ff0fc3f4a5fa0ae513997e13055b787e6bdd561a8a7bf",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_COUNT",
+      "guarantee": "count",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d97e4ba9709b8c40e4bdfa0ab20c00bfbe5218a2b1371ac72ee54bfb6de3a0eb",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_TREE_SIZE_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CHECKPOINT_TREE_SIZE_MISMATCH"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_TREE_SIZE_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CHECKPOINT_TREE_SIZE_MISMATCH"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "CHECKPOINT_TREE_SIZE_MISMATCH",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "UNKNOWN_PROFILE",
+      "guarantee": "dispatch",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "6ca3de4882bf0c0be61d1b81e89854040710ef4a77067b8bbd2ea0bf3261e018",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "PROOF_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "PROOF_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_LOG",
+      "guarantee": "policy log",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "da10b294fd24f6be68a22b88a3386c8098420e2fa4f4ba499329f70dd99549fe",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "MISSING_POLICY",
+      "guarantee": "explicit policy required",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_MISSING",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_MISSING",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "SELF_SUPPLIED_TRUST",
+      "guarantee": "proof cannot grant trust",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "b4d03f8569a0c72ded7dd1077a638f4cab71c076f3364e933e2156371c0b480a",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_AUTHORITY_UNKNOWN",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_AUTHORITY_UNKNOWN",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "BAD_POLICY_SIGNATURE",
+      "guarantee": "authenticate policy",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "81d0adf2cb4f02558c56bbc16694751ab9e6cd2a194aff520b2c1659008c022e"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SIGNATURE_INVALID",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SIGNATURE_INVALID",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "WRONG_CHECKPOINT",
+      "guarantee": "different valid signed checkpoint cannot substitute",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "629460ac3bb8284669bc309c80e8533fe7f2b67b8494679277ed80339433f146",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SELECTED_CHECKPOINT_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SELECTED_CHECKPOINT_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "CONFLICTING_HISTORY",
+      "guarantee": "supplied history conflict",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "c9942e41e0a3b3f4312e66c41e67423eaf4abd0767bd57bfaec752782ec31e7f",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "REFUTED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "stage": "chain",
+        "detail": "prev_root is not the previous snapshot's log_root (history rewritten?)"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "BROKEN_PREV_ROOT",
+      "guarantee": "chain continuity despite valid current root",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "01e1c9fb6ec55c0741d808e11954e64453beeaa3ad9d52c71c2a4813a9deaf4e",
+        "policy_sha256": "78ae4c502dbb86a3997881b9e9b282292ae0b186adc73bdbe992a1666d80a433"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "REFUTED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "stage": "chain",
+        "detail": "prev_root is not the previous snapshot's log_root (history rewritten?)"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "DROPPED_SLOT",
+      "guarantee": "old slots preserved, even when current root republished",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "eea321e8e81438e74261d6c7094477262e5cf762270bc15a7a491c141b3427d7",
+        "policy_sha256": "4d1619ba1ad4ef9d56656e7e87f8a2deb5cdf15dd79e77e0c71d031dea42ee45"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "REFUTED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "stage": "chain",
+        "detail": "1 slot(s) of the previous day missing (first: 0000000000000000000000000000000000000000000000000000000000000000)"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "MODIFIED_HISTORY",
+      "guarantee": "old slots preserved, even when current root republished",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "584b84dd9bf58039c51984bda8eb5c653e9beea53ddf08c2e28eb59b8432d3b2",
+        "policy_sha256": "4194b906ad23c99b57900fa2ea8cb64e41310c8cfbdd4f5409fa6b2fe6ec3ce7"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_CHAIN_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "REFUTED",
+        "reason": "SLOT_CHAIN_INVALID",
+        "stage": "chain",
+        "detail": "slot 0000000000000000000000000000000000000000000000000000000000000000 changed since the previous day (only new conflicts may be appended)"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "INVALID_CHECKPOINT_SIGNATURE",
+      "guarantee": "checkpoint signature",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "6bff38aca4e8e5c70fb734bb9bc98ba1a12a91f08c545376a61deb4593cb7e3c",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_SIGNATURE_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CHECKPOINT_SIGNATURE_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_SIGNATURE_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CHECKPOINT_SIGNATURE_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "CHECKPOINT_SIGNATURE_INVALID",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "REFUTED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "MISSING_TIMESTAMP",
+      "guarantee": "required timestamp missing",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "0ee8ea3e86d257a12931f60f30f25be29bf307dfed5fb93da1b6fddbcdd66d39",
+        "policy_sha256": "434773e54a4733a7fbde1582eca5f47d26e26494dd2857710fe125e4d40350a7"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "TIMESTAMP_EVIDENCE_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "TIMESTAMP_EVIDENCE_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "VERIFIED",
+        "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": "LOCAL_MANIFEST_INCLUSION_UNDER_CALLER_SELECTED_KEY",
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "UNANCHORED_VALID",
+      "guarantee": "valid inclusion does not imply anchoring",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "bfecb5a61a425005a7b44a97fbb411baa21447585b09b5dcdd7b4980db09bb3b",
+        "policy_sha256": "3f5f5fb209fdc0afa6c24e334e33dc5c61b0c121131be32601cd07f91b6996ce"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "VERIFIED",
+        "reason": "SLOT_NATIVE_VERIFIED",
+        "stage": "complete",
+        "log_root": "9259f8546badc74654ad3e211756ea22292e84d4850f9a06500ca5e39c3b5dae"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "CLAIMED_OTS",
+      "guarantee": "OTS label not verification",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "db354f1eb24c2525429605e2b1f8f5ca714f57f25b83a25882f67a96d7b92536",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "TIMESTAMP_VERIFIER_NOT_AVAILABLE",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "TIMESTAMP_VERIFIER_NOT_AVAILABLE",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "VERIFIED",
+        "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": "LOCAL_MANIFEST_INCLUSION_UNDER_CALLER_SELECTED_KEY",
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "UNSUPPORTED_VERSION",
+      "guarantee": "version",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "287a925b93ddd7a2cf35a837cb858ba2a35a51b2a64caf9cac11248fa6c0d200",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "PROOF_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "PROOF_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "NON_CANONICAL",
+      "guarantee": "raw canonical byte admission",
+      "input_commitments": {
+        "subject_bytes_sha256": "36e3303523820e266dd5b6af79f4f7bacc7e894832fe492ce59acd671f23d034",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "NON_CANONICAL_RECEIPT",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "NON_CANONICAL_RECEIPT",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "MALFORMED_JSON",
+      "guarantee": "malformed differs from refuted",
+      "input_commitments": {
+        "subject_bytes_sha256": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MALFORMED_JSON",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MALFORMED_JSON",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "DUPLICATE_MEMBER",
+      "guarantee": "duplicates before decoding",
+      "input_commitments": {
+        "subject_bytes_sha256": "e93326f1a087488abc979babb9945f1681ed51aad38683958283849e9c59785d",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "DUPLICATE_JSON_KEY",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "DUPLICATE_JSON_KEY",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "NEGATIVE_ZERO",
+      "guarantee": "negative zero",
+      "input_commitments": {
+        "subject_bytes_sha256": "d385b00df26d4ba288a410127dd444a2d193ee4d49259a9e848134164f91c282",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "UNSAFE_JSON_NUMBER",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "UNSAFE_JSON_NUMBER",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "UNSAFE_INTEGER",
+      "guarantee": "safe integer upper boundary",
+      "input_commitments": {
+        "subject_bytes_sha256": "5084bce59820a6b048fd020943e5574bdad487cb9d82e97f5bf0b559eae9a442",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "UNSAFE_JSON_NUMBER",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "UNSAFE_JSON_NUMBER",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "LONE_SURROGATE",
+      "guarantee": "Unicode scalar requirement",
+      "input_commitments": {
+        "subject_bytes_sha256": "0339c53bab5e164bab125fd6c2737ebd41021238fd314bcad0232643e7b0a924",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_UNICODE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_UNICODE",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "NON_ASCII_KEY",
+      "guarantee": "bounded common key domain",
+      "input_commitments": {
+        "subject_bytes_sha256": "d67a1feed80c3d18b462b81f8fe621b61bd0120640c3305c4dbb2f51eaf102cf",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_JSON_KEY",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_JSON_KEY",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "INVALID_UTF8",
+      "guarantee": "raw UTF8",
+      "input_commitments": {
+        "subject_bytes_sha256": "caf573f0daa6960ecb26f8eddbc4e2059277ad5afc6f72ffd59a0ecead602a22",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_UTF8",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "INVALID_UTF8",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "OTHER_MERKLE_CONVENTION",
+      "guarantee": "same leaf/siblings/count, only internal-pair convention changed",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "0d486d004235afd3248d220a86aee54ed8640ba38c697f18da78daa96e969c50",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "MERKLE_INCLUSION_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "SLOT_WRONG_RECEIPT",
+      "guarantee": "valid slot proof for a different receipt cannot substitute",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "c3f277e1b73df96637ae4fbb36417e9dac61fd1b0c7b7ad526840f523ce44e39",
+        "policy_sha256": "c183e1c5d570cff3da19789ac222f7835e53e95e6d374982c2c303e0320a1252"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_RECEIPT_BINDING_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_RECEIPT_BINDING_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "VALID_PROOF_OTHER_RECEIPT",
+      "guarantee": "valid manifest proof for a different receipt cannot substitute",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "1dd3635c16c864641cf9ce4f12e9326c06574a12213fad4278e63507f931c4e4",
+        "policy_sha256": "2eceefeaa6e78220fa816c39c20e7d423269de05421de9cc46103edfd65db11b"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "RECEIPT_LOG_LEAF_MISMATCH"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "RECEIPT_LOG_LEAF_MISMATCH"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+        "native": {
+          "leaf_binding": "NOT_CHECKED",
+          "inclusion": "NOT_CHECKED",
+          "checkpoint_identity": "NOT_CHECKED",
+          "log_identity": "NOT_CHECKED",
+          "signature": "NOT_CHECKED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "CHAIN_REQUIRED",
+      "guarantee": "required chain",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "f2f054c6ff2c578b74c186c4f15ad13d0a76f96799404fb12cac4fbd83865a39",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHAIN_EVIDENCE_MISSING",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHAIN_EVIDENCE_MISSING",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "SLOT_WRONG_POSITION",
+      "guarantee": "full snapshot binds leaf position",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "2614506a3755fbe19e99e1052b03e40d323f695c82cd227ef62b406c90dc27a5",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_POSITION_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_POSITION_INVALID"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "SLOT_POSITION_INVALID",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "REFUTED",
+          "reason": "SLOT_POSITION_INVALID"
+        }
+      },
+      "native_result": {
+        "profile": "invinoveritas.decision_receipt.slot_log.v1",
+        "status": "REFUTED",
+        "reason": "SLOT_POSITION_INVALID",
+        "stage": "position",
+        "detail": "selected leaf position differs from snapshot"
+      },
+      "reproduced": true
+    },
+    {
+      "case": "SAFE_BOUNDARIES_UNICODE",
+      "guarantee": "safe boundary, Unicode values and ordering",
+      "input_commitments": {
+        "subject_bytes_sha256": "de4a0c96ffdd64f0ff573872ac91e9101b079668209cd12147594183cc8ab708",
+        "envelope_bytes_sha256": "fa54ba0c45b9ac80104d80091ce4e2d5a4a147fd4821973557854aa14dd87525",
+        "policy_sha256": "94bb9c15296b1ea8fa76668ba625076f26f97c81a85f715995d3476c5f02210d"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "VERIFIED",
+        "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": "LOCAL_MANIFEST_INCLUSION_UNDER_CALLER_SELECTED_KEY",
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "A_CHAIN_VALID",
+      "guarantee": "native count-bound full-manifest extension",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "cb35bc17c0dfd0d257954c13ac297e698df06ba99307e2289cf3b4eaac7211e5",
+        "policy_sha256": "03a88319ab9eb120a870ee1cac2efcc370d9d1e41a475f7322d33c3f31bf14ca"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "reason": "BOUNDED_INCLUSION_VERIFIED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "VERIFIED",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "VERIFIED",
+        "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "LOCAL_MANIFEST_EXTENSION_VERIFIED"
+        },
+        "established_scope": "LOCAL_MANIFEST_INCLUSION_UNDER_CALLER_SELECTED_KEY",
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "A_CHAIN_CONFLICT",
+      "guarantee": "signed current checkpoint does not waive supplied history conflict",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "6895fcf555eecb73b85aa17584463a342580954e8cb06cdaf3675f218079bc6c",
+        "policy_sha256": "f225b7900a01468e18bf61b07f697655b4c9e38ab8ac385b91ed0a4c0c95a7ba"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CONSISTENCY_CHECKPOINT_CONFLICT",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CONSISTENCY_CHECKPOINT_CONFLICT"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CONSISTENCY_CHECKPOINT_CONFLICT",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "REFUTED",
+          "reason": "CONSISTENCY_CHECKPOINT_CONFLICT"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "REFUTED",
+        "reason": "CONSISTENCY_CHECKPOINT_CONFLICT",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "VERIFIED",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    },
+    {
+      "case": "NUMERIC_LOG_ID",
+      "guarantee": "authenticated policy bytes do not waive the nonempty-string log identity contract",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "ed027cf5c7c4078a1447349ea931562dba8be5230dbfbfd52e7989d00b6d8251",
+        "policy_sha256": "cf6197a49aeaa9ecb8816e668cafe2e37c1271dee18a6abb89b989364e9b3b5a"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MALFORMED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_IDENTITY_MALFORMED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_NOT_SELECTED",
+      "guarantee": "a valid policy signature cannot replace caller-selected policy identity",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "d8ab51b5f9b7369cb5ea346ea4be8c12b0f6bb7c39e42c7269d31c0e40b72f32",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SELECTION_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SELECTION_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_REF_WRONG",
+      "guarantee": "envelope references the exact selected authenticated policy",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "482ed36d2fb25f446206ff7e486960c0040f0203f58e87496ac1ae2b261c8fab",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_PROFILE_DIFFERENT",
+      "guarantee": "authenticated policy selects the same proof profile as the envelope",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7eb3d504c68696a55af7b402fb7a0ea4fe5d0849bcac19d2c060b89487f0e83b",
+        "policy_sha256": "418b8f6356ff94113b241274a84a1238833fe7296a5e09041fe68fca671ea9a0"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_BINDING_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "SLOT_UNSELECTED_ROOT",
+      "guarantee": "self-consistent proof cannot replace the independently selected checkpoint; refuse before native execution",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "8ab0fa96ea22a999922022d2e7dab82b43e385cc36016490a10e2e5868e8ee3d",
+        "policy_sha256": "3ff9804d5ef7594a1de2a4ea1d92a9db5e676eae3bd4a234e971027dcf43a3b3"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_COMMITMENT_MISMATCH",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "CHECKPOINT_COMMITMENT_MISMATCH",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_SCHEMA_WRONG",
+      "guarantee": "authenticated bytes do not establish an accepted policy schema",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "78f77bb82d4f1b1d68ac21ec38d49f27da5fdf5253840208f4869d605509da17",
+        "policy_sha256": "a1e4220434dff2d46a9b2e50a04b8059c4e59ee0f12c5d916de9b2a185f77b44"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_PROFILE_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_MECHANISM_UNKNOWN",
+      "guarantee": "policy mechanism allowlist is independent of envelope equality",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7efe178babeeffa374bd806c9db1ae5f78cc9129391462ad68f16af9beb80ea6",
+        "policy_sha256": "dbf18fd71d6e7eaebc371ed5b683bb422651bceb296cefddd13e486435ffb868"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "ENVELOPE_MECHANISM_MISMATCH",
+      "guarantee": "supported mechanism label must still match selected policy",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "e45ca883caef49f722ae5b72f030b914ef79733317f5d2094c903aeb267fe9ab",
+        "policy_sha256": "3c5e8d89fc3123558a1a57a6e6c4051f09acbfde8f2bd2d7271451080d47a155"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "ANCHOR_MECHANISM_UNSUPPORTED",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "ANCHOR_MECHANISM_UNSUPPORTED",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "POLICY_TIMESTAMP_NOT_BOOLEAN",
+      "guarantee": "falsey nonboolean does not waive policy type admission",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "813327f7bf1e460e25696f4fad99d7e935e4cd77706e7be28ae71414dbdeeca0",
+        "policy_sha256": "e1edab496e02926eba469b3d55e9fd4175cda8a7af7b101715d03fee9ea71ab8"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "POLICY_SHAPE",
+        "native": null
+      },
+      "native_result": null,
+      "reproduced": true
+    },
+    {
+      "case": "PROOF_SUPPLIED_CHECKPOINT_KEYS",
+      "guarantee": "envelope keys cannot become independently configured checkpoint trust",
+      "input_commitments": {
+        "subject_bytes_sha256": "7d47c4872740ba9c05f5d643e9a1f4ff415ab8e27cf24409c16fa92610fb7f47",
+        "envelope_bytes_sha256": "7d0df6040ef4ffef530c563e83684dd4c83a46e076f4b608bee1a6709129f1d7",
+        "policy_sha256": "7a20ffeec3ff9f08e09b44757b8a559c5c68d025009b451daa97ff8353f4f6d2"
+      },
+      "expected": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "UNVERIFIABLE",
+          "reason": "LOG_TRUST_ROOT_MISSING"
+        }
+      },
+      "actual": {
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "status": "UNVERIFIABLE",
+          "reason": "LOG_TRUST_ROOT_MISSING"
+        }
+      },
+      "native_result": {
+        "profile": "agent-action.local-manifest-log.v0",
+        "status": "UNVERIFIABLE",
+        "reason": "LOG_TRUST_ROOT_MISSING",
+        "native": {
+          "leaf_binding": "VERIFIED",
+          "inclusion": "VERIFIED",
+          "checkpoint_identity": "VERIFIED",
+          "log_identity": "VERIFIED",
+          "signature": "UNVERIFIABLE",
+          "consistency": "NOT_SUPPLIED"
+        },
+        "established_scope": null,
+        "public_log_authenticity": "NOT_COVERED",
+        "claim_authorization": "NOT_COVERED",
+        "limitations": [
+          "A caller-selected laboratory key is not an independently authenticated public log.",
+          "This sorted, count-bound manifest is not a Certificate Transparency append-only tree.",
+          "Inclusion does not authorize a claim or prove external execution."
+        ]
+      },
+      "reproduced": true
+    }
+  ],
+  "previous_evidence_head": "1afc4ab3e3649e3d987d54006a3f3508c9fd159f",
+  "mutation_difference_scopes": [
+    {
+      "mutation": "profile-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "subject-identity",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-authentication",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-authority",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "log-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "checkpoint-selection",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-leaf-binding",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "chain-required",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "timestamp-evidence",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "raw-admission",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "native-result",
+      "different_fields": [
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "assurance-separation",
+      "different_fields": [
+        "proof_validity"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "case-attribution",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "manifest-leaf",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "merkle-verification",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-chain-continuity",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "log-id-admission",
+      "different_fields": [
+        "anchor_assurance",
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "selected-policy",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-reference",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-proof-profile",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "slot-checkpoint-envelope",
+      "different_fields": [
+        "native"
+      ],
+      "class": "EVIDENCE_WITNESS"
+    },
+    {
+      "mutation": "policy-schema",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "policy-mechanism-allowlist",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "envelope-mechanism-binding",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "timestamp-boolean",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    },
+    {
+      "mutation": "proof-supplied-checkpoint-keys",
+      "different_fields": [
+        "native",
+        "proof_validity",
+        "reason"
+      ],
+      "class": "VERDICT_WITNESS"
+    }
+  ],
+  "additional_controls": [
+    "native-checkpoint report fault + guard removal",
+    "symlink entrypoint removal",
+    "existing runtime-refusal removal",
+    "existing scalar-order assertion removal"
+  ]
+}

@@ -1,0 +1,389 @@
+[
+  {
+    "name": "source-pins",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/bootstrap.py",
+      "/home/msi/codex-audits/pr85-review.RE5iZZ/sources"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-slot-vectors",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/invino/examples/decision-receipt/slot_log_check.py",
+      "--vectors",
+      "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/invino/examples/decision-receipt/slot_log_vectors.json"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-rvr",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/rvr/conformance/rvr-v0/adapter.py",
+      "--check"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "a5dfb9733f44256583353290729db591cb0b19f6f95e0269e1e4e40bee697aeb",
+    "stderr_sha256": "6ba1796b7e44d0ee61298de69264bdb653544d735421dde07724a4cf877d1581"
+  },
+  {
+    "name": "normal-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 1,
+    "stdout_sha256": "0381aab2c46aacab08692c5cb0ab0762911d277d01f809b30ac0c05c78097cee",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "a5dfb9733f44256583353290729db591cb0b19f6f95e0269e1e4e40bee697aeb",
+    "stderr_sha256": "118fedb2b6273656d6c0c1c65bfdd979044482a721cfa3fbf57777f72442342f"
+  },
+  {
+    "name": "repeat-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 1,
+    "stdout_sha256": "0381aab2c46aacab08692c5cb0ab0762911d277d01f809b30ac0c05c78097cee",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "a5dfb9733f44256583353290729db591cb0b19f6f95e0269e1e4e40bee697aeb",
+    "stderr_sha256": "de00b17b0ed74fafe0c65012181a599849bb3b20334f29fce00910188f059679"
+  },
+  {
+    "name": "optimized-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 1,
+    "stdout_sha256": "0381aab2c46aacab08692c5cb0ab0762911d277d01f809b30ac0c05c78097cee",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "canonical",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/run_conformance.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "runner-unit-tests",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools",
+      "-p",
+      "test_run_conformance_*.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e6767bd60ccea54fe04c3fbd028e81b92118d54416d566aabeabb510f774b47a"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "9348db9b3b7700cd56f0a56e62d54f4180d259cb4aa99c4d9a3522fdfcea281f"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "99ed7deeb2a6aaafb435c48a10e8516ebd58f563dcef3915c8726e1973253f07"
+  },
+  {
+    "name": "test_self_grading_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "22f9e931aeb6900566a20de3b98efdc0efaa3857717b02150dc7a9f22192d8cb"
+  },
+  {
+    "name": "test_self_grading_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "f4ac95b1076c4baf395170773aa194615a5abbb98970fd1e0c250fbbb8767a1e"
+  },
+  {
+    "name": "test_ungradable_expectations-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "a08782268c13a0199c97a8af18c11c9a96d8561a96f6745687f2799f0a2f62f6"
+  },
+  {
+    "name": "test_ungradable_expectations-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "5233bb7dde9fae87f2290d303204bb41263db84b495119b51c5bee1112f86cfa"
+  },
+  {
+    "name": "test_scan_subject_binding_ungradable-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_scan_subject_binding_ungradable.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "bcc00aae62dbed820ecf4e735ce356127b8c1ad0847c4a6509514498f8015067"
+  },
+  {
+    "name": "test_scan_subject_binding_ungradable-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo/tools/test_scan_subject_binding_ungradable.py"
+    ],
+    "cwd": "/home/msi/codex-audits/pr85-echo-repair.ZEClQP/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "89e30d439588debb18dc50d8bec6adf1a92fbe768b8588d3de2264885703b79e"
+  }
+]
