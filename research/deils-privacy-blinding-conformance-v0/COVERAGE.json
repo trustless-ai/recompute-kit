@@ -23,7 +23,7 @@
     "repeat",
     "python -O"
   ],
-  "report_sha256": "44960e49f46ad29ec980688168f4da3804eab54dcee9e5801b23ba5219d131bb",
+  "report_sha256": "37611468426747e1b3d8ce1573514d59e17cfbe59c98582beca4ccfe1816ebe0",
   "canonical_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
   "canonical": {
     "PASS": 46,
@@ -53,5 +53,6 @@
   "declared_digest_entries": 123,
   "base_files_preserved": 921,
   "existing_tool_scripts": 16,
-  "existing_optimized_scripts": 3
+  "existing_optimized_scripts": 3,
+  "self_review": "Literal in-range coordinate field swap replaces the initial sign-only coordinate_substitution case; original commit/evidence remain preserved."
 }

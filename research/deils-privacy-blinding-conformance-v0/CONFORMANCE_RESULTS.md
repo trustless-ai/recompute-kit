@@ -4,7 +4,7 @@ Measured on the isolated candidate; independently authored implementations in on
 
 Base: `b4537d73bda4e4df73c4b105ee516a43c351ba02`. Normal/repeat/-O tests: 13/13 per mode on Windows and WSL Ubuntu. Python and Node each reproduce 52/52 entire expected records. Status population: 14 bounded VERIFIED, 9 REFUTED, 29 UNVERIFIABLE; expected negative results are not authorization grants.
 
-Complete ASCII JSON report, including every canonical UTF-8 hex string, digest, validation stage and native state/reason, is byte-identical across runtimes, modes and OS runs. SHA256 `44960e49f46ad29ec980688168f4da3804eab54dcee9e5801b23ba5219d131bb`.
+Complete ASCII JSON report, including every canonical UTF-8 hex string, digest, validation stage and native state/reason, is byte-identical across runtimes, modes and OS runs. SHA256 `37611468426747e1b3d8ce1573514d59e17cfbe59c98582beca4ccfe1816ebe0`.
 
 Canonical main/candidate: 46 PASS / 6 declared NOT RUN / 2 live SKIPPED, exit 0. The complete stdout bytes are identical, SHA256 `1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39`. This is a successful canonical run with explicitly incomplete/live-excluded coverage; the historical DEILS directory remains NOT RUN.
 
@@ -76,3 +76,7 @@ No Go/Rust/macOS execution or new GitHub CI job is claimed. Final exact-commit f
 ## Historical failed attempts
 
 The initial environment selected system Python without rfc8785; it was corrected by selecting the isolated interpreter. Initial manifest integration was refused for an undeclared local runner import and absent per-check vector declarations. One environment negative control initially encountered a stale copied vector pin; it was corrected to reread the validly repinned copied manifest. Failed attempts are retained separately; none is counted as a semantic kill. No baseline code was changed to resolve them.
+
+## Literal field-swap refinement
+
+Final self-review replaced the sign-only coordinate_substitution input with an actual in-range swap: committed latE7=100/lonE7=200, revealed latE7=200/lonE7=100. It yields content_commitment_mismatch at the commitment stage, with hashing executed; it is not a range/type refusal. The corpus remains52 cases and all status counts unchanged. No adapter implementation changed. The initial commit971a465 and its evidence archive remain immutable; current raw replay is in evidence-crossfield-2026-10-24.zip.

@@ -54,8 +54,10 @@ def build():
     add("required_blinding_missing",unblinded,committed=unblinded,reason="RESEARCH_REQUIRED_BLINDING_ABSENT")
     add("blinding_omitted_preimage",gps(),committed=unblinded,canonical=gps(),mismatch=True)
     add("gps_sign_preimage",gps(lat=-123456789),committed=gps(),canonical=gps(lat=-123456789),mismatch=True)
-    for name,raw in [("latitude_changed",gps(lat=123456788)),("longitude_changed",gps(lon=-987654320)),("accuracy_changed",gps(accuracy=26)),("coordinate_substitution",gps(lat=-123456789,lon=987654321))]:
+    for name,raw in [("latitude_changed",gps(lat=123456788)),("longitude_changed",gps(lon=-987654320)),("accuracy_changed",gps(accuracy=26))]:
         add(name,raw,canonical=raw,mismatch=True)
+    add("coordinate_substitution",gps(lat=200,lon=100),committed=gps(lat=100,lon=200),canonical=gps(lat=200,lon=100),mismatch=True,
+        guarantee="Literal latE7/lonE7 substitution with both values in range; field-name binding, not range rejection.")
     add("reuse_other_commitment",gps(lat=123456788),committed=gps(lat=123456788),canonical=gps(lat=123456788),guarantee="Single-commitment verification cannot establish blinding freshness; same public test nonce is deliberately reused.")
     add("reordered_members",'{ "lonE7": -987654321, "latE7":123456789, "blinding":"'+B+'", "accuracyCm":25 }',canonical=gps())
     add("legacy_unblinded",unblinded,canonical=unblinded,committed=unblinded,profile=L)

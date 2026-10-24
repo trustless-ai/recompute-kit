@@ -6,7 +6,7 @@
   },
   "vectors": {
     "path": "vectors.json",
-    "sha256": "b6e16bb5ef6ea6607d729221959823fbe813c70e30e474ed2fe8231ee4423819"
+    "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
   },
   "mutation_checker": {
     "path": "mutations.py",
@@ -46,7 +46,7 @@
       },
       "vectors": {
         "path": "vectors.json",
-        "sha256": "b6e16bb5ef6ea6607d729221959823fbe813c70e30e474ed2fe8231ee4423819"
+        "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
       }
     },
     {
@@ -62,7 +62,7 @@
       },
       "vectors": {
         "path": "vectors.json",
-        "sha256": "b6e16bb5ef6ea6607d729221959823fbe813c70e30e474ed2fe8231ee4423819"
+        "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
       }
     }
   ]

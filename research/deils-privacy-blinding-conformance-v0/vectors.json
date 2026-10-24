@@ -446,8 +446,8 @@
       "input": {
         "profile": "research.deils-privacy-blinding.v0",
         "content_schema": "gps-integers-research.v0",
-        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":-123456789,\"lonE7\":987654321}",
-        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":200,\"lonE7\":100}",
+        "commitment": "sha256:a18e1e12b82103c811c2f2fe41f8eac2b817d93c7bec1359fa6affc701a505e6",
         "disclosed": true
       },
       "expected": {
@@ -456,11 +456,11 @@
         "reason": null,
         "stage": "commitment",
         "hash_evaluated": true,
-        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a2d3132333435363738392c226c6f6e4537223a3938373635343332317d",
-        "recomputed_commitment": "sha256:03e3155bc538020e060f2a70987841a3939bc795e75f5d1b477fdcb6b301142e"
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3230302c226c6f6e4537223a3130307d",
+        "recomputed_commitment": "sha256:e6bc6c3c5b6dfa8cffc57a9c9bec0847caa1af12001484085f6ff46f1cd11b6a"
       },
-      "guarantee": "coordinate_substitution",
-      "input_utf8_sha256": "03e3155bc538020e060f2a70987841a3939bc795e75f5d1b477fdcb6b301142e",
+      "guarantee": "Literal latE7/lonE7 substitution with both values in range; field-name binding, not range rejection.",
+      "input_utf8_sha256": "e6bc6c3c5b6dfa8cffc57a9c9bec0847caa1af12001484085f6ff46f1cd11b6a",
       "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
     },
     {
