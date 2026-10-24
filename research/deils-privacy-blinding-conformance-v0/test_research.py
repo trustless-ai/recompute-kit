@@ -21,6 +21,54 @@ EXPECTED={v['name']:v['expected'] for v in CORPUS['vectors']}
 
 
 class Research(unittest.TestCase):
+    def test_cli_symlink_and_removal(self):
+        source=(HERE/'verifier.mjs').read_bytes()
+        fixed=b'realpathSync(process.argv[1])===realpathSync(fileURLToPath(import.meta.url))'
+        old=b'resolve(process.argv[1])===fileURLToPath(import.meta.url)'
+        self.assertEqual(source.count(fixed),1)
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td).resolve()  # macOS /var TMPDIR must really be physical.
+            physical=root/'physical';physical.mkdir()
+            script=physical/'verifier.mjs';script.write_bytes(source)
+            linked=root/'linked';linked.symlink_to(physical,target_is_directory=True)
+            file_link=root/'linked.mjs';file_link.symlink_to(script)
+            self.assertTrue(linked.is_symlink());self.assertTrue(file_link.is_symlink())
+            self.assertEqual(physical,physical.resolve())
+            output=[]
+            for path in [script,linked/'verifier.mjs',file_link]*2:
+                rc,out,err=mutations.execute(path,CORPUS)
+                self.assertEqual((rc,err),(0,b''));self.assertTrue(out)
+                self.assertEqual(json.loads(out),EXPECTED);output.append(out)
+                rc,out,err=mutations.execute(path,{'vectors':[]})
+                self.assertEqual((rc,out),(2,b''));self.assertIn(b'REPORT_INPUT_UNGRADABLE',err)
+            self.assertTrue(all(out==output[0] for out in output))
+            # Restoring only the old entry guard restores the silent skip.
+            script.write_bytes(b"import {resolve} from 'node:path';\n"+source.replace(fixed,old))
+            rc,out,err=mutations.execute(script,CORPUS)
+            self.assertEqual((rc,out,err),(0,output[0],b''))
+            rc,out,err=mutations.execute(linked/'verifier.mjs',CORPUS)
+            self.assertEqual((rc,out,err),(0,b'',b''))
+            m=mutations.catalog()[0]
+            self.assertEqual(mutations.classify(rc,out,err,CORPUS,m['controls'],m['witness'])[0],'MISSING_OUTPUT')
+            script.write_bytes(source)
+            self.assertEqual(mutations.execute(linked/'verifier.mjs',CORPUS),(0,output[0],b''))
+        self.assertEqual((HERE/'verifier.mjs').read_bytes(),source)
+
+    def test_import_has_no_cli_side_effects(self):
+        p=subprocess.run(['node','--input-type=module','-e',"import './verifier.mjs';"],cwd=HERE,capture_output=True)
+        self.assertEqual((p.returncode,p.stdout,p.stderr),(0,b'',b''))
+
+    def test_missing_stdout_cannot_pass_runner(self):
+        with tempfile.TemporaryDirectory() as td:
+            dst=Path(td)/'research';shutil.copytree(HERE,dst)
+            manifest=json.loads((dst/'suite.json').read_bytes())
+            for check in manifest['checks']:
+                check['adapter']['cmd']='node -e "process.exit(0)"'
+            (dst/'suite.json').write_text(json.dumps(manifest),encoding='utf-8')
+            results,rc=replay.run(dst)
+            self.assertEqual(rc,2)
+            self.assertTrue(all(not r.ok and r.kind=='REPORT_CONTRACT' for r in results),results)
+
     def test_csprng_generation_boundary(self):
         first,second=verifier.fresh_blinding(),verifier.fresh_blinding()
         self.assertRegex(first,r'\A[0-9a-f]{64}\Z');self.assertNotEqual(first,second)

@@ -1,8 +1,7 @@
 // Independently written Node reporter; JCS over this research's safe-integer domain.
 import {createHash,randomBytes} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,realpathSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
-import {resolve} from 'node:path';
 const PRIVACY='research.deils-privacy-blinding.v0', LEGACY='research.deils-legacy-integer-replay.v0';
 const sha=b=>createHash('sha256').update(b).digest('hex');
 export function freshBlinding(){return randomBytes(32).toString('hex');}
@@ -73,7 +72,7 @@ export function report(doc){
   return out;
 }
 // Stable reporting is separate from the JCS content preimage, and uses only ASCII values here.
-if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+if(process.argv[1]&&realpathSync(process.argv[1])===realpathSync(fileURLToPath(import.meta.url))){
   try{process.stdout.write(canonical(report(JSON.parse(readFileSync(0,'utf8'))))+'\n');}
   catch(e){process.stderr.write('REPORT_INPUT_UNGRADABLE: '+e.message+'\n');process.exitCode=2;}
 }

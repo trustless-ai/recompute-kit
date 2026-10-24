@@ -53,7 +53,7 @@
       "name": "node",
       "checker": {
         "path": "verifier.mjs",
-        "sha256": "5986988ccab9499297b40492f6c899a377332f5c34aeff055cc6c96b371bb1aa"
+        "sha256": "d3e7e03bd05b0b6dcc8dd80e133917b2f6fafb28ab6459d1f12b38e4d5aa730b"
       },
       "adapter": {
         "kind": "stdio",
