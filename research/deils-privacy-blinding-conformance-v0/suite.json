@@ -1,0 +1,69 @@
+{
+  "profile": "research.deils-privacy-blinding-conformance.v0",
+  "spec": {
+    "path": "SPECIFICATION_CANDIDATE.md",
+    "sha256": "5929e989cd4afc6e35ff86d821f0dc5a02b178b664d09711ccb9a2a01d69d4dc"
+  },
+  "vectors": {
+    "path": "vectors.json",
+    "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
+  },
+  "mutation_checker": {
+    "path": "mutations.py",
+    "sha256": "77dad2de3587e163d60a0e3842def9c468a2fe55980b45ba13dd61e8d2974f19"
+  },
+  "runtime": {
+    "commands": [
+      "python",
+      "node"
+    ],
+    "python_modules": [
+      "rfc8785",
+      "run_conformance"
+    ]
+  },
+  "dependencies": [
+    {
+      "path": "SOURCE_PINS.json",
+      "sha256": "66500beb4c8f2480c38b32673619645eac2d68b6d8ab4cc6d001ca86ccf929a6"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "88013e81853feeaa0dca291c7d446e4d3925e606b74c02b765770c5eccf53211"
+    }
+  ],
+  "checks": [
+    {
+      "name": "python",
+      "checker": {
+        "path": "verifier.py",
+        "sha256": "cd13cb1a1ed1acceea9a15c535e99b63e50fef33b119f46b15675faa4912c936"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "contract": "reporter",
+        "cmd": "python -B verifier.py"
+      },
+      "vectors": {
+        "path": "vectors.json",
+        "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
+      }
+    },
+    {
+      "name": "node",
+      "checker": {
+        "path": "verifier.mjs",
+        "sha256": "d3e7e03bd05b0b6dcc8dd80e133917b2f6fafb28ab6459d1f12b38e4d5aa730b"
+      },
+      "adapter": {
+        "kind": "stdio",
+        "contract": "reporter",
+        "cmd": "node verifier.mjs"
+      },
+      "vectors": {
+        "path": "vectors.json",
+        "sha256": "81390085b3df04ac3625f5fef2e4d307a7209905c4cbb947033e9f1c68571c04"
+      }
+    }
+  ]
+}
