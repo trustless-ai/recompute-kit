@@ -1,0 +1,1149 @@
+{
+  "schema": "research.deils-blinding-vectors.v0",
+  "vectors": [
+    {
+      "name": "matching_blinded",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b"
+      },
+      "guarantee": "matching_blinded",
+      "input_utf8_sha256": "84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "other_valid_blinding_positive",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:e34cd6ba73cb8af213a7fd64805e668ec21b4908a44ad0f66f3ec26f8c9f387c",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2266666565646463636262616139393838373736363535343433333232313130306666656564646363626261613939383837373636353534343333323231313030222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:e34cd6ba73cb8af213a7fd64805e668ec21b4908a44ad0f66f3ec26f8c9f387c"
+      },
+      "guarantee": "other_valid_blinding_positive",
+      "input_utf8_sha256": "e34cd6ba73cb8af213a7fd64805e668ec21b4908a44ad0f66f3ec26f8c9f387c",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "wrong_valid_blinding",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2266666565646463636262616139393838373736363535343433333232313130306666656564646363626261613939383837373636353534343333323231313030222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:e34cd6ba73cb8af213a7fd64805e668ec21b4908a44ad0f66f3ec26f8c9f387c"
+      },
+      "guarantee": "wrong_valid_blinding",
+      "input_utf8_sha256": "e34cd6ba73cb8af213a7fd64805e668ec21b4908a44ad0f66f3ec26f8c9f387c",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_short",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddee\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_short",
+      "input_utf8_sha256": "b1aa64df49a100a4b59eddb6b104c31b65c86fc2eea31c52faffd3ad3c7f66a0",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_long",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_long",
+      "input_utf8_sha256": "9bd42e564e820c3d51ce02f00a6adfe59e867039d192ce0f96f3efecbf6a9cae",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_uppercase",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_uppercase",
+      "input_utf8_sha256": "77f8c46a8ad4a7858845fc581b33c4470f68447e49e1d8fd224fe647cc24b843",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_nonhex",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"g0112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_nonhex",
+      "input_utf8_sha256": "e136aab35e84be9f7b3b2810175f824d36828d44e5900dca2589b843d51fa85d",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_empty",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_empty",
+      "input_utf8_sha256": "2a88585a7fcc122097ee2df143ffee47491eb4ce958d4e6e6e393c22ec28dc3a",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_number",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":7,\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_number",
+      "input_utf8_sha256": "036defdd8af88a105739a105f6846e818cd0ae0e8f527638c7ba0f79c4d3c7b8",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_boolean",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":true,\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_boolean",
+      "input_utf8_sha256": "1fd93da042df8e7dfd281e100ddd1cdfff283991f34f08c609632a619ca98b94",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_null",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":null,\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_null",
+      "input_utf8_sha256": "5358294a847b8f05c5f1886085baa0156736e1e15a44eadaf7e034c8c67cfd51",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_array",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":[],\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_array",
+      "input_utf8_sha256": "aaa498039a730a1394e32d77e214aad0dac1dcbbbb9df7830c557e0239982316",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_object",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":{},\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_object",
+      "input_utf8_sha256": "1145188c9b479cba95d786d2d32d62b7f74caacc05b9d97eb7b629c6f0dc49e0",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_trailing_newline",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\\n\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "blinding_trailing_newline",
+      "input_utf8_sha256": "1c4441b55ffbbdbefd48de39af40a241cddc87152d9767c8579ef2f23e5b461d",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "required_blinding_missing",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_REQUIRED_BLINDING_ABSENT",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "required_blinding_missing",
+      "input_utf8_sha256": "817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "blinding_omitted_preimage",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b"
+      },
+      "guarantee": "blinding_omitted_preimage",
+      "input_utf8_sha256": "84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "gps_sign_preimage",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":-123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a2d3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:866ad19c3996282afb01759d97fe91be178ecfd95023db427190af0d93d26702"
+      },
+      "guarantee": "gps_sign_preimage",
+      "input_utf8_sha256": "866ad19c3996282afb01759d97fe91be178ecfd95023db427190af0d93d26702",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "latitude_changed",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456788,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738382c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:5986d3df34d7e9dbac316398d4e8c653e6ca2305241aebeba6d2f94adc3a64e2"
+      },
+      "guarantee": "latitude_changed",
+      "input_utf8_sha256": "5986d3df34d7e9dbac316398d4e8c653e6ca2305241aebeba6d2f94adc3a64e2",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "longitude_changed",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654320}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332307d",
+        "recomputed_commitment": "sha256:ed9282787b0978f7d8a463e51162e65241f41bec1af6b3f4bd4ff96eb3f61f79"
+      },
+      "guarantee": "longitude_changed",
+      "input_utf8_sha256": "ed9282787b0978f7d8a463e51162e65241f41bec1af6b3f4bd4ff96eb3f61f79",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "accuracy_changed",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":26,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32362c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:0c90ac90d3b5ff67a2ded5922dc95961841238d1db9c7ca32faaee51611d3522"
+      },
+      "guarantee": "accuracy_changed",
+      "input_utf8_sha256": "0c90ac90d3b5ff67a2ded5922dc95961841238d1db9c7ca32faaee51611d3522",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "coordinate_substitution",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":-123456789,\"lonE7\":987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a2d3132333435363738392c226c6f6e4537223a3938373635343332317d",
+        "recomputed_commitment": "sha256:03e3155bc538020e060f2a70987841a3939bc795e75f5d1b477fdcb6b301142e"
+      },
+      "guarantee": "coordinate_substitution",
+      "input_utf8_sha256": "03e3155bc538020e060f2a70987841a3939bc795e75f5d1b477fdcb6b301142e",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "reuse_other_commitment",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456788,\"lonE7\":-987654321}",
+        "commitment": "sha256:5986d3df34d7e9dbac316398d4e8c653e6ca2305241aebeba6d2f94adc3a64e2",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738382c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:5986d3df34d7e9dbac316398d4e8c653e6ca2305241aebeba6d2f94adc3a64e2"
+      },
+      "guarantee": "Single-commitment verification cannot establish blinding freshness; same public test nonce is deliberately reused.",
+      "input_utf8_sha256": "5986d3df34d7e9dbac316398d4e8c653e6ca2305241aebeba6d2f94adc3a64e2",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "reordered_members",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{ \"lonE7\": -987654321, \"latE7\":123456789, \"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\", \"accuracyCm\":25 }",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b"
+      },
+      "guarantee": "reordered_members",
+      "input_utf8_sha256": "ae31d848c58532085cf9dbc808b70ef5de4925a285ffe3527c70c0e89234294b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "legacy_unblinded",
+      "input": {
+        "profile": "research.deils-legacy-integer-replay.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3"
+      },
+      "guarantee": "legacy_unblinded",
+      "input_utf8_sha256": "817f1a1059a1579448d5bc06531ebdfc098e7c1b092cc87be74366cb78d828f3",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "withheld",
+      "input": {
+        "profile": "research.deils-legacy-integer-replay.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "null",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": false
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": "content_withheld",
+        "reason": null,
+        "stage": "disclosure",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "withheld",
+      "input_utf8_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "legacy_null_withheld",
+      "input": {
+        "profile": "research.deils-legacy-integer-replay.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "null",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": "content_withheld",
+        "reason": null,
+        "stage": "disclosure",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "legacy_null_withheld",
+      "input_utf8_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "unsupported_profile",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0.wrong",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_PROFILE_UNSUPPORTED",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "unsupported_profile",
+      "input_utf8_sha256": "84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "commitment_from_other_field",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a32352c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b"
+      },
+      "guarantee": "commitment_from_other_field",
+      "input_utf8_sha256": "84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "latitude_outside",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":900000001,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_GPS_RANGE_OR_TYPE",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "latitude_outside",
+      "input_utf8_sha256": "b2f164dc9151adf2bf48b5d717caa99f82062f20e16cbcbc8c6ab61373a94842",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "longitude_outside",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-1800000001}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_GPS_RANGE_OR_TYPE",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "longitude_outside",
+      "input_utf8_sha256": "5c564d2384094bb4fa79338e40fb705942aaad2fb2603df4c8638a6b71549283",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "accuracy_negative",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":-1,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_GPS_RANGE_OR_TYPE",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "accuracy_negative",
+      "input_utf8_sha256": "ec8c1eeeeb9ce6e84f8c391696e1f5dd1e7da135e0b42b740b6e3d10d6187631",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "gps_boolean",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":true,\"lonE7\":-987654321}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_GPS_RANGE_OR_TYPE",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "gps_boolean",
+      "input_utf8_sha256": "d0c463e04cbc2e35e5865f12669f6896e8d83d222bb8e3daa05fd3e6cff23bc1",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "gps_boundaries",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":0,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":-900000000,\"lonE7\":1800000000}",
+        "commitment": "sha256:f2b3769be233fa013242624f4993ee54134b979d444b733e476592156606aff7",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a302c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a2d3930303030303030302c226c6f6e4537223a313830303030303030307d",
+        "recomputed_commitment": "sha256:f2b3769be233fa013242624f4993ee54134b979d444b733e476592156606aff7"
+      },
+      "guarantee": "gps_boundaries",
+      "input_utf8_sha256": "f2b3769be233fa013242624f4993ee54134b979d444b733e476592156606aff7",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "accuracy_safe_max",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":9007199254740991,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "sha256:c2fb838395730dce06bded522b38bab5a0062811841315a959284d5d2684bdc6",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b226163637572616379436d223a393030373139393235343734303939312c22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226c61744537223a3132333435363738392c226c6f6e4537223a2d3938373635343332317d",
+        "recomputed_commitment": "sha256:c2fb838395730dce06bded522b38bab5a0062811841315a959284d5d2684bdc6"
+      },
+      "guarantee": "accuracy_safe_max",
+      "input_utf8_sha256": "c2fb838395730dce06bded522b38bab5a0062811841315a959284d5d2684bdc6",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "safe_min",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"n\":-9007199254740991}",
+        "commitment": "sha256:c55f736f123baced3d6da10fb9116d6f981823742cb2d36833a81600de56dc7c",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226e223a2d393030373139393235343734303939317d",
+        "recomputed_commitment": "sha256:c55f736f123baced3d6da10fb9116d6f981823742cb2d36833a81600de56dc7c"
+      },
+      "guarantee": "safe_min",
+      "input_utf8_sha256": "c55f736f123baced3d6da10fb9116d6f981823742cb2d36833a81600de56dc7c",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "safe_max",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"n\":9007199254740991}",
+        "commitment": "sha256:c33ddb5022f48485856421451fba9bd2f448d1faf9a4991e277924665f361f08",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226e223a393030373139393235343734303939317d",
+        "recomputed_commitment": "sha256:c33ddb5022f48485856421451fba9bd2f448d1faf9a4991e277924665f361f08"
+      },
+      "guarantee": "safe_max",
+      "input_utf8_sha256": "c33ddb5022f48485856421451fba9bd2f448d1faf9a4991e277924665f361f08",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "unsafe_integer",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"n\":9007199254740992}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "unsafe_integer",
+      "input_utf8_sha256": "66c87d9cb3014e05a11baa97df62282d89d425f22ee15816577c84534e2ef1bb",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "fraction_outside_domain",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"n\":0.9}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "fraction_outside_domain",
+      "input_utf8_sha256": "fc81c226e1e62e4508c3c97394a5cbc96718fbf78b2e18b37ac293200f906b93",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "exponent_outside_domain",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"n\":1e0}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "exponent_outside_domain",
+      "input_utf8_sha256": "1499d8ce7727c52f249d9b8cd88eae2162f228881be4d8e91720e482848b5153",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "malformed_json",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "malformed_json",
+      "input_utf8_sha256": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "duplicate_member",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"a\":1,\"a\":2}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "duplicate_member",
+      "input_utf8_sha256": "1c53ee0df7b12fd4d65b976120c7fa6b847dc41dffd7f0331c3237a1ceab1756",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "invalid_unicode",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"x\":\"\\ud800\"}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "invalid_unicode",
+      "input_utf8_sha256": "7f3c6b6b4a88409efe4d2fba1cb3cf2b79b682fe4387678cba2e6b9645b58221",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "nonfinite",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"n\":NaN}",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_INVALID",
+        "stage": "admission",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "nonfinite",
+      "input_utf8_sha256": "df38c4379aa2b6d4a7151668f11c6cdf75dc52f52588502956377adddf9e1a26",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "negative_zero",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"n\":-0}",
+        "commitment": "sha256:2668bd7c83311d2af61c36cd5d2f966e00505254701d87600d08ee5fdd657d02",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226e223a307d",
+        "recomputed_commitment": "sha256:2668bd7c83311d2af61c36cd5d2f966e00505254701d87600d08ee5fdd657d02"
+      },
+      "guarantee": "negative_zero",
+      "input_utf8_sha256": "7dc10578f9b09e4a678096aa32a4b86523824342993ee3840aae8a489074c2cc",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "escaped_unicode",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"note\":\"\\u00e9\\n\\t\\u000f\"}",
+        "commitment": "sha256:7984d46a9f1ecf7fb3303b69f8a866ea894b2287535d1f8eb6be3ca784a22787",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c226e6f7465223a22c3a95c6e5c745c7530303066227d",
+        "recomputed_commitment": "sha256:7984d46a9f1ecf7fb3303b69f8a866ea894b2287535d1f8eb6be3ca784a22787"
+      },
+      "guarantee": "escaped_unicode",
+      "input_utf8_sha256": "8760c5741a3ec1e7929b50665abf042eff773dbb830c90dddc89206f64be799f",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "utf16_key_order",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"\":2,\"😀\":1,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\"}",
+        "commitment": "sha256:c6df3a7b67a4b4adf249da218887e2347c605bcf11023625a04dc53fe31c20f4",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c22f09f9880223a312c22ee8080223a327d",
+        "recomputed_commitment": "sha256:c6df3a7b67a4b4adf249da218887e2347c605bcf11023625a04dc53fe31c20f4"
+      },
+      "guarantee": "utf16_key_order",
+      "input_utf8_sha256": "9dcd08fabddcb42175d099ce27a34818479154253057a6b187622a838e0593e0",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "nested_types",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"x\":[true,false,null,{\"z\":2,\"a\":1}]}",
+        "commitment": "sha256:dd328c54e647b87d4e68079fe48b4e8f083c5f50bd63a67a4642cc01240201c4",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c2278223a5b747275652c66616c73652c6e756c6c2c7b2261223a312c227a223a327d5d7d",
+        "recomputed_commitment": "sha256:dd328c54e647b87d4e68079fe48b4e8f083c5f50bd63a67a4642cc01240201c4"
+      },
+      "guarantee": "nested_types",
+      "input_utf8_sha256": "3b323543d392d48195ff964076c8d58e1100fea95786316e1e04ae68ad67f5a7",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "decomposed_unicode",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"x\":\"é\"}",
+        "commitment": "sha256:7280687603eb6ef3b4d4c9277e8928891d060dbf0921839fd97cabceffc0ec56",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "VERIFIED",
+        "state": "content_bound",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c2278223a2265cc81227d",
+        "recomputed_commitment": "sha256:7280687603eb6ef3b4d4c9277e8928891d060dbf0921839fd97cabceffc0ec56"
+      },
+      "guarantee": "decomposed_unicode",
+      "input_utf8_sha256": "7280687603eb6ef3b4d4c9277e8928891d060dbf0921839fd97cabceffc0ec56",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "unicode_not_normalized",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "{\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"x\":\"é\"}",
+        "commitment": "sha256:7280687603eb6ef3b4d4c9277e8928891d060dbf0921839fd97cabceffc0ec56",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "REFUTED",
+        "state": "content_commitment_mismatch",
+        "reason": null,
+        "stage": "commitment",
+        "hash_evaluated": true,
+        "canonical_utf8_hex": "7b22626c696e64696e67223a2230303131323233333434353536363737383839396161626263636464656566663030313132323333343435353636373738383939616162626363646465656666222c2278223a22c3a9227d",
+        "recomputed_commitment": "sha256:22110789c4904d93cfe4cfa3872ab64797152373abcba7ecdf54bfbd6f2041a1"
+      },
+      "guarantee": "unicode_not_normalized",
+      "input_utf8_sha256": "22110789c4904d93cfe4cfa3872ab64797152373abcba7ecdf54bfbd6f2041a1",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "privacy_array_not_object",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "json-integers",
+        "content_json": "[]",
+        "commitment": "sha256:84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "RESEARCH_CONTENT_OBJECT_REQUIRED",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "privacy_array_not_object",
+      "input_utf8_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "ref_bad_prefix",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "malformed_commitment",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "ref_bad_prefix",
+      "input_utf8_sha256": "84d9f39d741a7d86b8116a64dc78e8403cb03ae56428745be74550a0e71f507b",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    },
+    {
+      "name": "malformed_blinding_before_ref",
+      "input": {
+        "profile": "research.deils-privacy-blinding.v0",
+        "content_schema": "gps-integers-research.v0",
+        "content_json": "{\"accuracyCm\":25,\"blinding\":\"bad\",\"latE7\":123456789,\"lonE7\":-987654321}",
+        "commitment": "also-bad",
+        "disclosed": true
+      },
+      "expected": {
+        "status": "UNVERIFIABLE",
+        "state": null,
+        "reason": "blinding_malformed",
+        "stage": "validation",
+        "hash_evaluated": false,
+        "canonical_utf8_hex": null,
+        "recomputed_commitment": null
+      },
+      "guarantee": "malformed_blinding_before_ref",
+      "input_utf8_sha256": "034d09819bae011c14f740c06840426b5feebdb6a6aff319c87682185fa54342",
+      "expectation_basis": "reviewed literal canonical text and declared relation, never adapter output"
+    }
+  ]
+}

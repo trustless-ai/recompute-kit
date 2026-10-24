@@ -1,0 +1,57 @@
+{
+  "base": "b4537d73bda4e4df73c4b105ee516a43c351ba02",
+  "status": "RESEARCH_CANDIDATE_NORMATIVE_EXTENSION_UNRESOLVED",
+  "vectors": 52,
+  "expected_status_counts": {
+    "VERIFIED": 14,
+    "REFUTED": 9,
+    "UNVERIFIABLE": 29
+  },
+  "windows": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "node": "v22.15.0"
+  },
+  "linux": {
+    "platform": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "node": "v20.19.5"
+  },
+  "research_tests_per_mode": 13,
+  "modes": [
+    "normal",
+    "repeat",
+    "python -O"
+  ],
+  "report_sha256": "44960e49f46ad29ec980688168f4da3804eab54dcee9e5801b23ba5219d131bb",
+  "canonical_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+  "canonical": {
+    "PASS": 46,
+    "NOT_RUN": 6,
+    "SKIPPED": 2,
+    "full_output_unchanged": true
+  },
+  "physical_mutations": {
+    "CONTROL_BROKEN": 0,
+    "CRASHED": 0,
+    "KILLED": 16,
+    "MISSING_OUTPUT": 0,
+    "NOT_APPLIED": 0,
+    "NO_OP": 0,
+    "SURVIVED": 0
+  },
+  "negative_harness_sentinels": {
+    "CONTROL_BROKEN": 1,
+    "CRASHED": 1,
+    "KILLED": 0,
+    "MISSING_OUTPUT": 1,
+    "NOT_APPLIED": 1,
+    "NO_OP": 1,
+    "SURVIVED": 1
+  },
+  "source_pins_verified": 8,
+  "declared_digest_entries": 123,
+  "base_files_preserved": 921,
+  "existing_tool_scripts": 16,
+  "existing_optimized_scripts": 3
+}
