@@ -10,12 +10,18 @@ So each identifier must fall into exactly one declared account:
 
   DERIVED   a 32-byte hash that `mcp.conventions.resolve()` still resolves. Recomputed here from
             the descriptor, never read back from the document that quotes it.
-  PINNED    a 32-byte HASH that appears in a tracked vectors/corpus file, so a suite compares
-            against it. Hashes only, deliberately: a suite ENFORCES a hash by recomputing and
+  PINNED    a 32-byte HASH that appears in a vectors file a suite DECLARES (suite.json vectors.path or
+            checks[].vectors.path) and the canonical runner RUNS (not excused in uncovered.json), so a
+            suite compares against it. Presence in some file under conformance/ is not enough: a file
+            no manifest declares is executed by nothing (Pavlo, #81 review, 2 Nov). Hashes only, deliberately: a suite ENFORCES a hash by recomputing and
             comparing, whereas an address in a corpus is merely recorded. Letting an address count
             as "pinned" would be the containment-for-enforcement swap that this repo keeps paying
             for -- and it showed up here as a control that did not bite, because dropping the
             TruthAnchor's ONCHAIN entry silently reclassified it PINNED instead of reporting it.
+  OUTSIDE_CI  a hash that a repo tool enforces but CI cannot run (e.g. it needs foundry `cast`). Declared
+            with the file it sits in and the command to check it by hand; the file is checked here to
+            still carry it, so the declaration cannot go stale. Found when PINNED was tightened (#81 review):
+            the agent-flow convention hash was "pinned" only by sitting in a file no CI step runs.
   ONCHAIN   a fact no offline check can settle -- a transaction hash, a deployed address. Declared
             WITH the chain and block to check it against, because "we cannot verify this here" has
             to be written down rather than inferred from the absence of a check.
@@ -32,6 +38,7 @@ six were the first 40 hex characters of 32-byte HASHES, matched by an unanchored
 addresses and four hashes, and nothing was stale. The regexes here are `\\b`-anchored and classified
 by length so that mistake cannot recur.
 """
+import json
 import re
 import subprocess
 import sys
@@ -39,7 +46,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "mcp"))
+sys.path.insert(0, str(ROOT / "tools"))
 import conventions  # noqa: E402
+from run_conformance import load_declared_uncovered  # noqa: E402  (the runner's own list of excused suites)
 
 HASH = re.compile(r"0x[0-9a-fA-F]{64}\b")
 ADDRESS = re.compile(r"0x[0-9a-fA-F]{40}\b")
@@ -63,24 +72,63 @@ ONCHAIN = {
 }
 
 
+# Hashes a repo tool enforces but CI cannot run. Each names the file that carries it and how to check it by hand.
+OUTSIDE_CI = {
+    "0xe4cccdfecd0a29a1703e51995883a27c58cd3edf07ea6a2070ffc912520644a5": (
+        "conformance/agent-flow.vectors.json",
+        "agent-flow rounding_convention.hash; enforced by bin/conformance (its structural gate: 'does your convention "
+        "hash match'), which needs foundry cast, so CI does not run it · check by hand: bin/conformance"),
+}
+
+
 def tracked(pattern):
     out = subprocess.run(["git", "-C", str(ROOT), "ls-files", pattern],
                          capture_output=True, text=True, check=True).stdout.split()
     return [ROOT / p for p in out]
 
 
-def pinned_in_a_corpus(identifier):
-    """-> the tracked data files that carry this identifier, so a suite can enforce it."""
-    hits = []
-    for f in sorted(set(tracked("conformance/*") + tracked("conformance/*/*"))):
-        if f.suffix not in (".json", ".txt") or not f.is_file():
+def enforced_vector_files():
+    """-> {file: suite} for the vectors files a suite declares AND the canonical runner runs.
+
+    Declared = vectors.path and every checks[].vectors.path in the suite's suite.json (the same
+    declared set run_conformance.undeclared_json_files uses; spec.path is normative material pinned
+    by digest, not vectors compared at run time, so it does not count). A suite excused in
+    conformance/uncovered.json is not run by CI, so its vectors do not enforce anything there."""
+    # (never run, acknowledged undeclared files, live-only within their review date): the 1st and 3rd are not run by CI;
+    # the 2nd still runs its declared vectors, and its undeclared files are excluded by the declared-path rule below
+    not_run, _undeclared_ok, live_only = load_declared_uncovered()
+    excused = set(not_run) | set(live_only)
+    out = {}
+    for man in tracked("conformance/*/suite.json"):
+        suite = man.parent.name
+        if suite in excused:
             continue
         try:
-            if identifier in f.read_text(encoding="utf-8", errors="replace").lower():
-                hits.append(f.relative_to(ROOT))
-        except OSError:
+            m = json.loads(man.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
             continue
-    return hits
+        for v in [m.get("vectors")] + [c.get("vectors") for c in (m.get("checks") or []) if isinstance(c, dict)]:
+            if isinstance(v, dict) and isinstance(v.get("path"), str):
+                f = (man.parent / v["path"]).resolve()
+                if f.is_file() and ROOT in f.parents:
+                    out[f] = suite
+    return out
+
+
+def pinned_in(identifier, texts):
+    """-> the files among `texts` ({file: lowercased text}) that carry the hash, matched on its bare hex
+    (a vectors file may or may not write the 0x)."""
+    bare = identifier.lower().removeprefix("0x")
+    return sorted(str(f.relative_to(ROOT)) if isinstance(f, Path) else str(f) for f, t in texts.items() if bare in t)
+
+
+ENFORCED = enforced_vector_files()
+ENFORCED_TEXT = {f: f.read_text(encoding="utf-8", errors="replace").lower() for f in ENFORCED}
+
+
+def pinned_in_a_corpus(identifier):
+    """-> the enforced vectors files (declared and run) that carry this hash."""
+    return pinned_in(identifier, ENFORCED_TEXT)
 
 
 def collect():
@@ -95,6 +143,30 @@ def collect():
 
 
 fails = []
+
+# ---- negative controls: presence in a file is not enforcement (Pavlo, #81 review) ----
+# 1. synthetic, always runnable: the same hash in an undeclared file must not pin; in a declared one it must
+_h = "0x" + "ab" * 32
+if pinned_in(_h, {"undeclared.json": ""}) or pinned_in(_h, {}):
+    fails.append("control: a hash in no enforced file was counted as pinned")
+if pinned_in(_h, {"declared.json": "x" + _h[2:] + "x"}) != ["declared.json"]:
+    fails.append("control: a hash in an enforced file was NOT counted as pinned (the check cannot pass)")
+# 2. real: a hash that appears ONLY in conformance files no running suite declares must not pin, while the old
+#    presence-only rule (any .json/.txt under conformance/) would have pinned it -- so the control discriminates
+_all = {f: f.read_text(encoding="utf-8", errors="replace").lower()
+        for f in tracked("conformance/*") + tracked("conformance/*/*")
+        if f.suffix in (".json", ".txt") and f.is_file()}
+_unenforced = {f: t for f, t in _all.items() if f not in ENFORCED and f.name not in ("suite.json", "uncovered.json")}
+_enforced_blob = "".join(ENFORCED_TEXT.values())
+_real = next((h for t in _unenforced.values() for h in re.findall(r"[0-9a-f]{64}", t) if h not in _enforced_blob), None)
+if _real is not None:
+    if pinned_in_a_corpus("0x" + _real):
+        fails.append(f"control: 0x{_real[:12]}... appears only in unenforced files but was counted as pinned")
+    if not pinned_in("0x" + _real, _all):
+        fails.append("control: the old presence-only rule would not have accepted the real control hash, so it proves nothing")
+if not ENFORCED:
+    fails.append("no enforced vectors files found -- the declared-and-run set is empty, so PINNED cannot hold")
+
 found = collect()
 if not found:
     fails.append("no identifiers found in any tracked .md -- the sweep is broken, and a sweep that "
@@ -104,7 +176,7 @@ derived = {h.lower() for h in conventions.CONVENTION_HASH.values()}
 if not derived:
     fails.append("mcp/conventions.py derived no convention hashes; the DERIVED account cannot hold")
 
-accounted = {"DERIVED": [], "PINNED": [], "ONCHAIN": []}
+accounted = {"DERIVED": [], "PINNED": [], "OUTSIDE_CI": [], "ONCHAIN": []}
 for ident, rec in sorted(found.items()):
     where = ", ".join(sorted(rec["files"]))
     if rec["kind"] == "hash" and ident in derived:
@@ -116,6 +188,13 @@ for ident, rec in sorted(found.items()):
         accounted["DERIVED"].append((ident, resolved, where))
     elif ident in ONCHAIN:
         accounted["ONCHAIN"].append((ident, ONCHAIN[ident], where))
+    elif ident in OUTSIDE_CI:
+        path, how = OUTSIDE_CI[ident]
+        f = ROOT / path
+        if f not in tracked(path) or ident.removeprefix("0x") not in f.read_text(encoding="utf-8", errors="replace").lower():
+            fails.append(f"{ident} is declared OUTSIDE_CI in {path}, but that tracked file no longer carries it")
+        else:
+            accounted["OUTSIDE_CI"].append((ident, f"{path} · {how}", where))
     else:
         # hashes only -- see the PINNED note in the docstring
         corpora = pinned_in_a_corpus(ident) if rec["kind"] == "hash" else []
@@ -148,7 +227,9 @@ if fails:
 
 print(f"OK — {len(found)} documented identifiers, all accounted for "
       f"({len(accounted['DERIVED'])} derived, {len(accounted['PINNED'])} pinned, "
-      f"{len(accounted['ONCHAIN'])} declared on-chain)")
-for account in ("DERIVED", "PINNED", "ONCHAIN"):
+      f"{len(accounted['OUTSIDE_CI'])} declared outside CI, {len(accounted['ONCHAIN'])} declared on-chain)")
+print(f"  pinned means: in one of {len(ENFORCED)} vectors files a running suite declares; controls passed"
+      + (f" (real control: 0x{_real[:12]}..., only in unenforced files)" if _real else " (no real control available; synthetic only)"))
+for account in ("DERIVED", "PINNED", "OUTSIDE_CI", "ONCHAIN"):
     for ident, detail, where in accounted[account]:
         print(f"  {account:8} {ident[:18]}…  {detail}")
