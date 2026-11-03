@@ -149,10 +149,19 @@ bin/conformance-suite --suite conformance/dex-calldata-v0
 #   ✓ CONFORMANT — every vector reproduced
 ```
 
-`bin/conformance-suite` grades **one** `reporter`-contract manifest: it feeds the pinned vectors
-in and compares the adapter's JSON against them. A `checks[]` (multi-check) manifest or a
-`self_grading` adapter goes through the whole-repo runner instead, which reads each manifest and
-dispatches on `adapter.contract`:
+`bin/conformance-suite` grades **one** `reporter`-contract check: it feeds the pinned vectors in and
+compares the adapter's JSON against them. A `checks[]` (multi-check) manifest needs the check named,
+and a `self_grading` adapter it cannot grade at all — that one decides its own verdict, so there is
+no result map to compare:
+
+```bash
+bin/conformance-suite --suite conformance/erc8275-win-rate-bps-v0 --check conformance
+```
+
+Anything it cannot read it **refuses with exit 2 and a sentence**, never a traceback and never
+exit 1 — `1` means a vector was refuted, and "I cannot read this declaration" is not a refutation
+(#72). The whole-repo runner is the general path, reading each manifest and dispatching on
+`adapter.contract`:
 
 ```bash
 python3 tools/run_conformance.py            # every suite, as its own suite.json declares

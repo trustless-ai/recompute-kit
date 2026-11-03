@@ -1,0 +1,96 @@
+PASS         aggregate-budget-v0                                   7/7 reproduced (runner-graded reporter)
+PASS         authorized-preimage-schema-v0/conformance             }
+PASS         authorized-preimage-schema-v0/mutation-coverage       }
+PASS         captured-admission-v0                                 63/63 cases reproduced
+PASS         captured-admission-v0-review-profile                  10/10 cases reproduced
+PASS         captured-admission-v0-review-profile-deadline         8/8 cases reproduced
+PASS         chronicle-checkpoint-continuity-v0                    20/20 reproduced (runner-graded reporter)
+SKIPPED      communication-chain-v0                                needs external binary / live service — not hermetic
+PASS         companion-envelope-v0/envelope                        5/5 vectors reproduced
+PASS         companion-envelope-v0/envelope-reference-ts           5/5 vectors reproduced (TS/JS reference == gateway companionEnvelope)
+PASS         consumption-time-state-binding-v0/conformance         }
+PASS         consumption-time-state-binding-v0/mutation-coverage   }
+NOT RUN      convention-hash-v0                                    no suite.json — nothing declares how to run this
+NOT RUN      crc-claim-v0                                          no suite.json — nothing declares how to run this
+NOT RUN      deils-leg2-reveal-v0                                  no suite.json — nothing declares how to run this
+PASS         dex-calldata-v0                                       3/3 reproduced (runner-graded reporter)
+PASS         encode-json-utf8-lf-v0                                PASS RFC 8785 Appendix B classified: 12 success, 14 rejection
+SKIPPED      ens-write-v0                                          needs external binary / live service — not hermetic
+PASS         erc-8309-envelope-v0                                  4/4 reproduced (runner-graded reporter)
+PASS         erc8275-win-rate-bps-v0/conformance                   10/10 reproduced (runner-graded reporter)
+PASS         erc8275-win-rate-bps-v0/mutation-coverage             10/10 reproduced (runner-graded reporter)
+PASS         event-time-concurrency-boundary-v0/conformance        }
+PASS         event-time-concurrency-boundary-v0/mutation-coverage  }
+NOT RUN      id-write-v0                                           no suite.json — nothing declares how to run this
+NOT RUN      nft-fulfill-v0                                        no suite.json — nothing declares how to run this
+PASS         permission-consumption-boundary-v0/conformance        }
+PASS         permission-consumption-boundary-v0/mutation-coverage  }
+PASS         pq-key-binding-v0/grade                               5/5 reproduced (runner-graded reporter)
+PASS         pq-key-binding-v0/cutoff                              8/8 cases reproduced
+PASS         pq-key-binding-v0/rotation                            8/8 cases reproduced
+PASS         pq-key-binding-v0/revocation                          6/6 cases reproduced
+PASS         pq-key-binding-v0/per-agent-anchor-recompute          3/3 hash-recompute claims reproduced
+PASS         pq-key-binding-v0/rotation-deep-recompute             2/2 hash-recompute claims reproduced
+PASS         pq-key-binding-v0/revocation-deep-recompute           2/2 hash-recompute claims reproduced
+PASS         pq-key-binding-v1/cutoff                              32/32 cases reproduced
+PASS         pq-key-binding-v1/manifest                            7/7 cases reproduced
+PASS         pq-key-binding-v1-profile                             15/15 cases reproduced
+PASS         pq-recovery-classes-v0                                20/20 cases reproduced
+PASS         predicate-conformance-v0                              {"clean-disjoint-pass":{"disjointness_holds":true,"precommit_hash":"c13d9d1a2182e19e81a970e11b00867c7d4b7220b6
+PASS         profile-amendment-v0/amendment                        8/8 vectors reproduced
+PASS         profile-amendment-v0/amendment-reference-ts           8/8 vectors reproduced (JS reference == amendment_gate.py)
+PASS         profile-commitment-loop-v0/loop                       6/6 vectors reproduced
+PASS         profile-commitment-loop-v0/loop-reference-ts          6/6 vectors reproduced (JS reference == loop_gate.py; composes #40 + #41)
+PASS         provenance-anchor-v0/origination-gate                 35/35 cases reproduced
+PASS         scan-subject-binding-v0/conformance                   }
+PASS         scan-subject-binding-v0/mutation-coverage             }
+PASS         serializer-bindings/shape                             15/15 cases reproduced
+PASS         serializer-bindings/tsei-frozen-artifact              OK tsei.frozen-artifact -> valid
+NOT RUN      storage-root-v0                                       no suite.json — nothing declares how to run this
+PASS         tee-attested-leaf-v0                                  7/7 reproduced (runner-graded reporter)
+FAIL         tee-inference-enclave-v0                              precondition: runtime dependency missing (node package ethers), adapter not run
+FAIL         tee-inference-v0                                      precondition: runtime dependency missing (node package ethers), adapter not run
+PASS         verdict-profile-binding-v0/binding                    6/6 vectors reproduced
+PASS         verdict-profile-binding-v0/binding-reference-ts       6/6 vectors reproduced (JS reference == verdict_binding_gate.py)
+
+44/54 suites passed
+6/54 declared NOT RUN (conformance/uncovered.json) — unrun, not passing:
+    - convention-hash-v0
+    - crc-claim-v0
+    - deils-leg2-reveal-v0
+    - id-write-v0
+    - nft-fulfill-v0
+    - storage-root-v0
+
+vector files present that NO manifest declares (executed by nothing):
+    chronicle-checkpoint-continuity-v0: chronicle-root-golden-vectors.json, tmerlini-evaluator-results-20.json
+
+executed files that NO declared pin covers (17 suites) -- a change to these cannot
+surface as DRIFT; report-only (RECOMPUTE_STRICT_EXEC_PINS=1 makes each one NOT COVERED):
+    - aggregate-budget-v0: gate.ts
+    - chronicle-checkpoint-continuity-v0: continuity_gate.ts
+    - companion-envelope-v0: companion-envelope-v0.reference.mjs, envelope_gate.py
+    - dex-calldata-v0: gate.py
+    - encode-json-utf8-lf-v0: gate.py
+    - erc-8309-envelope-v0: erc-8309-envelope-grade.py
+    - pq-key-binding-v0: cutoff_enforce.py, deep_recompute.py, gate.py
+    - pq-key-binding-v1: cutoff_enforce.py, manifest_resolve.py
+    - predicate-conformance-v0: gate.ts
+    - profile-amendment-v0: amendment_gate.py, profile-amendment-v0.reference.mjs
+    - profile-commitment-loop-v0: loop_gate.py, profile-commitment-loop-v0.reference.mjs
+    - provenance-anchor-v0: provenance_gate.py
+    - serializer-bindings: check_real_record.py
+    - tee-attested-leaf-v0: tee-attested-leaf-v0.reference.mjs
+    - tee-inference-enclave-v0: gate.ts
+    - tee-inference-v0: gate.ts
+    - verdict-profile-binding-v0: verdict-profile-binding-v0.reference.mjs, verdict_binding_gate.py
+2/54 SKIPPED as non-hermetic (conformance/uncovered.json requires_live) — not passing:
+    - communication-chain-v0
+    - ens-write-v0
+
+not green, by cause:
+  runner could not execute it (environment, not evidence):
+    - tee-inference-enclave-v0: precondition: runtime dependency missing (node package ethers), adapter not run
+    - tee-inference-v0: precondition: runtime dependency missing (node package ethers), adapter not run
+
+exit 2 — UNVERIFIABLE (nothing refuted; something could not be run)

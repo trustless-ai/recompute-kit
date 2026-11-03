@@ -1,0 +1,910 @@
+{
+  "counts": {
+    "KILLED": 20
+  },
+  "mutations": [
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "UNKNOWN_PROFILE",
+        "UNSUPPORTED_VERSION"
+      ],
+      "exit": 0,
+      "mutation": "profile-selection",
+      "new": "false",
+      "old": "e.profile!==ENVELOPE||![MANIFEST,SLOT].includes(e.proof_profile)",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "UNSUPPORTED_VERSION",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "624f7c7a579188c3db94915c89a367d6bddce7f6edf5d0591ec1c5b0c0b4f308",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "PROOF_PROFILE_UNSUPPORTED"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_RECEIPT"
+      ],
+      "exit": 0,
+      "mutation": "subject-identity",
+      "new": "false",
+      "old": "e.subject_profile!==SUBJECT||e.subject_id!==id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "WRONG_RECEIPT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "d5d41d51bbd473711c4959eb8d52a0cffd67a1266d900c62da8462edee78028f",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "RECEIPT_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "BAD_POLICY_SIGNATURE"
+      ],
+      "exit": 0,
+      "mutation": "policy-authentication",
+      "new": "false",
+      "old": "pub.asymmetricKeyType!=='ed25519'||!verify(null,Buffer.concat([Buffer.from(DOMAIN),canonicalize(body)]),pub,Buffer.from(policy.signature,'base64'))",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "BAD_POLICY_SIGNATURE",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "257aa2419f0bb350dc08df36d2472fcbedf3b6a2d3d9d65d6484a6d18ae9b572",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "POLICY_SIGNATURE_INVALID"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "SELF_SUPPLIED_TRUST"
+      ],
+      "exit": 0,
+      "mutation": "policy-authority",
+      "new": "if(!key) return {body,id};",
+      "old": "if(!key) throw new Error('POLICY_AUTHORITY_UNKNOWN');",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "SELF_SUPPLIED_TRUST",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "37fc448eef91bddc3a4c6cf24415d44cbfb94f2976a51dade42859a6f28b2cda",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "POLICY_AUTHORITY_UNKNOWN"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_LOG"
+      ],
+      "exit": 0,
+      "mutation": "log-selection",
+      "new": "false",
+      "old": "e.log_id!==p.body.log_id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "WRONG_LOG",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "2d9e87fbaae54b4b637a79175cd224f36053a532297b4d5708a29ce0a55bbd3c",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "LOG_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_CHECKPOINT"
+      ],
+      "exit": 0,
+      "mutation": "checkpoint-selection",
+      "new": "false",
+      "old": "e.checkpoint_id!==p.body.checkpoint_id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "WRONG_CHECKPOINT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "f6de18f33d7e9b9d40456980c3e751becb114927c673e8a37215841e4f686e1e",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "SELECTED_CHECKPOINT_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "SLOT_WRONG_RECEIPT"
+      ],
+      "exit": 0,
+      "mutation": "slot-leaf-binding",
+      "new": "false",
+      "old": "s.inclusion.line.scope!=='decider'||s.inclusion.line.claim_sha256!==sha256(canonicalize(claim))",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "SLOT_WRONG_RECEIPT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "11349e8ec92ce545c278ae2c1762a258e6bb03e7040017e519e8d2a355a3402c",
+      "witness_actual": {
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "reason": "SLOT_NATIVE_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "SLOT_RECEIPT_BINDING_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "CHAIN_REQUIRED"
+      ],
+      "exit": 0,
+      "mutation": "chain-required",
+      "new": "false",
+      "old": "p.body.require_chain&&!s.previous",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "CHAIN_REQUIRED",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "595c6c89d0861c6507eb02b21ffcd1eb44996468b2604457833ed0867ffdc30c",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "reason": "SLOT_NATIVE_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "CHAIN_EVIDENCE_MISSING"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "CLAIMED_OTS"
+      ],
+      "exit": 0,
+      "mutation": "timestamp-evidence",
+      "new": "false",
+      "old": "e.timestamp!==null",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "CLAIMED_OTS",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "b5f680667e0d481f0cc90020f0f6db57aa5d1491ecd66bc6fd35e87cd1b1a509",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "TIMESTAMP_VERIFIER_NOT_AVAILABLE"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "NON_CANONICAL"
+      ],
+      "exit": 0,
+      "mutation": "raw-admission",
+      "new": "false",
+      "old": "!raw.equals(canonicalize(v))",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "NON_CANONICAL",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "c7b76a326eecc20d92680fb6c1ee5d028f84bed8acbeb89e0bba18beba558590",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "RECEIPT_IDENTITY_MISMATCH"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "NON_CANONICAL_RECEIPT"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_LEAF",
+        "WRONG_ROOT",
+        "CORRUPT_SIBLING",
+        "WRONG_INDEX",
+        "WRONG_COUNT",
+        "CONFLICTING_HISTORY",
+        "BROKEN_PREV_ROOT",
+        "DROPPED_SLOT",
+        "MODIFIED_HISTORY",
+        "INVALID_CHECKPOINT_SIGNATURE",
+        "OTHER_MERKLE_CONVENTION",
+        "VALID_PROOF_OTHER_RECEIPT",
+        "SLOT_WRONG_POSITION",
+        "A_CHAIN_CONFLICT"
+      ],
+      "exit": 0,
+      "mutation": "native-result",
+      "new": "false",
+      "old": "native.status!=='VERIFIED'",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "INVALID_CHECKPOINT_SIGNATURE",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "8067ad9d2a925f4e4bab8d06a8a92929527b34c70931bbe0df8e4eb6080b0755",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "CHECKPOINT_SIGNATURE_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "CHECKPOINT_SIGNATURE_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "CHECKPOINT_SIGNATURE_INVALID"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_LEAF",
+        "WRONG_ROOT",
+        "CORRUPT_SIBLING",
+        "WRONG_INDEX",
+        "WRONG_COUNT",
+        "CONFLICTING_HISTORY",
+        "BROKEN_PREV_ROOT",
+        "DROPPED_SLOT",
+        "MODIFIED_HISTORY",
+        "INVALID_CHECKPOINT_SIGNATURE",
+        "OTHER_MERKLE_CONVENTION",
+        "VALID_PROOF_OTHER_RECEIPT",
+        "SLOT_WRONG_POSITION",
+        "A_CHAIN_CONFLICT"
+      ],
+      "exit": 0,
+      "mutation": "assurance-separation",
+      "new": "return answer('VERIFIED',native.reason,'ANCHOR_UNCHECKED');",
+      "old": "return answer(native.status,native.reason);",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "CORRUPT_SIBLING",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "707fcc18bc8822349fa323361464664ebea9ff746b629bf07a886253d4fd8e06",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "MERKLE_INCLUSION_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "MERKLE_INCLUSION_INVALID"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "MERKLE_INCLUSION_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_RECEIPT"
+      ],
+      "exit": 0,
+      "mutation": "case-attribution",
+      "new": "const r=evaluate(v.name==='WRONG_RECEIPT'?corpus.vectors[0].input:v.input,v.context);",
+      "old": "const r=evaluate(v.input,v.context);",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "WRONG_RECEIPT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "d5d41d51bbd473711c4959eb8d52a0cffd67a1266d900c62da8462edee78028f",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "RECEIPT_IDENTITY_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_LEAF",
+        "VALID_PROOF_OTHER_RECEIPT"
+      ],
+      "exit": 0,
+      "mutation": "manifest-leaf",
+      "new": "false",
+      "old": "!equal(evidence.leaf,receiptLeaf(receiptRoot))",
+      "path": "external:receiptos/research/agent-action-browser-verify-v0/lib/anchor.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "VALID_PROOF_OTHER_RECEIPT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "8ec11130c478a8c7c66ce60b37f76e30751572ebc8823f54047c54305fc0c60e",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "RECEIPT_LOG_LEAF_MISMATCH",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "RECEIPT_LOG_LEAF_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "WRONG_ROOT",
+        "CORRUPT_SIBLING",
+        "WRONG_INDEX",
+        "OTHER_MERKLE_CONVENTION"
+      ],
+      "exit": 0,
+      "mutation": "merkle-verification",
+      "new": "false",
+      "old": "!verifyInclusion(evidence.leaf,evidence.proof,c.body.merkle_root)",
+      "path": "external:receiptos/research/agent-action-browser-verify-v0/lib/anchor.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "CORRUPT_SIBLING",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "a2bf538073dfa4d82c16cffeeef908125a29d61fed2ed91a34d0e7cbb7a835cc",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "MERKLE_INCLUSION_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "MERKLE_INCLUSION_INVALID"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "CONFLICTING_HISTORY",
+        "BROKEN_PREV_ROOT",
+        "DROPPED_SLOT",
+        "MODIFIED_HISTORY"
+      ],
+      "exit": 0,
+      "mutation": "slot-chain-continuity",
+      "new": "pass",
+      "old": "slot.check_chain(h, lines, data['previous'].encode('utf-8'))",
+      "path": "slot_bridge.py",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "BROKEN_PREV_ROOT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "3071888a546911b13ace94361c49d46b907b72e75cb0cc40f442afa8e6cb6aaa",
+      "witness_actual": {
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "reason": "SLOT_NATIVE_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "reason": "SLOT_CHAIN_INVALID",
+          "status": "REFUTED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "REFUTED",
+        "reason": "SLOT_CHAIN_INVALID"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "NUMERIC_LOG_ID"
+      ],
+      "exit": 0,
+      "mutation": "log-id-admission",
+      "new": "false",
+      "old": "typeof e.log_id!=='string'||!e.log_id||typeof p.body.log_id!=='string'||!p.body.log_id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "NUMERIC_LOG_ID",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "17a562ec1f6f03f9614e41dd7df75505d30e8bf7e880fc006c7898bd88d2c3ba",
+      "witness_actual": {
+        "anchor_assurance": "CHAIN_CONSISTENT",
+        "native": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "reason": "SLOT_NATIVE_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "LOG_IDENTITY_MALFORMED"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "POLICY_NOT_SELECTED"
+      ],
+      "exit": 0,
+      "mutation": "selected-policy",
+      "new": "false",
+      "old": "id!==context.policy_id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "POLICY_NOT_SELECTED",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "bb53663014404e931ae441939d8bfde18257a4dbefd24302bd0042e951ead66f",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "POLICY_SELECTION_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "POLICY_REF_WRONG"
+      ],
+      "exit": 0,
+      "mutation": "policy-reference",
+      "new": "false",
+      "old": "e.policy_ref!==p.id",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "POLICY_REF_WRONG",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "fa2c07b3d56927b5b64ae13f8aa47593e31c2e8bcef2cd736df3b51c96030651",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "POLICY_BINDING_MISMATCH"
+      }
+    },
+    {
+      "applications": 1,
+      "canonical_kind": "SUITE",
+      "changed_cases": [
+        "POLICY_PROFILE_DIFFERENT"
+      ],
+      "exit": 0,
+      "mutation": "policy-proof-profile",
+      "new": "false",
+      "old": "p.body.proof_profile!==e.proof_profile",
+      "path": "adapter.mjs",
+      "positive_controls": {
+        "A_CHAIN_VALID": true,
+        "A_VALID": true,
+        "B_VALID_CHAIN": true,
+        "SAFE_BOUNDARIES_UNICODE": true,
+        "UNANCHORED_VALID": true
+      },
+      "required_killer": "POLICY_PROFILE_DIFFERENT",
+      "restored": true,
+      "status": "KILLED",
+      "stderr": "",
+      "stdout_sha256": "16dfb44aa9b39f0bfc3da566381a716cb6f51d3a97ffaa65583f075205153fe6",
+      "witness_actual": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": {
+          "profile": "agent-action.local-manifest-log.v0",
+          "reason": "LOCAL_CHECKPOINT_INCLUSION_VERIFIED",
+          "status": "VERIFIED"
+        },
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "VERIFIED",
+        "reason": "BOUNDED_INCLUSION_VERIFIED"
+      },
+      "witness_expected": {
+        "anchor_assurance": "ANCHOR_UNCHECKED",
+        "native": null,
+        "projection": "chain-neutral.result.v0",
+        "proof_validity": "UNVERIFIABLE",
+        "reason": "POLICY_BINDING_MISMATCH"
+      }
+    }
+  ],
+  "positive_controls": [
+    "A_VALID",
+    "B_VALID_CHAIN",
+    "UNANCHORED_VALID",
+    "SAFE_BOUNDARIES_UNICODE",
+    "A_CHAIN_VALID"
+  ],
+  "restored_baseline": true,
+  "total": 20
+}

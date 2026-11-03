@@ -1,0 +1,3 @@
+# Preserve captured Windows process bytes; source text remains LF.
+windows-final/** whitespace=cr-at-eol
+initial-windows/** whitespace=cr-at-eol

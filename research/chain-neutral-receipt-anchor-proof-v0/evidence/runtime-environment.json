@@ -1,0 +1,17 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "node": "v20.19.5",
+  "bun": "1.3.14",
+  "git": "git version 2.43.0",
+  "python_packages": {
+    "rfc8785": {
+      "version": "0.1.4",
+      "files": {
+        "__init__.py": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154",
+        "_impl.py": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec"
+      }
+    }
+  },
+  "note": "Runtime measurements, not a claim of a hermetically sealed production runtime."
+}

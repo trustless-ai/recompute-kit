@@ -1,0 +1,14 @@
+[
+  {
+    "path": "real",
+    "exit": 0,
+    "stdout_bytes": 9739,
+    "stderr_bytes": 0
+  },
+  {
+    "path": "symlink",
+    "exit": 0,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0
+  }
+]

@@ -1,0 +1,828 @@
+{
+  "checked": 137,
+  "all_valid": true,
+  "occurrences": [
+    {
+      "suite": "conformance/aggregate-budget-v0/suite.json",
+      "path": "aggregate-budget-v0.vectors.json",
+      "sha256": "ac6f6efd485e887a7f82140ac5be234643af17efb24506d9cd40e87ecd2bcb85",
+      "ok": true
+    },
+    {
+      "suite": "conformance/aggregate-budget-v0/suite.json",
+      "path": "aggregate-budget-v0.spec.md",
+      "sha256": "874e92ab93541ae3d9893f1603945b5e86ac568cd1fe14ad31047b2cdf8f699c",
+      "ok": true
+    },
+    {
+      "suite": "conformance/authorized-preimage-schema-v0/suite.json",
+      "path": "README.md",
+      "sha256": "ef819fe9383e95cc7cd237cfb2b4bdeb7c1e6e5998d4c68b64162129c7914f99",
+      "ok": true
+    },
+    {
+      "suite": "conformance/authorized-preimage-schema-v0/suite.json",
+      "path": "schema_check.py",
+      "sha256": "42e7de94fe56507e3538025f503efb882b4dc808a0ec89e3380f242f18f06ebc",
+      "ok": true
+    },
+    {
+      "suite": "conformance/authorized-preimage-schema-v0/suite.json",
+      "path": "mutation_check.py",
+      "sha256": "403e8fd297ab9d36128653eafde5a9e5f518d2c6a654acd71fddb3b41eb13e5d",
+      "ok": true
+    },
+    {
+      "suite": "conformance/authorized-preimage-schema-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "16ccd7479f2fafedc328fc111fd0a01da2c3a21fb2f13ddc94fc732922583eb0",
+      "ok": true
+    },
+    {
+      "suite": "conformance/authorized-preimage-schema-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "16ccd7479f2fafedc328fc111fd0a01da2c3a21fb2f13ddc94fc732922583eb0",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "c0842d6ba8dc70ee24093bcaa2f477da78ebf978f6ad3a854403e528739e4b27",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0/suite.json",
+      "path": "README.md",
+      "sha256": "4cc8349e14f88aaa0e75f9020f7b91a2a68b0dd3c04b33fdf07e6ff71c7f1656",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0/suite.json",
+      "path": "admission_check.py",
+      "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile/suite.json",
+      "path": "vectors.json",
+      "sha256": "6d4a38b8b89055beff6bfd2b172efae272352cffa18939ce652358c399c23b36",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile/suite.json",
+      "path": "README.md",
+      "sha256": "aa44f2aa4eaeff0833aa092804a2e368b17b2b0faaa329b9f977bb3d5cf96443",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile/suite.json",
+      "path": "../captured-admission-v0/admission_check.py",
+      "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile-deadline/suite.json",
+      "path": "deadline_vectors.json",
+      "sha256": "94eb720d96ff2b6dcda1669401a5af92f461a4c3ecc46efa463053bfadf218a6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile-deadline/suite.json",
+      "path": "deadline_derivation.py",
+      "sha256": "d52866f1e135fcbef6a5bbeb548c0fc95e138a42ed9be198a05cf7498a33627a",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile-deadline/suite.json",
+      "path": "README.md",
+      "sha256": "012482fe6fdd8e0a18bc3fcdcafddc121d775f0d44ea067a934603b803d853d3",
+      "ok": true
+    },
+    {
+      "suite": "conformance/captured-admission-v0-review-profile-deadline/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/chronicle-checkpoint-continuity-v0/suite.json",
+      "path": "continuity-vectors.json",
+      "sha256": "c369bd3924f5ce053c698c903345e3859e75a4daabffed1720d11351f81def93",
+      "ok": true
+    },
+    {
+      "suite": "conformance/communication-chain-v0/suite.json",
+      "path": "communication-chain-v0.vectors.json",
+      "sha256": "d9d63cc82903d89c220f62f22035ff1901619124707a2acccd293cfc5c2dec6e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/companion-envelope-v0/suite.json",
+      "path": "companion-envelope-v0.vectors.json",
+      "sha256": "b285ce5091cfe806c238b2b657422b283ddb69c6d0ba0c5501579f34593b57b1",
+      "ok": true
+    },
+    {
+      "suite": "conformance/companion-envelope-v0/suite.json",
+      "path": "companion-envelope-v0.vectors.json",
+      "sha256": "b285ce5091cfe806c238b2b657422b283ddb69c6d0ba0c5501579f34593b57b1",
+      "ok": true
+    },
+    {
+      "suite": "conformance/companion-envelope-v0/suite.json",
+      "path": "companion-envelope-v0.spec.md",
+      "sha256": "9ba69fb49e55be03de5749117b004464f0f8f4b12f052b063461c7030f1ee4c4",
+      "ok": true
+    },
+    {
+      "suite": "conformance/companion-envelope-v0/suite.json",
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646",
+      "ok": true
+    },
+    {
+      "suite": "conformance/companion-envelope-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/consumption-time-state-binding-v0/suite.json",
+      "path": "README.md",
+      "sha256": "c2ac5109a141f6f586df55de5397001d00381629d5df187dacaec1a3ee4c4538",
+      "ok": true
+    },
+    {
+      "suite": "conformance/consumption-time-state-binding-v0/suite.json",
+      "path": "binding_check.py",
+      "sha256": "8dee4a999278adc5140559369b57a5ac931cc3ac04b2e83665a4e537fb1593d9",
+      "ok": true
+    },
+    {
+      "suite": "conformance/consumption-time-state-binding-v0/suite.json",
+      "path": "mutation_check.py",
+      "sha256": "da5202ad445e18fc498fd40a743f6c3d658c6159f8057ef08c0790c379e552fa",
+      "ok": true
+    },
+    {
+      "suite": "conformance/consumption-time-state-binding-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "0788f31772d0d3ee646cbc1bcf77e003c524256162b27f77c80a2e234d9e9e08",
+      "ok": true
+    },
+    {
+      "suite": "conformance/consumption-time-state-binding-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "0788f31772d0d3ee646cbc1bcf77e003c524256162b27f77c80a2e234d9e9e08",
+      "ok": true
+    },
+    {
+      "suite": "conformance/dex-calldata-v0/suite.json",
+      "path": "dex-calldata-v0.vectors.json",
+      "sha256": "0f88616f3c21ad6f90875e34b3d891b998616f41a0012e45dffe12a0d24fe282",
+      "ok": true
+    },
+    {
+      "suite": "conformance/dex-calldata-v0/suite.json",
+      "path": "dex-calldata-v0.spec.md",
+      "sha256": "6d0f67769b7b83ba7fc65f64da2d41f9bb2127d27f50b60ea22ab6376cfdfeff",
+      "ok": true
+    },
+    {
+      "suite": "conformance/encode-json-utf8-lf-v0/suite.json",
+      "path": "encode-json-utf8-lf-v0.spec.md",
+      "sha256": "22207f8c4047044414da98b5497a2c9683aea14a7a498fc1819a9094c920a1f9",
+      "ok": true
+    },
+    {
+      "suite": "conformance/encode-json-utf8-lf-v0/suite.json",
+      "path": "encode-json-utf8-lf-v0.vectors.json",
+      "sha256": "8d53ab1d3dfb2de1ba9db23ed06d6864b08b516451938a4b1f6db6bcdcf1950f",
+      "ok": true
+    },
+    {
+      "suite": "conformance/encode-json-utf8-lf-v0/suite.json",
+      "path": "encoder.py",
+      "sha256": "469105707cc91a11d530f5c25a9d51e0407297c09f24591277c6b97701736cbc",
+      "ok": true
+    },
+    {
+      "suite": "conformance/encode-json-utf8-lf-v0/suite.json",
+      "path": "encoder.ts",
+      "sha256": "70c9f1b81786e65dcc1ea081a66e417e9f6451debad4ba50ab21f9791ce1cd2d",
+      "ok": true
+    },
+    {
+      "suite": "conformance/encode-json-utf8-lf-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/ens-write-v0/suite.json",
+      "path": "ens-write-v0.vectors.json",
+      "sha256": "f4fec32aafb2dcc19c537e29339fb86db8d9e770cd20d25b8ccfab1fc5e333a7",
+      "ok": true
+    },
+    {
+      "suite": "conformance/ens-write-v0/suite.json",
+      "path": "ens-write-v0.spec.md",
+      "sha256": "2e5ba8f8518677ef9c305c0eaee813111505ce45550693dd6898daf5dfc340e8",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc-8309-envelope-v0/suite.json",
+      "path": "erc-8309-envelope-v0.vectors.json",
+      "sha256": "6a66c7578ff839f00b8fb6e4b96549199d736c91c23c3ea5e1b6fe943f5085d7",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc-8309-envelope-v0/suite.json",
+      "path": "erc-8309.envelope.schema.json",
+      "sha256": "de1395884ac62fc5d05b39fc3d5401ab993c54a64cb22cd1d385d7a32da71821",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc8275-win-rate-bps-v0/suite.json",
+      "path": "erc8275-win-rate-bps-v0.spec.md",
+      "sha256": "ba71b0787a80abed00d12bf3a5ad54ce08b162b3c104d3b9a947284e36c65fe6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc8275-win-rate-bps-v0/suite.json",
+      "path": "erc8275-win-rate-bps-v0.vectors.json",
+      "sha256": "01d354ec0cf5f1b5de88526fdb22461c72ed296ae5d289efbb26ba4ec7c88c49",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc8275-win-rate-bps-v0/suite.json",
+      "path": "erc8275-win-rate-bps-v0.vectors.json",
+      "sha256": "01d354ec0cf5f1b5de88526fdb22461c72ed296ae5d289efbb26ba4ec7c88c49",
+      "ok": true
+    },
+    {
+      "suite": "conformance/erc8275-win-rate-bps-v0/suite.json",
+      "path": "gate.py",
+      "sha256": "8c6596cfa0e672423d1bc11ea06f13f64625b852db0ed700315b0604c4b4786c",
+      "ok": true
+    },
+    {
+      "suite": "conformance/event-time-concurrency-boundary-v0/suite.json",
+      "path": "README.md",
+      "sha256": "e67ab8c06e23eca1c24e627aec4304062861b01a4ed57c3501767fcefca3de0e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/event-time-concurrency-boundary-v0/suite.json",
+      "path": "boundary_check.py",
+      "sha256": "076144d44ba481aa6a2c159ae7269e75a286b65b033bc70e0d628e3927d7c7a8",
+      "ok": true
+    },
+    {
+      "suite": "conformance/event-time-concurrency-boundary-v0/suite.json",
+      "path": "mutation_check.py",
+      "sha256": "32035ab74870110785aa8b73ff3fc710612bafc5a055059e14afba4b4754cfc6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/event-time-concurrency-boundary-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "9cfae3d121a865e3d9776a3a8d5805149be4d09e85ecccab00cf57ddd2d8709c",
+      "ok": true
+    },
+    {
+      "suite": "conformance/event-time-concurrency-boundary-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "9cfae3d121a865e3d9776a3a8d5805149be4d09e85ecccab00cf57ddd2d8709c",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "README.md",
+      "sha256": "32dab8c2b4c3cbe1002c9ee900626c18dec5609a9f843480ad09236a239363f5",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "permission_check.py",
+      "sha256": "48d49f02708ab9e7d023ad69680e749719977019fae432eb058f6c7f92336629",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "mutation_check.py",
+      "sha256": "98b0c1f10de03fbd844c971144e493737ef6447b567bcbb323e9c65580e10aa1",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "../../bin/conformance",
+      "sha256": "2360e7241340295a909504ce6b80e4fb7650b401c2215ed6fdb74eadebc280d0",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "../captured-admission-v0/admission_check.py",
+      "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "../consumption-time-state-binding-v0/binding_check.py",
+      "sha256": "8dee4a999278adc5140559369b57a5ac931cc3ac04b2e83665a4e537fb1593d9",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "d36ba09a00bd3125308aa4776eddb6f0060503565d5cebb80ce41173136f0f26",
+      "ok": true
+    },
+    {
+      "suite": "conformance/permission-consumption-boundary-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "d36ba09a00bd3125308aa4776eddb6f0060503565d5cebb80ce41173136f0f26",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.vectors.json",
+      "sha256": "9ee62960f0fade98ee107ee600feac3bca9b6b1157c273568ee060efec235823",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.cutoff-vectors.json",
+      "sha256": "7cfd7e8906b0afbfa1d000e99177ab797b2f757dc2d71364ff79cc48fbc506f7",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.rotation-vectors.json",
+      "sha256": "b71f375928fb2b03454b91b28b4b10f3cab0fe0f14b75b1c0a7cc54221113abd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.revocation-vectors.json",
+      "sha256": "3481360d3ffa5e785ca640a06994a9724ab6e7cee1a2e033102e70b91f31cac0",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.per-agent-anchor.json",
+      "sha256": "4b15f56105fe5cb04b1d43c47cc78bf7346f402ab04df2aa82250f404d05803a",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.rotation.json",
+      "sha256": "150817aef5862ef601f487ef2f038917bfe78fa302bdf546607a40a7215adee6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.revocation.json",
+      "sha256": "b97752168fd1071a7a00c72cd584f2e14f24a7314719bdbabc0b089e630151bc",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "pq-key-binding-v0.spec.md",
+      "sha256": "877499e8dae1d20e6e3f056cc48337f08755af63fef0c66d58ca44e628928af0",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1/suite.json",
+      "path": "pq-key-binding-v1.cutoff-vectors.json",
+      "sha256": "43ccc194292cb24232fc1ba68962fcf55856aa2b232f47a534c095a7d6636de6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1/suite.json",
+      "path": "pq-key-binding-v1.manifest-vectors.json",
+      "sha256": "e245249692329407a021af5bcc6dc1158b704ba8804451d71f4237975110bde5",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1-profile/suite.json",
+      "path": "vectors.json",
+      "sha256": "74b0fbd7f271a0c7beaa9df323aa5a0404ec99f77591782f8d39ae53b7e3ade8",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1-profile/suite.json",
+      "path": "../captured-admission-v0/admission_check.py",
+      "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-key-binding-v1-profile/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-recovery-classes-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "dd2c79991adb878b53ca389a5519475c717e59e55b9d91dc66bfc5be8bbbdd65",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-recovery-classes-v0/suite.json",
+      "path": "README.md",
+      "sha256": "7826c414cd0bb8b8d1c51a9480a5b8217f9b4247ecd25ade6ea10940b448803e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-recovery-classes-v0/suite.json",
+      "path": "recovery_check.py",
+      "sha256": "8586e6dbd2cabebb2c198c8e398a530cafca3bb2dfca22ddcd559e8f99b4bee8",
+      "ok": true
+    },
+    {
+      "suite": "conformance/pq-recovery-classes-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/predicate-conformance-v0/suite.json",
+      "path": "predicate-conformance-v0.vectors.json",
+      "sha256": "c8653f03aeb92cd21259238cf859d906849f54576c3cdae8aafd27e32389adaa",
+      "ok": true
+    },
+    {
+      "suite": "conformance/predicate-conformance-v0/suite.json",
+      "path": "predicate-conformance-v0.spec.md",
+      "sha256": "b3ea7fe89d5cf8489cd04afba3abb8957f0534a3cfe5db40cc14c186aea5e861",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-amendment-v0/suite.json",
+      "path": "profile-amendment-v0.vectors.json",
+      "sha256": "79cd891adcb9019da5f4b3c81e01e8c083ba036d4ae25577f53873b17a105f74",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-amendment-v0/suite.json",
+      "path": "profile-amendment-v0.vectors.json",
+      "sha256": "79cd891adcb9019da5f4b3c81e01e8c083ba036d4ae25577f53873b17a105f74",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-amendment-v0/suite.json",
+      "path": "profile-amendment-v0.spec.md",
+      "sha256": "6088753df1f0c428f14ccb954179ff5441af1684d2f289761e872a7a3a17c50b",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-amendment-v0/suite.json",
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-amendment-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-commitment-loop-v0/suite.json",
+      "path": "profile-commitment-loop-v0.vectors.json",
+      "sha256": "af73ee1a7e7a3c410cb7fe068556833053143998636090964c78438dc961842e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-commitment-loop-v0/suite.json",
+      "path": "profile-commitment-loop-v0.vectors.json",
+      "sha256": "af73ee1a7e7a3c410cb7fe068556833053143998636090964c78438dc961842e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-commitment-loop-v0/suite.json",
+      "path": "profile-commitment-loop-v0.spec.md",
+      "sha256": "ae3bfbeca7ec895e88c69cec3d3245346260c9834ce207516380620f6a7c98b5",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-commitment-loop-v0/suite.json",
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646",
+      "ok": true
+    },
+    {
+      "suite": "conformance/profile-commitment-loop-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/provenance-anchor-v0/suite.json",
+      "path": "provenance-anchor-v0.vectors.json",
+      "sha256": "b5417c3225edb7e2a587abcf290be8ca9c8f3e259efa03569853dff5661a1946",
+      "ok": true
+    },
+    {
+      "suite": "conformance/provenance-anchor-v0/suite.json",
+      "path": "provenance-anchor-v0.spec.md",
+      "sha256": "528adff80003446b66249daf0b485bb42b628e541d55eeff0558bf5a1b38bd3e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/scan-subject-binding-v0/suite.json",
+      "path": "README.md",
+      "sha256": "38e52e759b0a4b0643af2bde530767d6bacf6c5cdf3d7db3533394e803f59c46",
+      "ok": true
+    },
+    {
+      "suite": "conformance/scan-subject-binding-v0/suite.json",
+      "path": "scan_check.py",
+      "sha256": "0cfe367fb7dd0d9aa8d0e8a560cf57971165c6822624b3c91cde9cfdaae0c733",
+      "ok": true
+    },
+    {
+      "suite": "conformance/scan-subject-binding-v0/suite.json",
+      "path": "mutation_check.py",
+      "sha256": "48103f0128ee2a24704aa9445516aa090997cbb11178a554331409742509cecb",
+      "ok": true
+    },
+    {
+      "suite": "conformance/scan-subject-binding-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "a790f6c1eb7bab084399b9b87cd48aa7ea96b8b2ed16864c0d59fe273a186c7e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/scan-subject-binding-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "a790f6c1eb7bab084399b9b87cd48aa7ea96b8b2ed16864c0d59fe273a186c7e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/serializer-bindings/suite.json",
+      "path": "binding-record.vectors.json",
+      "sha256": "7beaabc7166816ae984eb1c5fffc55dc457ca4f86743f1f14e8795841626485e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/serializer-bindings/suite.json",
+      "path": "records/tsei.frozen-artifact.json",
+      "sha256": "f45e3e99f3e31dc4884d92e8b1622b6c8497ecf295424442698db9d9aeb14ec6",
+      "ok": true
+    },
+    {
+      "suite": "conformance/serializer-bindings/suite.json",
+      "path": "binding-record.schema.json",
+      "sha256": "87ea63d6cc98dfea8f9f88fe27b27cfd87f9cf4b0039e304ccd0e97d32644d9e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/serializer-bindings/suite.json",
+      "path": "validate_binding_record.py",
+      "sha256": "3b8e3332354bab378fd151bfad9909723d8c98539e94a815b195a93fce161e7d",
+      "ok": true
+    },
+    {
+      "suite": "conformance/serializer-bindings/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-attested-leaf-v0/suite.json",
+      "path": "tee-attested-leaf-v0.vectors.json",
+      "sha256": "b12304ca2a43bef2c710034ec7b99ad8ce9cf78ed7a8fc0ae8bed9df22df2940",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-attested-leaf-v0/suite.json",
+      "path": "tee-attested-leaf-v0.spec.md",
+      "sha256": "3766d12d8bdd448f2b56db84d1021401f162bc22ceceae1c5e46cd02442b1d27",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-inference-enclave-v0/suite.json",
+      "path": "tee-inference-enclave-v0.vectors.json",
+      "sha256": "b197809da7198f8854cc9d17036b46c7ad16466155bc0657c5197d204da82d2e",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-inference-enclave-v0/suite.json",
+      "path": "tee-inference-enclave-v0.spec.md",
+      "sha256": "f912211313b633234a158421ae0a0b7e4b5787c6e42665cbbc2f080bc566d239",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-inference-v0/suite.json",
+      "path": "tee-inference-v0.vectors.json",
+      "sha256": "c02f8af51edef5038a76b9e30ab7ef4781d3d66bd4eafe00146fe225ddbb2a69",
+      "ok": true
+    },
+    {
+      "suite": "conformance/tee-inference-v0/suite.json",
+      "path": "tee-inference-v0.spec.md",
+      "sha256": "57faa873b0c83ba9f95260353e6400d422bc861f52ccd3aecf6c651aabb1ce03",
+      "ok": true
+    },
+    {
+      "suite": "conformance/verdict-profile-binding-v0/suite.json",
+      "path": "verdict-profile-binding-v0.vectors.json",
+      "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a",
+      "ok": true
+    },
+    {
+      "suite": "conformance/verdict-profile-binding-v0/suite.json",
+      "path": "verdict-profile-binding-v0.vectors.json",
+      "sha256": "4a50b2fb74de7974ca197b1c627413bfc39f41363ed786ae79465ab9ee751f0a",
+      "ok": true
+    },
+    {
+      "suite": "conformance/verdict-profile-binding-v0/suite.json",
+      "path": "verdict-profile-binding-v0.spec.md",
+      "sha256": "a58aa6f4e88043b10c385f75368fd8f7429234d947a3f7c1122d67a19f41c309",
+      "ok": true
+    },
+    {
+      "suite": "conformance/verdict-profile-binding-v0/suite.json",
+      "path": "../_self_grading.mjs",
+      "sha256": "52dc008112af85db5237e26e1f2de35b583176f7dd380a11c102d5c6b10c6646",
+      "ok": true
+    },
+    {
+      "suite": "conformance/verdict-profile-binding-v0/suite.json",
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "SPECIFICATION_CANDIDATE.md",
+      "sha256": "a3d34b59ce98990b67a87873d765794a4b9f7d807a20f8bfa9823cd2409e4edc",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "vectors.json",
+      "sha256": "3c4e9a342e8ac30c5737b27ce6f32ea934b594084db3cd22bfb269ed03555bf5",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "adapter.mjs",
+      "sha256": "0639606fddbea598cc7e66036e362d8ad03f9b7f03e4f4dfb4050838105c48b7",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "mutations.py",
+      "sha256": "f847b270b351b1e5b670aa137b0874952de776fa66b2cc76360f031d52b9a2a8",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "sources.mjs",
+      "sha256": "d47ff35368479469c2769b95c1d6c7345b00530b3a726bdd82252e1cf8f67879",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "slot_bridge.py",
+      "sha256": "1afeeb7b93ef68ec4bf755c821396b7ada3797d35c5d2a37956f20f7904546ed",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "SOURCE_PINS.json",
+      "sha256": "c8bac305c2a127ea6a2ec64114266187b4af5f6efc6419874bb7ffd209244908",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "subject.schema.json",
+      "sha256": "39099aaab04f5ff82f81e82e933d5bb39b679c7c8fe3e309115ac51e513bf414",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "envelope.schema.json",
+      "sha256": "4624a85e17ddbc38c6abac6c885ebc9c1c1df45f78afe6f87cfd788d0388441a",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "bootstrap.py",
+      "sha256": "fa12736cdc4411222d7210f67af416da9d361287ac9e836be1d37a3d960b91c8",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "rvr_boundary.py",
+      "sha256": "0c2d24e793d908ebe6054daca9451baf132a1d065d8bf54ee1c1a9f69ea627ce",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "replay.py",
+      "sha256": "0f72a6ae3b5aca42064a87983ad8f235b6f23bfdfb6e892a85b0b2e114c3cc38",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "test_research.py",
+      "sha256": "bb8b178441fd05b2ceb0c45d7d5649fe914c5bf24dee15b324355ee1f4d4339a",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "define_vectors.mjs",
+      "sha256": "c967d8ebfbfbe79dcfcf5d64bce645c315f2098edbbeceb67fdfec232dfef8da",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "validate.py",
+      "sha256": "e42deabc46f0f9f2b3203bf33f78acd536ccd84f6f7403a622ae0763a3c0fb56",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "RECEIPT_PROFILE.md",
+      "sha256": "133c700ede3ed72244fe2fe4d18dcb120f461dea450e67963dd5e5bf7d3328d0",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "ANCHOR_PROOF_ENVELOPE.md",
+      "sha256": "f81646fa443e047152f175161be11fd4bf3da7d954eca03ae573da7302aa37a2",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "PROOF_PROFILES.md",
+      "sha256": "a3a92ecd08664d9fcebfd7eb4276dfaf14ff89f3aca62c5a6925c60eb414bf3a",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "VERDICT_SEMANTICS.md",
+      "sha256": "a1bdca0bc57bfb7f1acfb51f662f8989ecf0fdd542c8321913f20be89bfb43fb",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "TRUST_POLICY.md",
+      "sha256": "e57be186a516f365baad8e1b594583c0da8a7b95a11bc235a82a95f7066ac8d8",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "ERC8404_RECEIPT_BOUNDARY.md",
+      "sha256": "8ffe83fe43a9a9c456e67e42bb909d296870ca01dbb450c1d85c791654f9c0ba",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "../../tools/run_conformance.py",
+      "sha256": "84041862cf1c250d55b0378d70de968bee21df768ba2d1f21ee5d8017b265080",
+      "ok": true
+    },
+    {
+      "suite": "research/chain-neutral-receipt-anchor-proof-v0/suite.json",
+      "path": "../../bin/conformance-suite",
+      "sha256": "4c4fedab675247f93793961bbddbc2079718ad4b9019707fa8f967fbfa38ab3a",
+      "ok": true
+    }
+  ]
+}

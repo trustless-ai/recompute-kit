@@ -65,21 +65,35 @@ def loop(v):
 KEYS = ("transition_status", "resolution_status", "effective_profile_commitment",
         "bound_profile_commitment", "loop_status")
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     doc = json.load(open(path))
     if isinstance(doc["vectors"], list) and not doc["vectors"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(doc["vectors"])
     fails = 0
-    for v in doc["vectors"]:
+    for i, v in enumerate(doc["vectors"]):
+        if not grading.expectation(i, v, "expect",
+                required=('transition_status', 'resolution_status', 'effective_profile_commitment', 'bound_profile_commitment', 'loop_status'),
+                types={'transition_status': 'string',
+                       'resolution_status': 'string',
+                       'effective_profile_commitment': 'string',
+                       'bound_profile_commitment': 'nullable_string',
+                       'loop_status': 'string'}):
+            continue
         got, exp = loop(v), v["expect"]
         ok = all(got[k] == exp[k] for k in KEYS)
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {v['name']:<34} loop={got['loop_status']:<7} "
               f"transition={got['transition_status']:<10} resolution={got['resolution_status']}")
-    print(f"{len(doc['vectors']) - fails}/{len(doc['vectors'])} vectors reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(doc['vectors'])} vectors reproduced")
+    return grading.finish()
 
 if __name__ == "__main__":
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(_HERE, "profile-commitment-loop-v0.vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(_HERE, "profile-commitment-loop-v0.vectors.json")))

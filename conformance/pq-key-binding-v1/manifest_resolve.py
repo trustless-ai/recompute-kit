@@ -93,22 +93,30 @@ def resolve(manifests, target):
     return f"resolved:{m0['anchor_time']}"
 
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     fx = json.load(open(path))
     if isinstance(fx["cases"], list) and not fx["cases"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(fx["cases"])
     fails = 0
-    for c in fx["cases"]:
+    for i, c in enumerate(fx["cases"]):
+        if not grading.expectation(i, c, "expected", kind="string"):
+            continue
         got, exp = resolve(c["manifests"], c["target"]), c["expected"]
         ok = got == exp
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {c['name']:<54} -> {got:<32} (want {exp})")
-    print(f"{len(fx['cases']) - fails}/{len(fx['cases'])} cases reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(fx['cases'])} cases reproduced")
+    return grading.finish()
 
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(here, "pq-key-binding-v1.manifest-vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(here, "pq-key-binding-v1.manifest-vectors.json")))

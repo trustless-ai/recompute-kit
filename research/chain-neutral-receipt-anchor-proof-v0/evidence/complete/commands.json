@@ -1,0 +1,389 @@
+[
+  {
+    "name": "source-pins",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/bootstrap.py",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/sources"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-slot-vectors",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/sources/invino/examples/decision-receipt/slot_log_check.py",
+      "--vectors",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/sources/invino/examples/decision-receipt/slot_log_vectors.json"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-rvr",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/sources/rvr/conformance/rvr-v0/adapter.py",
+      "--check"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "2378179ab37097f927efefb41d643739b7f7b77c4db7136628346bd2f6423711"
+  },
+  {
+    "name": "normal-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "dc0da114f0ec1c5ca2f1936d18a12a654fec84a17ed0c72663af5fe0e54dca12"
+  },
+  {
+    "name": "repeat-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-report",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-native",
+    "argv": [
+      "node",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "eec4c6a470cf92dcdb03ef3830b6befc557d3ed4133ebd4ec81a162322ad45af"
+  },
+  {
+    "name": "optimized-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "canonical",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/run_conformance.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "runner-unit-tests",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools",
+      "-p",
+      "test_run_conformance_*.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "482b7b30ac7c787951768c2c27af3114c6c7672b9ee72e99f448820f77496385"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "897a3451fc87659270b85b48da170c5be2b0be348f6978209c4e62b0274803bb"
+  },
+  {
+    "name": "test_mutation_inventory_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_mutation_inventory_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "547e6b03cf5e350f0d4aae373b44b0e400f07c801c0363de2b82b2b5aa7c03f3"
+  },
+  {
+    "name": "test_self_grading_nonempty-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "aab93d52cc9880310b642f780711e55a2e5b3e99dbef93a7986405e1f5b9e4f2"
+  },
+  {
+    "name": "test_self_grading_nonempty-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_self_grading_nonempty.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "2020900060072e609f188232245b94e6730e1db6c00db528b443377459728ca3"
+  },
+  {
+    "name": "test_ungradable_expectations-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "224a3076d1885c8cca25f64dda913d392ca95fa656385253155019557baf17fa"
+  },
+  {
+    "name": "test_ungradable_expectations-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_ungradable_expectations.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "7b46aa2d663f4c79ff11c3cd15b870aaabbd106b643ad38179a8b3f49bc09c11"
+  },
+  {
+    "name": "test_scan_subject_binding_ungradable-normal",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_scan_subject_binding_ungradable.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "a3f61a0b04c5b2f208573f4df1b099bb2035bb73dc5a795d8ef95e1b56f70468"
+  },
+  {
+    "name": "test_scan_subject_binding_ungradable-optimized",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo/tools/test_scan_subject_binding_ungradable.py"
+    ],
+    "cwd": "/home/msi/codex-audits/chain-neutral-complete.Z8dxa1/repo",
+    "exit": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "66ca2b3dc5e4eb5e2da3124ff805b50e88e4377adfe56d845b5c98e1035d092e"
+  }
+]

@@ -1,0 +1,161 @@
+{
+  "gate": "RVR_V0_CONFORMANCE_PASS",
+  "implementation": "python-independent-rvr-v0",
+  "profileId": "rvr-generic-sha256-equals-v0",
+  "verificationProfileDigest": "51f79442e96339ca45e9e6cc0c8232833efbee20e7480df00987dbc97da72948",
+  "canonicalByteContract": "rvr-canonical-json-v0",
+  "canonicalByteVectors": {
+    "passed": 13,
+    "vectorIds": [
+      "object-key-order",
+      "unicode-scalar-key-order",
+      "array-order-and-duplicates",
+      "null-is-present",
+      "unicode-not-normalized",
+      "json-string-escaping",
+      "all-control-character-escapes",
+      "solidus-is-literal",
+      "u2028-u2029-are-literal-utf8",
+      "numbers-forbidden",
+      "duplicate-keys-forbidden",
+      "lone-surrogate-forbidden",
+      "escaped-surrogate-pair-is-scalar"
+    ]
+  },
+  "dependencyResolver": {
+    "passed": 7,
+    "accepted": [
+      "package-relative-posix-path"
+    ],
+    "rejected": [
+      "reject-absolute-path",
+      "reject-reverse-solidus",
+      "reject-empty-segment",
+      "reject-dot-segment",
+      "reject-dotdot-segment",
+      "reject-colon-segment"
+    ]
+  },
+  "profileSchemaBoundary": {
+    "alternateProfileId": "example-external-profile-v0",
+    "genericManifestAccepted": true,
+    "sha256EqualsConstraintsAccepted": false,
+    "tamperedConstraintsPinRejected": true
+  },
+  "manifest": {
+    "memberCount": 11,
+    "packageDigest": "c56fa659590247b302cf670245523ed3b02902157c27b0d710bad653cb3a0eee"
+  },
+  "cases": {
+    "REPRODUCED": {
+      "verificationOutcome": "VERIFIED",
+      "verificationReasonCode": "rvr.v0.digest_match",
+      "recomputationStatus": "REPRODUCED",
+      "reasonCode": "rvr.recompute.identical",
+      "evaluationPerformed": true,
+      "canonicalResultDigest": "d666e5fd313adff2c87c80b6789c217dd127d47d1b0902cc79107b82de9ddb46"
+    },
+    "DIVERGED": {
+      "verificationOutcome": "REFUTED",
+      "verificationReasonCode": "rvr.v0.digest_mismatch",
+      "recomputationStatus": "DIVERGED",
+      "reasonCode": "rvr.recompute.canonical_result_diverged",
+      "evaluationPerformed": true,
+      "canonicalResultDigest": "b20960c2fd211e8861794bb9c11d58fb500a9359c7cb4d7b84e220a6d0f9657b"
+    },
+    "UNVERIFIABLE_REPRODUCED": {
+      "verificationOutcome": "UNVERIFIABLE",
+      "verificationReasonCode": "rvr.v0.required_evidence_unavailable",
+      "recomputationStatus": "REPRODUCED",
+      "reasonCode": "rvr.recompute.identical",
+      "evaluationPerformed": true,
+      "canonicalResultDigest": "006c5582a0166be674d52b0393db05add3f76257efdb50400246f1ee18b47181"
+    },
+    "CANNOT_RECOMPUTE": {
+      "recomputationStatus": "CANNOT_RECOMPUTE",
+      "reasonCode": "rvr.recompute.normative_dependency_unavailable",
+      "dependencyId": "verification-specification",
+      "dependencyFailureKind": "UNRESOLVED",
+      "evaluationPerformed": false
+    },
+    "REQUIRED_DEPENDENCY_IDENTITY_MISMATCH": {
+      "recomputationStatus": "CANNOT_RECOMPUTE",
+      "reasonCode": "rvr.recompute.normative_dependency_identity_mismatch",
+      "dependencyId": "verification-specification",
+      "dependencyFailureKind": "IDENTITY_MISMATCH",
+      "evaluationPerformed": false
+    },
+    "PRESENT_PAYLOAD_UNRESOLVED": {
+      "recomputationStatus": "CANNOT_RECOMPUTE",
+      "reasonCode": "rvr.recompute.committed_evidence_unavailable",
+      "unavailableEvidenceMemberId": "subject",
+      "evidenceFailureKind": "UNRESOLVED_COMMITTED_PRESENT",
+      "evaluationPerformed": false
+    },
+    "RESOLVED_PAYLOAD_IDENTITY_MISMATCH": {
+      "gateStatus": "REJECTED",
+      "reasonCode": "rvr.gate.identity_mismatch",
+      "evaluationPerformed": false
+    },
+    "OPTIONAL_DEPENDENCY_NONSEMANTIC": {
+      "verificationOutcome": "VERIFIED",
+      "verificationReasonCode": "rvr.v0.digest_match",
+      "recomputationStatus": "REPRODUCED",
+      "reasonCode": "rvr.recompute.identical",
+      "evaluationPerformed": true,
+      "canonicalResultDigest": "d666e5fd313adff2c87c80b6789c217dd127d47d1b0902cc79107b82de9ddb46"
+    },
+    "PROJECTION_NEGATIVE_CONTROL": {
+      "gateStatus": "REJECTED",
+      "reasonCode": "rvr.gate.result_projection_mismatch"
+    },
+    "HIDDEN_STATE_NEGATIVE_CONTROL": {
+      "gateStatus": "REJECTED",
+      "reasonCode": "rvr.gate.evidence_closure_incomplete",
+      "evaluationPerformed": false
+    }
+  },
+  "adversarialSemanticMutants": {
+    "killed": 6,
+    "total": 6,
+    "results": [
+      {
+        "id": "sort_arrays_as_sets",
+        "killedBy": "array-order-and-duplicates",
+        "faultObservation": "distinct-arrays-collapsed",
+        "killed": true
+      },
+      {
+        "id": "normalize_unicode_nfc",
+        "killedBy": "unicode-not-normalized",
+        "faultObservation": "distinct-unicode-strings-collapsed",
+        "killed": true
+      },
+      {
+        "id": "ignore_result_projection",
+        "killedBy": "projectionContradiction",
+        "faultObservation": "contradictory-receipt-accepted",
+        "killed": true
+      },
+      {
+        "id": "missing_dependency_as_refuted",
+        "killedBy": "cannotRecompute",
+        "faultObservation": "semantic-outcome-returned-without-normative-dependency",
+        "killed": true
+      },
+      {
+        "id": "allow_uncommitted_ambient_override",
+        "killedBy": "hiddenState",
+        "faultObservation": "uncommitted-input-produced-semantic-outcome",
+        "killed": true
+      },
+      {
+        "id": "trust_stored_result_without_evaluation",
+        "killedBy": "diverged",
+        "faultObservation": "mutated-evidence-reported-reproduced-without-evaluation",
+        "killed": true
+      }
+    ]
+  },
+  "producerImports": 0
+}

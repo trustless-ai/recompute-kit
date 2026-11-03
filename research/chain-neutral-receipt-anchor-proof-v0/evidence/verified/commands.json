@@ -1,0 +1,259 @@
+[
+  {
+    "name": "source-pins",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/bootstrap.py",
+      "/tmp/chain-neutral-final.7UbZGH/sources"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-slot-vectors",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/sources/invino/examples/decision-receipt/slot_log_check.py",
+      "--vectors",
+      "/tmp/chain-neutral-final.7UbZGH/sources/invino/examples/decision-receipt/slot_log_vectors.json"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-rvr",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/sources/rvr/conformance/rvr-v0/adapter.py",
+      "--check"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-report",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-native",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "4668745d8bad2f24ff2b28f5bf810a1477fe606af52ca798716b5a742d864803"
+  },
+  {
+    "name": "normal-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-report",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-native",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "8438702f3616a22052fa5574e779c69950152497d3c22f8c7112972a012df8f8"
+  },
+  {
+    "name": "repeat-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-report",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "8257b4d47f2a88c139df44d55bb0288372190faa246274a2bc724abb7b872dce",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-native",
+    "argv": [
+      "node",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+      "--native"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "ef9a5ab3180c6239328ebcab879df7f8b0b01536d521e93580f59c17eabd733b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-test_research",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "262264067a47dafb306c4e375f1fe73f42a84ae3474083d8f133096a2f510f9f",
+    "stderr_sha256": "db97a78aa3d79860645db7ab7810012b8b7bc8dd60791547cb62d61238d5d2ec"
+  },
+  {
+    "name": "optimized-rvr_boundary",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-mutations",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "a639f3c9ee83f5f12011ab1e1316f24519b2e58fba74c0bd834ae782f3d9424c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-replay",
+    "argv": [
+      "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+      "-B",
+      "-O",
+      "/tmp/chain-neutral-final.7UbZGH/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+    ],
+    "cwd": "/tmp/chain-neutral-final.7UbZGH/repo",
+    "exit": 0,
+    "stdout_sha256": "506f6e045f86a4546cca11f018c4416a8d2fd554e801745cabac6ece05dabf39",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

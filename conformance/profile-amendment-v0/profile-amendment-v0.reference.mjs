@@ -1,3 +1,4 @@
+import { Grading } from "../_self_grading.mjs";
 // profile-amendment.v0 — executable reference for the AUTHORIZED-transition logic: is a change from
 // verification profile A to profile B a co-signed amendment, or an unauthorized swap? Sibling to
 // companion-envelope-v0.reference.mjs. Cross-language control for amendment_gate.py: a hand-written
@@ -82,13 +83,29 @@ if (Array.isArray(doc.vectors) && doc.vectors.length === 0) {
   console.error("UNVERIFIABLE: ZERO_CASES");
   process.exit(2);
 }
-let fails = 0;
-for (const v of doc.vectors) {
+const grading = new Grading(doc.vectors);
+for (const [i, v] of doc.vectors.entries()) {
+  if (!grading.expectation(i, v, "expect", {
+    "required": [
+      "prior_profile_commitment",
+      "new_profile_commitment",
+      "amendment_cc",
+      "transition_status",
+      "effective_profile_commitment"
+    ],
+    "types": {
+      "prior_profile_commitment": "string",
+      "new_profile_commitment": "string",
+      "amendment_cc": "nullable_string",
+      "transition_status": "string",
+      "effective_profile_commitment": "string"
+    }
+  })) continue;
   const got = profileTransition(v), exp = v.expect;
   const ok = KEYS.every((k) => got[k] === exp[k]);
-  if (!ok) fails++;
+  grading.record(i, ok);
   console.log(`${ok ? "OK " : "BAD"} ${v.name.padEnd(34)} status=${String(got.transition_status).padEnd(10)} amendment_cc=${String(got.amendment_cc).slice(0, 12)}`);
 }
-console.log(`${doc.vectors.length - fails}/${doc.vectors.length} vectors reproduced (JS reference == amendment_gate.py)`);
-process.exit(fails ? 1 : 0);
+console.log(`${grading.reproduced}/${doc.vectors.length} vectors reproduced (JS reference == amendment_gate.py)`);
+process.exit(grading.finish());
 }

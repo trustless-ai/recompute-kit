@@ -84,6 +84,10 @@ def admit(bindings, consumer_cutoff, artifact):
     return out
 
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def run(path):
     fx = json.load(open(path))
     base_bindings, base_cutoff = fx.get("bindings", []), fx["consumer_cutoff"]
@@ -91,8 +95,16 @@ def run(path):
     if isinstance(fx["cases"], list) and not fx["cases"]:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(fx["cases"])
     fails = 0
-    for c in fx["cases"]:
+    for i, c in enumerate(fx["cases"]):
+        if not grading.expectation(i, c, "expected",
+                required=('resolved', 'resolution_reason', 'rule', 'decision'),
+                types={'resolved': 'nullable_string',
+                       'resolution_reason': 'string',
+                       'rule': 'string',
+                       'decision': 'string'}):
+            continue
         bindings = c.get("bindings", base_bindings)
         bindings = apply_revocations(bindings, c.get("revocations", base_revocations))
         cutoff = c.get("consumer_cutoff", base_cutoff)
@@ -100,13 +112,14 @@ def run(path):
         # assert the RESOLUTION step (which binding, by which reason) AND the decision+rule — not just the boolean
         ok = (got["decision"] == exp["decision"] and got["rule"] == exp["rule"]
               and got["resolved"] == exp["resolved"] and got["resolution_reason"] == exp["resolution_reason"])
+        grading.record(i, ok)
         fails += not ok
         print(f"{'OK ' if ok else 'BAD'} {c['name']:<46} resolved={str(got['resolved']):<12} {got['rule']:<30} -> {got['decision']}")
-    print(f"{len(fx['cases']) - fails}/{len(fx['cases'])} cases reproduced")
-    return fails
+    print(f"{grading.reproduced}/{len(fx['cases'])} cases reproduced")
+    return grading.finish()
 
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     arg = next((a for a in sys.argv[1:] if not a.startswith("--")), None)
-    sys.exit(1 if run(arg or os.path.join(here, "pq-key-binding-v0.cutoff-vectors.json")) else 0)
+    sys.exit(run(arg or os.path.join(here, "pq-key-binding-v0.cutoff-vectors.json")))

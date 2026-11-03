@@ -1,0 +1,32 @@
+{
+  "kit-base": {
+    "head": "b9d4fc13a7b945dc7030360f7d39fe7c8484bef3",
+    "tree": "3e6bcd0dbd6284d035fcbdbe693c708ce89e272f",
+    "tracked_files": 239,
+    "different": []
+  },
+  "receiptos": {
+    "head": "ac82f93b81559b4da61ae766824bb5fcf54388f4",
+    "tree": "7373783ee08430ec3c5b27c0f6b56b31f14374a1",
+    "tracked_files": 2229,
+    "different": []
+  },
+  "invino": {
+    "head": "ce8c504f2ae4d9b389b53823fe16afec7fcf3bb3",
+    "tree": "a6542c9ec0f7521d438040781758e83680c8b4d7",
+    "tracked_files": 395,
+    "different": []
+  },
+  "lens": {
+    "head": "70b44d854a32c867b756fa1272b194d4ae8f1ce0",
+    "tree": "f70af15cb3a3e7a844469f515faff1466e9ee81d",
+    "tracked_files": 25,
+    "different": []
+  },
+  "rvr": {
+    "head": "9dd36e882dd372f264b77b179130948aa5adcbde",
+    "tree": "5d51b50a39683db0844098741bd2fc31fb5a8bcc",
+    "tracked_files": 75,
+    "different": []
+  }
+}

@@ -1,0 +1,40 @@
+name: chain-neutral receipt and anchor research
+on:
+  pull_request:
+    paths:
+      - 'research/chain-neutral-receipt-anchor-proof-v0/**'
+      - '.github/workflows/chain-neutral-research.yml'
+      - 'tools/run_conformance.py'
+      - 'bin/conformance-suite'
+  push:
+    branches: ['research/chain-neutral-receipt-anchor-proof-v0']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  finite-research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Independent canonical comparison dependency
+        run: python3 -m pip install rfc8785==0.1.4
+      - name: Exact external sources and complete research replay
+        env:
+          CHAIN_PROOF_SOURCES: ${{ runner.temp }}/chain-proof-sources
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          P=research/chain-neutral-receipt-anchor-proof-v0
+          python3 -B "$P/bootstrap.py" "$CHAIN_PROOF_SOURCES"
+          python3 -B "$P/validate.py" --out "$RUNNER_TEMP/chain-proof-evidence"
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exact-research-replay
+          path: ${{ runner.temp }}/chain-proof-evidence

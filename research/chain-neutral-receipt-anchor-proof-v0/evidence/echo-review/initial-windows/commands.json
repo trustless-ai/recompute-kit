@@ -1,0 +1,259 @@
+[
+  {
+    "name": "source-pins",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\bootstrap.py",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "b9aa55510f4b3c20998d9dc360e44aac11396140c96230ea6781f2d4b7f77f64",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-slot-vectors",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\invino\\examples\\decision-receipt\\slot_log_check.py",
+      "--vectors",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\invino\\examples\\decision-receipt\\slot_log_vectors.json"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "c7b58db2c23f7f0b3320c5579575c3333e17a3cca31007bd97308b872fe01c7b",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "original-rvr",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\rvr\\conformance\\rvr-v0\\adapter.py",
+      "--check"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "85c6379bc34a1df12e6c6ca93926842aae2b43ed37a6754d58a22fc113d25636",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-report",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-native",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+      "--native"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-test_research",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "abab07c66d96b9d009dcf5aab178ae3ff9159c8027c5a5820940a4d1def24e84",
+    "stderr_sha256": "9fb7f651a5b4c39652edb25f68499cf03d6064cff80780a9fa7d932953006322"
+  },
+  {
+    "name": "normal-rvr_boundary",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-mutations",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "normal-replay",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-report",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-native",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+      "--native"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-test_research",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "abab07c66d96b9d009dcf5aab178ae3ff9159c8027c5a5820940a4d1def24e84",
+    "stderr_sha256": "7bc8c048c9906eded7cf05925b2504e4325a8852a0cdd9f092da184d57bd39e9"
+  },
+  {
+    "name": "repeat-rvr_boundary",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-mutations",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "repeat-replay",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-report",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-native",
+    "argv": [
+      "node",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+      "--native"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-test_research",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "-O",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "abab07c66d96b9d009dcf5aab178ae3ff9159c8027c5a5820940a4d1def24e84",
+    "stderr_sha256": "832cd29fcaf3fc32595288422ed698d843420f52cd265e65c0fa0068a944c912"
+  },
+  {
+    "name": "optimized-rvr_boundary",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "-O",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-mutations",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "-O",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 0,
+    "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "optimized-replay",
+    "argv": [
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+      "-B",
+      "-O",
+      "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+    ],
+    "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+    "exit": 1,
+    "stdout_sha256": "96adb58c0d0d710953eb6a16cdb8d8a599f4d64e427e86390055cfff5215e06f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

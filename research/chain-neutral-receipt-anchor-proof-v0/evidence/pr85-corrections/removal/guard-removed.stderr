@@ -1,0 +1,14 @@
+test_scalar_order_is_asserted (__main__.ResearchTests.test_scalar_order_is_asserted) ... FAIL
+
+======================================================================
+FAIL: test_scalar_order_is_asserted (__main__.ResearchTests.test_scalar_order_is_asserted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/pr85-scalar-removal-olm8xr9f/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py", line 176, in test_scalar_order_is_asserted
+    with self.assertRaisesRegex(RuntimeError,'scalar-key-domain: native result contradicts'):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.035s
+
+FAILED (failures=1)

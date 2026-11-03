@@ -1,0 +1,851 @@
+{
+  "reviewed_head": "cc8e38b1fd93e36e9d262fc0757b987e20413cdd",
+  "echo_review": "https://github.com/trustless-ai/recompute-kit/pull/85#issuecomment-6364685624",
+  "change": "Only root=Path(td) -> root=Path(td).resolve() inside test_symlink_entrypoint_and_removal; test pin refreshed.",
+  "test_sha256": "ba70f7f69c02306b85345a02bef500b3aa10e7094b325f274e57538da4dba2e7",
+  "prior_test_sha256": "e057985e63f1c80e9cc867290b0a238c37c8608ea8d0598d88ddaef5508b89df",
+  "research_tests_per_mode": 18,
+  "normal_repeat_optimized": {
+    "windows": {
+      "commands": 21,
+      "nonzero": [],
+      "complete_machine_outputs_byte_identical": {
+        "report": true,
+        "native": true,
+        "rvr_boundary": true,
+        "mutations": true,
+        "replay": true
+      },
+      "note": "Unittest stderr includes measured timing; byte equality applies only to the named machine reports."
+    },
+    "linux": {
+      "commands": 31,
+      "nonzero": [],
+      "complete_machine_outputs_byte_identical": {
+        "report": true,
+        "native": true,
+        "rvr_boundary": true,
+        "mutations": true,
+        "replay": true
+      },
+      "note": "Unittest stderr includes measured timing; byte equality applies only to the named machine reports."
+    }
+  },
+  "commands": {
+    "windows": [
+      {
+        "name": "source-pins",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\bootstrap.py",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "b9aa55510f4b3c20998d9dc360e44aac11396140c96230ea6781f2d4b7f77f64",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "original-slot-vectors",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\invino\\examples\\decision-receipt\\slot_log_check.py",
+          "--vectors",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\invino\\examples\\decision-receipt\\slot_log_vectors.json"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "c7b58db2c23f7f0b3320c5579575c3333e17a3cca31007bd97308b872fe01c7b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "original-rvr",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\sources\\rvr\\conformance\\rvr-v0\\adapter.py",
+          "--check"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "85c6379bc34a1df12e6c6ca93926842aae2b43ed37a6754d58a22fc113d25636",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-report",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-native",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+          "--native"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-test_research",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+        "stderr_sha256": "ddfb4e457b358b2bdabb8cb6516b4d1ea09cfc8986475a68921d5a50e600e1d9"
+      },
+      {
+        "name": "normal-rvr_boundary",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-mutations",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-replay",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-report",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-native",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+          "--native"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-test_research",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+        "stderr_sha256": "6ef4a265d3644341568340caac0a99fadaf5b0bbe87d79e50dce9d97c13d16a6"
+      },
+      {
+        "name": "repeat-rvr_boundary",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-mutations",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-replay",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-report",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-native",
+        "argv": [
+          "node",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\adapter.mjs",
+          "--native"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-test_research",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "-O",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\test_research.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+        "stderr_sha256": "5c503ea3edb8e48cbf844670cdf5e7a4d140552456fb60eaf0deefc385bd0892"
+      },
+      {
+        "name": "optimized-rvr_boundary",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "-O",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\rvr_boundary.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-mutations",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "-O",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\mutations.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-replay",
+        "argv": [
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\venv\\Scripts\\python.exe",
+          "-B",
+          "-O",
+          "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo\\research\\chain-neutral-receipt-anchor-proof-v0\\replay.py"
+        ],
+        "cwd": "D:\\PAVLO HQ\\Workspaces\\chain-neutral-receipt-anchor-v0\\echo-repair-repo",
+        "exit": 0,
+        "stdout_sha256": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "linux": [
+      {
+        "name": "source-pins",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/bootstrap.py",
+          "/home/msi/codex-audits/pr85-review.RE5iZZ/sources"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "original-slot-vectors",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/invino/examples/decision-receipt/slot_log_check.py",
+          "--vectors",
+          "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/invino/examples/decision-receipt/slot_log_vectors.json"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "original-rvr",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-review.RE5iZZ/sources/rvr/conformance/rvr-v0/adapter.py",
+          "--check"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-report",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-native",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+          "--native"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-test_research",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+        "stderr_sha256": "90d45441262a9f3bf49c9420eecc3c0be05b0a4f919f401f75d0283757816ca2"
+      },
+      {
+        "name": "normal-rvr_boundary",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-mutations",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "normal-replay",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-report",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-native",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+          "--native"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-test_research",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+        "stderr_sha256": "702d0bf9edae7cbe0efa0e8e7dc936baaf88a766b3e3888f594fdd9c1f6ead83"
+      },
+      {
+        "name": "repeat-rvr_boundary",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-mutations",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "repeat-replay",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-report",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-native",
+        "argv": [
+          "node",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+          "--native"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-test_research",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/test_research.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+        "stderr_sha256": "de851ad0231dc629d50431c184bedf2eb608a31a5b71f594cb7283e005d1703d"
+      },
+      {
+        "name": "optimized-rvr_boundary",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/rvr_boundary.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-mutations",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/mutations.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "optimized-replay",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/research/chain-neutral-receipt-anchor-proof-v0/replay.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "canonical",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/run_conformance.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "runner-unit-tests",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tools",
+          "-p",
+          "test_run_conformance_*.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "08c57732d5b2d35880438ff7a77ff09aef1adc0d5d5e989cbaf7695656ee96ac"
+      },
+      {
+        "name": "test_mutation_inventory_nonempty-normal",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_mutation_inventory_nonempty.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "19a74968a370c8ea9262816fcf6820b93189cd2fc24a9642899dfba28edd40b2"
+      },
+      {
+        "name": "test_mutation_inventory_nonempty-optimized",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_mutation_inventory_nonempty.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "2c5a821ef28d850c445401eb105c54e9b092b4152226e8f8bc0c34bfb70685d5"
+      },
+      {
+        "name": "test_self_grading_nonempty-normal",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_self_grading_nonempty.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "b340a4d3daf2d36856fa0b891cbd29f2cdeb5cca52b261b9d55137753463d53a"
+      },
+      {
+        "name": "test_self_grading_nonempty-optimized",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_self_grading_nonempty.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "44fbea72dd052ea23af4328beaa46b81f9f279c772c55113999d48c7d17a3eeb"
+      },
+      {
+        "name": "test_ungradable_expectations-normal",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_ungradable_expectations.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "b2319a07fcdb91c0b27ef936c6fcf9148a253777c1cb2f48b5060d17616f6ac4"
+      },
+      {
+        "name": "test_ungradable_expectations-optimized",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_ungradable_expectations.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d5682e811fa902cc065571944dff1156c3ff453af232f886498a9caef3410107"
+      },
+      {
+        "name": "test_scan_subject_binding_ungradable-normal",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_scan_subject_binding_ungradable.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "f7f86a4a9269ba19fd3cb55fb74ed8750058cfd9275691284e8972b2ced69710"
+      },
+      {
+        "name": "test_scan_subject_binding_ungradable-optimized",
+        "argv": [
+          "/home/msi/codex-audits/issue79-eedod_7c/venv/bin/python3",
+          "-B",
+          "-O",
+          "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo/tools/test_scan_subject_binding_ungradable.py"
+        ],
+        "cwd": "/home/msi/codex-audits/pr85-macos-test.rMQ942/repo",
+        "exit": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "3c097f54c87eb7d23b5585338a3954f7a08de3672281261e00b7956215e79b79"
+      }
+    ]
+  },
+  "symlinked_tmpdir_before": "1 test, 1 JSONDecodeError: lexical physical path is still through a symlink",
+  "symlinked_tmpdir_after": "normal/repeat/-O: 1/1; physical path resolved; linked parent actual symlink; removal/restoration and positives valid",
+  "vectors": 49,
+  "targeted_mutations": {
+    "KILLED": 26,
+    "SURVIVED": 0,
+    "CRASHED": 0,
+    "NOT_COVERED": 0
+  },
+  "mutation_scope": "25 verdict witnesses and 1 native-evidence witness; separate native-root and entrypoint removal controls preserved; non-kill sentinels excluded",
+  "machine_outputs_match_cc8e38b": {
+    "windows/normal-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/normal-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/normal-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/normal-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/normal-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "windows/repeat-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/repeat-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/repeat-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/repeat-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/repeat-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "windows/optimized-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/optimized-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/optimized-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/optimized-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/optimized-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "linux/normal-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/normal-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/normal-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/normal-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/normal-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+    "linux/repeat-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/repeat-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/repeat-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/repeat-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/repeat-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+    "linux/optimized-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/optimized-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/optimized-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/optimized-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/optimized-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9"
+  },
+  "canonical": {
+    "PASS": 46,
+    "NOT_RUN": 6,
+    "SKIPPED": 2,
+    "byte_identical_to_previous_baseline": true,
+    "sha256": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39"
+  },
+  "declared_pins_valid": 137,
+  "all_other_tracked_files_byte_identical": 907,
+  "platforms": [
+    "Windows",
+    "actual WSL Linux with symlinked TMPDIR"
+  ],
+  "macos": "Not run locally; Echo independent follow-up requested after publication",
+  "fresh_exact_commit_and_CI": "Post-commit gates, reported separately; not claimed by this pre-commit evidence",
+  "raw_evidence_hashes": {
+    "windows/commands.json": "2d2781b6c3c9460b80e599760879a6e6a666fc0eba63ff0e0e710e1181c45477",
+    "windows/normal-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/normal-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/normal-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/normal-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/normal-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/normal-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "windows/normal-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/normal-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/normal-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/normal-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/normal-test_research.stderr": "ddfb4e457b358b2bdabb8cb6516b4d1ea09cfc8986475a68921d5a50e600e1d9",
+    "windows/normal-test_research.stdout": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+    "windows/optimized-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/optimized-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/optimized-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/optimized-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/optimized-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/optimized-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "windows/optimized-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/optimized-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/optimized-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/optimized-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/optimized-test_research.stderr": "5c503ea3edb8e48cbf844670cdf5e7a4d140552456fb60eaf0deefc385bd0892",
+    "windows/optimized-test_research.stdout": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+    "windows/original-rvr.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/original-rvr.stdout": "85c6379bc34a1df12e6c6ca93926842aae2b43ed37a6754d58a22fc113d25636",
+    "windows/original-slot-vectors.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/original-slot-vectors.stdout": "c7b58db2c23f7f0b3320c5579575c3333e17a3cca31007bd97308b872fe01c7b",
+    "windows/repeat-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/repeat-mutations.stdout": "0339110be669e8696742926fc50429d739e83ed1eb155ec21c8e8ed852aeb23d",
+    "windows/repeat-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/repeat-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "windows/repeat-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/repeat-replay.stdout": "b1eaa78d852349c8081070921f0d35fd06895692f7690571ce3667d931fe07a5",
+    "windows/repeat-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/repeat-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "windows/repeat-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/repeat-rvr_boundary.stdout": "77493effb397d323f42cd24be6393fd9a55f7f6ff05d9933e39f59c8a2cd9af9",
+    "windows/repeat-test_research.stderr": "6ef4a265d3644341568340caac0a99fadaf5b0bbe87d79e50dce9d97c13d16a6",
+    "windows/repeat-test_research.stdout": "17177bcf2f88e538ce01a9bfe15f250b2f2c8550e3d2655abbaa544803256416",
+    "windows/source-pins.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "windows/source-pins.stdout": "b9aa55510f4b3c20998d9dc360e44aac11396140c96230ea6781f2d4b7f77f64",
+    "windows/summary.json": "ea3528910661ef2eae015059f3895b28470e4e11255dd0987f6f5b5dbe8dcc95",
+    "linux/canonical.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/canonical.stdout": "1b943bda16f5b84ab4a4070bd8971fcda4c4cf5185ac3c28b4440cf07f505f39",
+    "linux/commands.json": "20a88e4649c626fe600abd6c7de76e19533eec5501631ed07667b4f69df70df9",
+    "linux/normal-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/normal-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/normal-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/normal-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/normal-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/normal-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+    "linux/normal-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/normal-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/normal-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/normal-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/normal-test_research.stderr": "90d45441262a9f3bf49c9420eecc3c0be05b0a4f919f401f75d0283757816ca2",
+    "linux/normal-test_research.stdout": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+    "linux/optimized-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/optimized-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/optimized-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/optimized-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/optimized-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/optimized-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+    "linux/optimized-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/optimized-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/optimized-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/optimized-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/optimized-test_research.stderr": "de851ad0231dc629d50431c184bedf2eb608a31a5b71f594cb7283e005d1703d",
+    "linux/optimized-test_research.stdout": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+    "linux/original-rvr.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/original-rvr.stdout": "401987f3dc74a7b8c90f4387a7954efe9e8703d56741bc392d565fe72471eb7d",
+    "linux/original-slot-vectors.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/original-slot-vectors.stdout": "3ec62ee92e6456101014c9eacf0a6fac7f281ffc699f414670084513b55df730",
+    "linux/repeat-mutations.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/repeat-mutations.stdout": "cbaf511500293680ff57fba62d2581da8228950f0bad4516f73766f210af0cb6",
+    "linux/repeat-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/repeat-native.stdout": "52d497a381662a4127c1f15e0ea1d1cc63a927a1425b5cc9789a690893671624",
+    "linux/repeat-replay.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/repeat-replay.stdout": "d25b91d67158579e70800633b5b5a102d8f107e20f040b18706013549b71f4d9",
+    "linux/repeat-report.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/repeat-report.stdout": "49fc69479b8d39d9e7bb27f4d69034cf88ea60f081fc28649925b1cdd49bda7c",
+    "linux/repeat-rvr_boundary.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/repeat-rvr_boundary.stdout": "b36a7a6d7dff8032d8f3a8f76925166349348e438acc7b8725b426db3bbb8ff9",
+    "linux/repeat-test_research.stderr": "702d0bf9edae7cbe0efa0e8e7dc936baaf88a766b3e3888f594fdd9c1f6ead83",
+    "linux/repeat-test_research.stdout": "41304b8499a17791c109ca8822e4485d6bbf437ddce5305126428b0ca191a172",
+    "linux/runner-unit-tests.stderr": "08c57732d5b2d35880438ff7a77ff09aef1adc0d5d5e989cbaf7695656ee96ac",
+    "linux/runner-unit-tests.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/source-pins.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/source-pins.stdout": "61c54663b482f3d42d8c08ac2ed7657558d70fbcb0e6d96a23247b289225a07b",
+    "linux/summary.json": "765cbef05720f8d817f43a93242b0d00383933457b4bffb3b535b6b2968101c9",
+    "linux/test_mutation_inventory_nonempty-normal.stderr": "19a74968a370c8ea9262816fcf6820b93189cd2fc24a9642899dfba28edd40b2",
+    "linux/test_mutation_inventory_nonempty-normal.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_mutation_inventory_nonempty-optimized.stderr": "2c5a821ef28d850c445401eb105c54e9b092b4152226e8f8bc0c34bfb70685d5",
+    "linux/test_mutation_inventory_nonempty-optimized.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_scan_subject_binding_ungradable-normal.stderr": "f7f86a4a9269ba19fd3cb55fb74ed8750058cfd9275691284e8972b2ced69710",
+    "linux/test_scan_subject_binding_ungradable-normal.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_scan_subject_binding_ungradable-optimized.stderr": "3c097f54c87eb7d23b5585338a3954f7a08de3672281261e00b7956215e79b79",
+    "linux/test_scan_subject_binding_ungradable-optimized.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_self_grading_nonempty-normal.stderr": "b340a4d3daf2d36856fa0b891cbd29f2cdeb5cca52b261b9d55137753463d53a",
+    "linux/test_self_grading_nonempty-normal.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_self_grading_nonempty-optimized.stderr": "44fbea72dd052ea23af4328beaa46b81f9f279c772c55113999d48c7d17a3eeb",
+    "linux/test_self_grading_nonempty-optimized.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_ungradable_expectations-normal.stderr": "b2319a07fcdb91c0b27ef936c6fcf9148a253777c1cb2f48b5060d17616f6ac4",
+    "linux/test_ungradable_expectations-normal.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux/test_ungradable_expectations-optimized.stderr": "d5682e811fa902cc065571944dff1156c3ff453af232f886498a9caef3410107",
+    "linux/test_ungradable_expectations-optimized.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

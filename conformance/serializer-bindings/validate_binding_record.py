@@ -187,6 +187,10 @@ def verdict(record):
     return "valid"
 
 
+from pathlib import Path as _Path
+import runpy as _runpy
+Grading = _runpy.run_path(str(_Path(__file__).resolve().parents[1] / "_self_grading.py"))["Grading"]
+
 def main(argv):
     # Preflight the whole schema ONCE before any record: an unimplemented keyword anywhere in the
     # schema (even in an unused definition) makes the entire suite unverifiable, not silently green.
@@ -203,8 +207,11 @@ def main(argv):
     if isinstance(cases, list) and not cases:
         print("UNVERIFIABLE: ZERO_CASES", file=sys.stderr)
         raise SystemExit(2)
+    grading = Grading(cases)
     fails = faults = 0
-    for c in cases:
+    for i, c in enumerate(cases):
+        if not grading.expectation(i, c, "expected_verdict", kind="string"):
+            continue
         want = c["expected_verdict"]
         try:
             got = verdict(c["record"])
@@ -212,6 +219,10 @@ def main(argv):
         except ValidatorFault as f:
             got, fault = f"VALIDATOR_FAULT:{f}", True
         ok = (not fault) and got == want
+        if fault:
+            grading.ungradable(i, got)
+        else:
+            grading.record(i, ok)
         faults += fault
         fails += (not ok) and (not fault)
         tag = "FAULT" if fault else ("OK " if ok else "BAD")
@@ -219,9 +230,9 @@ def main(argv):
     n = len(cases)
     if faults:
         print(f"\n{faults}/{n} cases could not be checked — VALIDATOR FAULT (unverifiable)")
-        return 2
-    print(f"\n{n - fails}/{n} cases reproduced" + ("" if not fails else "  <- MISMATCH"))
-    return 1 if fails else 0
+        return grading.finish()
+    print(f"\n{grading.reproduced}/{n} cases reproduced" + ("" if not fails else "  <- MISMATCH"))
+    return grading.finish()
 
 
 if __name__ == "__main__":

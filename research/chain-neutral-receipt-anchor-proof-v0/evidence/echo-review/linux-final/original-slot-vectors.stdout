@@ -1,0 +1,16 @@
+  agree day1-three-slots: ok
+  agree empty-day: ok
+  agree day2-chained: ok
+  agree line-edited: reject (merkle_root does not match the lines)
+  agree n-slots-wrong: reject (n_slots does not match the lines)
+  agree header-not-canonical: reject (header is not canonical JSON)
+  agree lines-unsorted: reject (slot lines not strictly sorted by slot (a slot listed twice?))
+  agree slot-listed-twice: reject (slot lines not strictly sorted by slot (a slot listed twice?))
+  agree taken-after-cutoff: reject (a slot taken after the cutoff)
+  agree extra-key: reject (malformed slot line)
+  agree prev-root-wrong: reject (prev_root is not the previous snapshot's log_root (history rewritten?))
+  agree slot-dropped: reject (1 slot(s) of the previous day missing (first: 9999999999999999999999999999999999999999999999999999999999999999))
+  agree conflict-removed: reject (slot 5555555555555555555555555555555555555555555555555555555555555555 changed since the previous day (only new conflicts may be appended))
+  agree slot-rescoped: reject (slot 1111111111111111111111111111111111111111111111111111111111111111 changed since the previous day (only new conflicts may be appended))
+  agree prev-not-earlier: reject (previous snapshot is not an earlier day)
+15/15 vectors agree

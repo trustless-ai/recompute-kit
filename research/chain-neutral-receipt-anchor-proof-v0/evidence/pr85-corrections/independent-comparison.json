@@ -1,0 +1,67 @@
+{
+  "argv": [
+    "node",
+    "/home/msi/codex-audits/pr85-corrections.9vPvxX/repo/research/chain-neutral-receipt-anchor-proof-v0/adapter.mjs",
+    "--native"
+  ],
+  "exit": 0,
+  "corpus_sha256": "4b5f1138e5e61039342ff082641111fc74d8133c8b34468dba73c0d9fc5685e3",
+  "cases": 36,
+  "unchanged_complete_results": 34,
+  "intentional_changes": {
+    "MISSING_log_id": {
+      "before": {
+        "result": {
+          "projection": "chain-neutral.result.v0",
+          "proof_validity": "REFUTED",
+          "anchor_assurance": "ANCHOR_UNCHECKED",
+          "reason": "LOG_IDENTITY_MISMATCH",
+          "native": null
+        },
+        "native_details": null
+      },
+      "after": {
+        "result": {
+          "projection": "chain-neutral.result.v0",
+          "proof_validity": "UNVERIFIABLE",
+          "anchor_assurance": "ANCHOR_UNCHECKED",
+          "reason": "LOG_IDENTITY_MALFORMED",
+          "native": null
+        },
+        "native_details": null
+      }
+    },
+    "NUMERIC_LOG_ID": {
+      "before": {
+        "result": {
+          "projection": "chain-neutral.result.v0",
+          "proof_validity": "VERIFIED",
+          "anchor_assurance": "CHAIN_CONSISTENT",
+          "reason": "BOUNDED_INCLUSION_VERIFIED",
+          "native": {
+            "profile": "invinoveritas.decision_receipt.slot_log.v1",
+            "status": "VERIFIED",
+            "reason": "SLOT_NATIVE_VERIFIED"
+          }
+        },
+        "native_details": {
+          "profile": "invinoveritas.decision_receipt.slot_log.v1",
+          "status": "VERIFIED",
+          "reason": "SLOT_NATIVE_VERIFIED",
+          "stage": "complete",
+          "log_root": "9259f8546badc74654ad3e211756ea22292e84d4850f9a06500ca5e39c3b5dae"
+        }
+      },
+      "after": {
+        "result": {
+          "projection": "chain-neutral.result.v0",
+          "proof_validity": "UNVERIFIABLE",
+          "anchor_assurance": "ANCHOR_UNCHECKED",
+          "reason": "LOG_IDENTITY_MALFORMED",
+          "native": null
+        },
+        "native_details": null
+      }
+    }
+  }
+}

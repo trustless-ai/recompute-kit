@@ -17,8 +17,14 @@
   },
   "checker": {
     "path": "../captured-admission-v0/admission_check.py",
-    "sha256": "fc76aae43a35fa3f8548802c832c4d923f02a0a28c1cf5888016855fe43882b0",
+    "sha256": "d5880500607934ce15b2e9fc751e4657aaff9847f70fac36f66443a2c957e79f",
     "note": "same file, same hash as the core suite's own pin (main, PR #5 merged as 5288b93) -- must stay in sync if the core checker changes"
   },
-  "status": "proposed shape, not production -- no /review endpoint change made"
+  "status": "proposed shape, not production -- no /review endpoint change made",
+  "dependencies": [
+    {
+      "path": "../_self_grading.py",
+      "sha256": "da6af5d6070c6c670f577d49802c0039aa074e1eb1fcc7a45028d4c3a7370afd"
+    }
+  ]
 }
