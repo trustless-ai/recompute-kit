@@ -1,0 +1,64 @@
+{
+  "base": "b4537d73bda4e4df73c4b105ee516a43c351ba02",
+  "tree": "be1c808c7356157df4ccfb67de6fcb8613812e8a",
+  "sources": [
+    {
+      "repository": "trustless-ai/deils",
+      "revision": "c686d8e530c9136197dd0155b789736f83a80b60",
+      "path": "conformance/deils-reveal-v0/deils-reveal-v0.spec.md",
+      "sha256": "2c655d20e2c5b487b4808c2fbf58ca84f9f97f42940101fd8a77dd8c47c7cd16",
+      "visibility": "private; source not redistributed"
+    },
+    {
+      "repository": "trustless-ai/deils",
+      "revision": "c686d8e530c9136197dd0155b789736f83a80b60",
+      "path": "conformance/deils-reveal-v0/reveal_check.py",
+      "sha256": "dd760452d464aef68060e2ff6927e2181d2cc88054fdd0dc5d15a401d45f3514",
+      "visibility": "private; source not redistributed"
+    },
+    {
+      "repository": "trustless-ai/deils",
+      "revision": "c686d8e530c9136197dd0155b789736f83a80b60",
+      "path": "README.md",
+      "sha256": "fe05108f17dacb7a3b0b09a18875412ce29b59e33bef57194e8cd911f384ecf3",
+      "visibility": "private; source not redistributed"
+    },
+    {
+      "repository": "trustless-ai/deils",
+      "revision": "c686d8e530c9136197dd0155b789736f83a80b60",
+      "path": "spec/leg-2-privacy.md",
+      "sha256": "c16618b1043a9e73060d13ddaab4412290f89c0e26fcc78671370180d6805807",
+      "visibility": "private; source not redistributed"
+    },
+    {
+      "repo": "babyblueviper1/preaction-governance-conformance",
+      "revision": "df019b226e6ca79c0ce40eb37950ccaad421d2fe",
+      "path": "examples/deils-leg2/README.md",
+      "sha256": "c0904facf8088920924f826810f9a600c0d363d2b847a77b333642fd34cd402c"
+    },
+    {
+      "repo": "babyblueviper1/preaction-governance-conformance",
+      "revision": "df019b226e6ca79c0ce40eb37950ccaad421d2fe",
+      "path": "examples/deils-leg2/check_deils_leg2.py",
+      "sha256": "df73ae182aa9e3209422c910022224d8b25cf88180f914d669ea559483ce909e"
+    },
+    {
+      "repo": "babyblueviper1/preaction-governance-conformance",
+      "revision": "df019b226e6ca79c0ce40eb37950ccaad421d2fe",
+      "path": "examples/deils-leg2/vectors.json",
+      "sha256": "5aa97e604098d2287135b44c5df6da7495b60030937f38582c0416121c0258dd"
+    },
+    {
+      "repo": "babyblueviper1/preaction-governance-conformance",
+      "revision": "df019b226e6ca79c0ce40eb37950ccaad421d2fe",
+      "path": "LICENSE",
+      "sha256": "a04a7ce27f94ea252318562aed1e5b178796bff813f6f70400936f53cab53d07"
+    }
+  ],
+  "extension_status": "NOT_FOUND_IN_PINNED_SOURCE",
+  "missing_blinding_normative_error": null,
+  "rfc8785_source_sha256": {
+    "__init__.py": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154",
+    "_impl.py": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec"
+  }
+}
