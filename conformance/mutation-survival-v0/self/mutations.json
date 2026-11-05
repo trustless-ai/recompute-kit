@@ -1,0 +1,65 @@
+[
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "        with Workspace(a.dir) as w:\n            open(os.path.join(w, m[\"file\"]), \"w\", encoding=\"utf-8\").write(\n                src.replace(m[\"find\"], m[\"replace\"], 1))\n            rc, out = run(a.test_cmd, w)   # the real tree is never written to, so no restore",
+    "replace": "        open(full, \"w\", encoding=\"utf-8\").write(src.replace(m[\"find\"], m[\"replace\"], 1))\n        try:\n            rc, out = run(a.test_cmd, a.dir)\n        finally:\n            open(full, \"w\", encoding=\"utf-8\").write(src)",
+    "class": "guard",
+    "label": "per-run isolation removed (mutate in place, restore)",
+    "kill_witness": "FAIL stale-bytecode",
+    "must": "execution freshness \u2014 the bytes written MUST be the bytes executed"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "    if not muts:",
+    "replace": "    if False:",
+    "class": "guard",
+    "label": "ZERO_MUTANTS guard disabled",
+    "kill_witness": "FAIL zero-mutants",
+    "must": "an empty mutation inventory MUST NOT be verified-good"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "        elif witness and witness in out:",
+    "replace": "        elif rc != 0:",
+    "class": "guard",
+    "label": "kill relation degraded to any non-zero exit",
+    "kill_witness": "FAIL crashing",
+    "must": "a mutant that died unobserved is CRASHED, never a KILL"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "        if rc == 0:",
+    "replace": "        if rc != 0:",
+    "class": "guard",
+    "label": "SURVIVED/KILLED branches swapped",
+    "kill_witness": "FAIL load-bearing",
+    "must": "a green suite under mutation means the mutant SURVIVED"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "        if hits != 1:",
+    "replace": "        if hits == 9:",
+    "class": "guard",
+    "label": "applied-exactly-once precondition disabled",
+    "kill_witness": "FAIL not-applied",
+    "must": "a mutation that did not apply exactly once MUST NOT be graded"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "    if base_rc != 0:",
+    "replace": "    if False:",
+    "class": "guard",
+    "label": "baseline-green precondition disabled",
+    "kill_witness": "FAIL red-baseline",
+    "must": "a red baseline cannot distinguish a kill from a pre-existing failure"
+  },
+  {
+    "file": "bin/recompute-mutation-survival",
+    "find": "    with Workspace(a.dir) as w:\n        base_rc, base_out = run(a.test_cmd, w)",
+    "replace": "    base_rc, base_out = run(a.test_cmd, a.dir)",
+    "class": "probe",
+    "label": "baseline isolation removed",
+    "kill_witness": "FAIL",
+    "must": "KNOWN GAP: baseline staleness needs cross-invocation state, which no single-run vector can set up"
+  }
+]

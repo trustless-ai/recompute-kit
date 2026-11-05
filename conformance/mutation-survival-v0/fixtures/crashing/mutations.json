@@ -1,0 +1,11 @@
+[
+  {
+    "file": "mod.py",
+    "find": "n % 2 == 0",
+    "replace": "undefined_helper(n)",
+    "class": "guard",
+    "label": "is_even replaced by an undefined name",
+    "kill_witness": "AssertionError",
+    "must": "a mutant that dies unobserved is NOT a kill — regression control for bin/...:73"
+  }
+]
