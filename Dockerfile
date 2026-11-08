@@ -25,7 +25,7 @@ RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
 
 # MCP SDK + OpenTimestamps client (for the 8263/precedence recipe)
-RUN pip install --no-cache-dir mcp opentimestamps-client pycryptodome
+RUN pip install --no-cache-dir "mcp<2" opentimestamps-client pycryptodome
 
 WORKDIR /app
 COPY bin/ ./bin/
