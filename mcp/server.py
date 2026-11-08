@@ -53,6 +53,30 @@ def _verdict(rc: int, reversible: bool = False) -> dict:
     return {"verdict": v, "pass": rc == 0, "gate": gate}
 
 
+# 2026-11-08 incident: test_cmd ran through a shell, so any caller could run arbitrary commands in the container.
+# Only allowlisted test runners with plain arguments are accepted now; clone URLs must be https, refs plain.
+_TEST_RUNNERS = ("forge test", "npm test", "npm run test", "pnpm test", "yarn test", "bun test", "pytest",
+                 "python -m pytest", "python3 -m pytest", "cargo test", "go test", "make test",
+                 "npx hardhat test", "node --test")
+_SAFE_ARG = re.compile(r"^[A-Za-z0-9_./:=@+,-]+$")
+_SAFE_REF = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$")
+_SAFE_URL = re.compile(r"^https://[A-Za-z0-9.-]+(:[0-9]{2,5})?/[A-Za-z0-9._~/-]+$")
+
+
+def _check_repo_args(git_url: str, ref: str, test_cmd: str) -> str | None:
+    if not _SAFE_URL.match(git_url or ""):
+        return "git_url must be a plain https URL"
+    if not _SAFE_REF.match(ref or ""):
+        return "ref must be a plain commit SHA, branch or tag"
+    cmd = " ".join((test_cmd or "").split())
+    runner = next((r for r in _TEST_RUNNERS if cmd == r or cmd.startswith(r + " ")), None)
+    if not runner:
+        return "test_cmd must start with an allowlisted test runner: " + ", ".join(_TEST_RUNNERS)
+    if not all(_SAFE_ARG.match(a) for a in cmd[len(runner):].split()):
+        return "test_cmd arguments may only contain letters, digits and . _ / : = @ + , -"
+    return None
+
+
 @mcp.tool()
 def recompute_repo(git_url: str, ref: str, test_cmd: str = "forge test") -> dict:
     """Clone a repo at an EXACT ref (commit SHA / branch / tag) and run its tests
@@ -61,10 +85,13 @@ def recompute_repo(git_url: str, ref: str, test_cmd: str = "forge test") -> dict
     Args:
         git_url: clone URL of the repo.
         ref: the exact ref to pin (SHA preferred; branch/tag ok).
-        test_cmd: command to run in the repo (default "forge test"; shell operators ok).
+        test_cmd: an allowlisted test runner plus plain arguments (default "forge test"; no shell operators).
     Returns {pass, sha, git_url, ref, command, evidence}.
     """
-    rc, out, err = _run("recompute-repo", git_url, ref, test_cmd)
+    problem = _check_repo_args(git_url, ref, test_cmd)
+    if problem:
+        return {"pass": False, "sha": None, "git_url": git_url, "ref": ref, "command": test_cmd, "evidence": "refused: " + problem}
+    rc, out, err = _run("recompute-repo", git_url, ref, " ".join(test_cmd.split()))
     m = re.search(r"@ ([0-9a-f]{7,40})", out)
     return {
         "pass": rc == 0,
