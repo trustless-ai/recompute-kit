@@ -29,7 +29,8 @@ echo "────────────────────────�
 set +e
 # run through a shell so both `forge test --match X` (separate args) and
 # `"npm ci && npm test"` (one string with shell operators) work
-( cd "$dir" && bash -c "${cmd[*]}" ); rc=$?
+# PR #88: cap CPU, memory, processes and file size so a hostile repo cannot exhaust the host.
+( cd "$dir" && bash -c "ulimit -t 900 -v 4000000 -u 512 -f 2000000 2>/dev/null; ${cmd[*]}" ); rc=$?
 set -e
 echo "─────────────────────────────────────────────"
 if [ "$rc" -eq 0 ]; then
