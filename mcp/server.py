@@ -68,7 +68,7 @@ _SAFE_REF = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$")
 _SAFE_URL = re.compile(r"^https://([A-Za-z0-9.-]+)(:[0-9]{2,5})?/[A-Za-z0-9._~/-]+$")
 _CLONE_HOSTS = ("github.com", "gitlab.com", "codeberg.org", "bitbucket.org", "git.sr.ht")
 # options that make a runner execute a named program / load caller code (Fede, PR #88 gap 2)
-_PROG_OPTS = re.compile(r"^(-exec|--exec|-toolexec|--config|--script-shell|--shell|-f|--file|--makefile|-p|-c|--plugin|--require|-r)(=|$)")
+_PROG_OPTS = re.compile(r"^(-[pcfro]|-exec|-toolexec|--exec|--config|--script-shell|--shell|--file|--makefile|--plugin|--require|--override-ini|--makefile)")  # short flags matched as prefix (glued forms, per Fede PR#88)
 # KEY=program env/make overrides (SHELL=, CC=, LD_PRELOAD=, …)
 _ENV_OVERRIDE = re.compile(r"^[A-Z_][A-Z0-9_]*=")
 
