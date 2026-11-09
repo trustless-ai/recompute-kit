@@ -53,27 +53,59 @@ def _verdict(rc: int, reversible: bool = False) -> dict:
     return {"verdict": v, "pass": rc == 0, "gate": gate}
 
 
-# 2026-11-08 incident: test_cmd ran through a shell, so any caller could run arbitrary commands in the container.
-# Only allowlisted test runners with plain arguments are accepted now; clone URLs must be https, refs plain.
+# 2026-11-08 incident + PR #88 review (Fede): test_cmd ran through a shell (arbitrary command execution),
+# and the runner still executes the caller's repo code with host-network reach. We can't fully net-isolate
+# the exec on this kernel (no unprivileged netns), so: allowlist test runners with plain args, refuse runner
+# options that name a program to run, allowlist clone hosts, and refuse any host that resolves to a private,
+# loopback, link-local or metadata address (closes the clone-side SSRF). Full isolation of the test step is a
+# deployment-level sidecar (--network none); see bin/recompute-repo and the PR discussion.
+import socket, ipaddress
 _TEST_RUNNERS = ("forge test", "npm test", "npm run test", "pnpm test", "yarn test", "bun test", "pytest",
                  "python -m pytest", "python3 -m pytest", "cargo test", "go test", "make test",
                  "npx hardhat test", "node --test")
-_SAFE_ARG = re.compile(r"^[A-Za-z0-9_./:=@+,-]+$")
+_SAFE_ARG = re.compile(r"^[A-Za-z0-9_./:@+,-]+(=[A-Za-z0-9_./:@+,-]+)?$")
 _SAFE_REF = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$")
-_SAFE_URL = re.compile(r"^https://[A-Za-z0-9.-]+(:[0-9]{2,5})?/[A-Za-z0-9._~/-]+$")
+_SAFE_URL = re.compile(r"^https://([A-Za-z0-9.-]+)(:[0-9]{2,5})?/[A-Za-z0-9._~/-]+$")
+_CLONE_HOSTS = ("github.com", "gitlab.com", "codeberg.org", "bitbucket.org", "git.sr.ht")
+# options that make a runner execute a named program / load caller code (Fede, PR #88 gap 2)
+_PROG_OPTS = re.compile(r"^(-exec|--exec|-toolexec|--config|--script-shell|--shell|-f|--file|--makefile|-p|-c|--plugin|--require|-r)(=|$)")
+# KEY=program env/make overrides (SHELL=, CC=, LD_PRELOAD=, …)
+_ENV_OVERRIDE = re.compile(r"^[A-Z_][A-Z0-9_]*=")
+
+
+def _host_is_internal(host: str) -> bool:
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except Exception:
+        return True  # unresolvable → refuse
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+            return True
+    return False
 
 
 def _check_repo_args(git_url: str, ref: str, test_cmd: str) -> str | None:
-    if not _SAFE_URL.match(git_url or ""):
+    m = _SAFE_URL.match(git_url or "")
+    if not m:
         return "git_url must be a plain https URL"
+    host = m.group(1).lower()
+    if host not in _CLONE_HOSTS and not any(host.endswith("." + h) for h in _CLONE_HOSTS):
+        return "clone host not allowed; use one of: " + ", ".join(_CLONE_HOSTS)
+    if _host_is_internal(host):
+        return "clone host resolves to a private/loopback/link-local address"
     if not _SAFE_REF.match(ref or ""):
         return "ref must be a plain commit SHA, branch or tag"
     cmd = " ".join((test_cmd or "").split())
     runner = next((r for r in _TEST_RUNNERS if cmd == r or cmd.startswith(r + " ")), None)
     if not runner:
         return "test_cmd must start with an allowlisted test runner: " + ", ".join(_TEST_RUNNERS)
-    if not all(_SAFE_ARG.match(a) for a in cmd[len(runner):].split()):
-        return "test_cmd arguments may only contain letters, digits and . _ / : = @ + , -"
+    args = cmd[len(runner):].split()
+    for a in args:
+        if not _SAFE_ARG.match(a):
+            return "test_cmd arguments may only contain letters, digits and . _ / : = @ + , -"
+        if _PROG_OPTS.match(a) or _ENV_OVERRIDE.match(a):
+            return "test_cmd may not pass a runner option that names a program to run (%s)" % a
     return None
 
 
