@@ -28,8 +28,9 @@ ENV BUN_INSTALL=/opt/bun
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/opt/bun/bin:${PATH}"
 
-# MCP SDK + OpenTimestamps client (for the 8263/precedence recipe)
-RUN pip install --no-cache-dir mcp opentimestamps-client pycryptodome
+# MCP SDK + OpenTimestamps client (for the 8263/precedence recipe). Pinned: unpinned mcp now
+# resolves to 2.x, whose FastMCP->MCPServer rename breaks mcp/server.py at import.
+RUN pip install --no-cache-dir mcp==1.30.0 opentimestamps-client==0.8.0 pycryptodome==4.5.0
 
 WORKDIR /app
 COPY bin/ ./bin/
