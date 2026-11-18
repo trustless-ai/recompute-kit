@@ -23,9 +23,10 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
 ENV PATH="/opt/foundry/bin:${PATH}"
 
 # Bun — runtime for stdio conformance adapters (e.g. the chronicle continuity gate).
-# Installed under /opt for the same reason.
+# Installed under /opt for the same reason. Pinned (not the installer's default latest) so a rebuild
+# can't silently pull a newer bun — same rebuild-bomb class as the unpinned pip deps below; matches CI.
 ENV BUN_INSTALL=/opt/bun
-RUN curl -fsSL https://bun.sh/install | bash
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4"
 ENV PATH="/opt/bun/bin:${PATH}"
 
 # MCP SDK + OpenTimestamps client (for the 8263/precedence recipe). Pinned: unpinned mcp now

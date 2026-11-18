@@ -29,7 +29,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: latest
+          bun-version: 1.4.4 # pinned (not `latest`) to the version the container image is smoke-tested against
 
       # ethers is a real dependency of several gates. Without this the TS suites fail to
       # resolve it, which CI would otherwise report as refuted vectors — a green-about-the-
@@ -202,7 +202,7 @@ jobs:
             exit 1
           fi
           # Attributed by the declared-runtime precondition, before execution, not by matching stderr wording: bun's
-          # message for a missing package floats with bun-version: latest, and a wording list cannot keep up (#68).
+          # missing-package message can change between versions, so we assert our own precondition line, not it (#68).
           for s in tee-inference-v0 tee-inference-enclave-v0; do
             if ! grep -q -- "- $s: precondition: runtime dependency missing" /tmp/infra.out; then
               echo "::error::$s reached the adapter with node_modules hidden — its runtime dependency was not checked as a precondition"
