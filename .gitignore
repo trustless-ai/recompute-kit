@@ -4,4 +4,3 @@ __pycache__/
 
 # seam4/envelope-align recipe dep
 node_modules/
-package-lock.json
