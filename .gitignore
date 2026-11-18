@@ -4,4 +4,5 @@ __pycache__/
 
 # seam4/envelope-align recipe dep
 node_modules/
+# bun.lock is the committed lockfile; keep a stray npm lockfile out so the tree holds one source of truth
 package-lock.json
