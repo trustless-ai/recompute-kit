@@ -94,6 +94,12 @@ jobs:
           python3 tools/test_scan_subject_binding_ungradable.py
           python3 tools/test_ungradable_expectations.py
 
+      # A digest the .ots proof does not commit to was reported as UNVERIFIABLE (exit 2), i.e.
+      # "couldn't check", when the client had checked and said no. Its own step rather than a line
+      # in the block above, which three PRs have already collided on. Offline: a stand-in ots.
+      - name: recompute-step 8263/precedence — digest mismatch is verified-bad, pending stays unverifiable
+        run: python3 tools/test_recompute_step_8263_digest_mismatch.py
+
       # bin/conformance-suite tracebacked on 15 of 30 manifests and an uncaught exception exits 1 —
       # this repo's code for "a vector was refuted". mcp/server.py maps that code through _verdict(),
       # where 1 becomes verified-bad / gate "deny", so the MCP conformance tool was returning an

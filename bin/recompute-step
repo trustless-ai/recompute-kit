@@ -338,6 +338,12 @@ if proof.startswith("http"):
     except Exception as e: unverifiable(f"could not fetch the .ots proof: {e}")
 # OTS resolves the proof to a Bitcoin block + merkleroot (no local node)
 r = subprocess.run([ots, "--no-bitcoin", "verify", "-d", digest, pf], capture_output=True, text=True)
+# A digest the proof does not commit to is a determinate negative, not "couldn't check": the
+# client read the proof and the proof names a different digest. Classify it before the anchor
+# regex, or it falls through to UNVERIFIABLE with a "pending, or node unreachable" message.
+if "does not match digest in timestamp" in (r.stdout + r.stderr):
+    print("✗ VERIFIED-BAD — the .ots proof commits to a different digest than the one supplied:\n" + (r.stdout + r.stderr).strip()[-300:])
+    sys.exit(1)
 m = re.search(r"Bitcoin block (\d+) has merkleroot ([0-9a-fA-F]+)", r.stdout + r.stderr)
 if not m:
     unverifiable("OTS proof not yet anchored to a Bitcoin block (pending, or node unreachable):\n" + (r.stdout + r.stderr)[-300:])
