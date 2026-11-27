@@ -95,7 +95,7 @@ manifest all break the right case).
 
 ## Run
 ```
-python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 41/41 reproduced
+python3 cutoff_enforce.py   pq-key-binding-v1.cutoff-vectors.json    # 47/47 reproduced
 python3 manifest_resolve.py pq-key-binding-v1.manifest-vectors.json  # 7/7 reproduced
 ```
 
