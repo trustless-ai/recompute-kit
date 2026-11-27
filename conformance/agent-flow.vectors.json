@@ -958,6 +958,62 @@
         }
       },
       "expected": "indeterminate"
+    },
+    {
+      "id": "8263-forward-precedence-entry38",
+      "step": "8263/precedence",
+      "spec": "ERC-8263 anchor precedence: the verdict's OTS anchor must be Bitcoin-confirmed and its block time strictly before the outcome (same block does not count)",
+      "desc": "First forward-precedence vector (agreed on the ERC-8299 Magicians thread, #53/#54/#56). invinoveritas ledger entry 38 verdict: signed Nostr event id stamped as the OTS digest, Bitcoin block 955810 (block time 1782654639, 28 Jun 2026 13:50:39 UTC), stamped while the outcome was still pending. Outcome: the first settled close, 1782826592 (30 Jun 2026 13:36 UTC), from a producer-signed report (see inputs.outcome_source). anchor_block_time < outcome_timestamp holds. Live recipe: run via recompute-step (needs the OTS client and a Bitcoin explorer).",
+      "inputs": {
+        "digest": "a42205d7e39c684f0aa43f80fe7ea1aa8e180df93ff46e82b5bff95b70c663e9",
+        "ots_proof": "https://api.babyblueviper.com/ledger/38/ots",
+        "outcome_timestamp": 1782826592,
+        "outcome_source": {
+          "kind": "producer-signed-report",
+          "note": "The outcome time is invinoveritas' own signed report, not exchange data: the first settled close in ledger entry 39. Entry 39's Nostr event is rebuilt exactly from GET /ledger/39 (event id d06ff4ce3f2704ad27e86cef489820b78a4bcacbed4f88c22f4256e428abcc3d, BIP-340 signature verifies against the published key) and dated by OpenTimestamps to Bitcoin block 956190 (time 1782895015, 1 Jul 2026 08:36 UTC). Exchange fill hashes for these closes are not available.",
+          "ledger_entry": 39,
+          "event_id": "d06ff4ce3f2704ad27e86cef489820b78a4bcacbed4f88c22f4256e428abcc3d",
+          "bitcoin_block": 956190,
+          "bitcoin_block_time": 1782895015
+        }
+      },
+      "expected": "VERIFIED-GOOD"
+    },
+    {
+      "id": "8263-forward-precedence-entry38-same-block-control",
+      "step": "8263/precedence",
+      "spec": "ERC-8263 anchor precedence: the verdict's OTS anchor must be Bitcoin-confirmed and its block time strictly before the outcome (same block does not count)",
+      "desc": "Control: the outcome at the anchor's own block time. Same block does not count, so strict precedence fails.",
+      "inputs": {
+        "digest": "a42205d7e39c684f0aa43f80fe7ea1aa8e180df93ff46e82b5bff95b70c663e9",
+        "ots_proof": "https://api.babyblueviper.com/ledger/38/ots",
+        "outcome_timestamp": 1782654639
+      },
+      "expected": "VERIFIED-BAD"
+    },
+    {
+      "id": "8263-forward-precedence-entry38-earlier-outcome-control",
+      "step": "8263/precedence",
+      "spec": "ERC-8263 anchor precedence: the verdict's OTS anchor must be Bitcoin-confirmed and its block time strictly before the outcome (same block does not count)",
+      "desc": "Control: an outcome before the anchor. Strict precedence fails.",
+      "inputs": {
+        "digest": "a42205d7e39c684f0aa43f80fe7ea1aa8e180df93ff46e82b5bff95b70c663e9",
+        "ots_proof": "https://api.babyblueviper.com/ledger/38/ots",
+        "outcome_timestamp": 1782654000
+      },
+      "expected": "VERIFIED-BAD"
+    },
+    {
+      "id": "8263-forward-precedence-entry38-wrong-digest-control",
+      "step": "8263/precedence",
+      "spec": "ERC-8263 anchor precedence: the verdict's OTS anchor must be Bitcoin-confirmed and its block time strictly before the outcome (same block does not count)",
+      "desc": "Control: a digest the proof does not commit to (last hex digit changed). A definitive negative: VERIFIED-BAD, not UNVERIFIABLE.",
+      "inputs": {
+        "digest": "a42205d7e39c684f0aa43f80fe7ea1aa8e180df93ff46e82b5bff95b70c663e0",
+        "ots_proof": "https://api.babyblueviper.com/ledger/38/ots",
+        "outcome_timestamp": 1782826592
+      },
+      "expected": "VERIFIED-BAD"
     }
   ],
   "rounding_convention": {
