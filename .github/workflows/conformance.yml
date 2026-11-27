@@ -121,6 +121,12 @@ jobs:
       - name: pq-key-binding-v1 — grade() must assert presence, not just value
         run: python3 tools/test_pq_v1_cutoff_grade_presence.py
 
+      # 8263/precedence: a digest the .ots proof does not commit to is VERIFIED-BAD (exit 1), not
+      # UNVERIFIABLE. Uses a fake OTS client, so no network; the pending case is the control that the
+      # fix did not turn every unanchored proof into a refutation.
+      - name: 8263/precedence — a mismatched digest is refuted, not unverifiable
+        run: python3 tools/test_8263_precedence_classes.py
+
       # Proves the job can actually go red, on every run, rather than trusting that it
       # would. A deliberately refuted vector must produce a non-zero exit AND be reported
       # as a suite failure — not as drift and not as a runner error. Without this a

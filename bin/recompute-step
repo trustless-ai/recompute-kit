@@ -338,9 +338,15 @@ if proof.startswith("http"):
     except Exception as e: unverifiable(f"could not fetch the .ots proof: {e}")
 # OTS resolves the proof to a Bitcoin block + merkleroot (no local node)
 r = subprocess.run([ots, "--no-bitcoin", "verify", "-d", digest, pf], capture_output=True, text=True)
-m = re.search(r"Bitcoin block (\d+) has merkleroot ([0-9a-fA-F]+)", r.stdout + r.stderr)
+out = r.stdout + r.stderr
+# A digest the proof does not commit to is a definitive negative: the proof was checked and it is for
+# something else. That is verified-bad, not "couldn't check" -- it must not fall through to the
+# unanchored/pending branch below, which is the only place UNVERIFIABLE belongs.
+if re.search(r"Digest provided does not match digest in timestamp", out):
+    print("✗ VERIFIED-BAD — the .ots proof commits to a different digest than the one given:\n" + out.strip()[-300:]); sys.exit(1)
+m = re.search(r"Bitcoin block (\d+) has merkleroot ([0-9a-fA-F]+)", out)
 if not m:
-    unverifiable("OTS proof not yet anchored to a Bitcoin block (pending, or node unreachable):\n" + (r.stdout + r.stderr)[-300:])
+    unverifiable("OTS proof not yet anchored to a Bitcoin block (pending, or node unreachable):\n" + out[-300:])
 block, ots_root = int(m.group(1)), m.group(2).lower()
 # cross-check the merkleroot off a public explorer (no node, no trust in the ledger)
 try:
