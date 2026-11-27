@@ -60,22 +60,24 @@ def activation_of(bindings, b):
 
 
 def resolve_in_force(bindings, at_time):
-    """Which binding governs an artifact anchored at at_time. Generic over chain length and
-    revocation: eligible from its activation boundary; a revoked_at ends authority (artifacts anchored
-    at/after are no longer governed). Returns (binding | None, reason)."""
-    eligible = []
+    """Which binding governs an artifact anchored at at_time. The chain is linear, in list order: the
+    governing binding is the LATEST anchored binding in the chain whose activation boundary B <= at_time.
+    If that binding is revoked at or before at_time, authority has ended and nothing governs: there is
+    NO fallback to a predecessor, because a rotation retires its predecessor permanently. (The previous
+    version skipped revoked bindings before choosing, so a revoked successor handed authority back to
+    the binding it replaced.) Returns (binding | None, reason)."""
+    latest = None
     for b in bindings:
         if b.get("binding_anchor_time") is None:
             continue                                     # anchor UNAVAILABLE — no reproducible B, cannot govern
-        if activation_of(bindings, b) > at_time:
-            continue
-        rev = b.get("revoked_at")
-        if rev is not None and at_time >= rev:
-            continue                                     # revocation slot — authority ended
-        eligible.append(b)
-    if not eligible:
+        if activation_of(bindings, b) <= at_time:
+            latest = b                                   # later in the chain supersedes earlier
+    if latest is None:
         return None, "no_in_force_binding"
-    return max(eligible, key=lambda b: activation_of(bindings, b)), "resolved_at_anchor_time"
+    rev = latest.get("revoked_at")
+    if rev is not None and at_time >= rev:
+        return None, "no_in_force_binding"               # revocation slot — authority ended, no fallback
+    return latest, "resolved_at_anchor_time"
 
 
 def apply_revocations(bindings, revocations):
@@ -83,7 +85,11 @@ def apply_revocations(bindings, revocations):
         return None
     if not revocations:
         return bindings
-    earliest = {}
+    # R is the EARLIEST authenticated revocation of a binding, whatever its source: a revocation
+    # already embedded on the binding (revoked_at) counts alongside the listed ones, so a later
+    # revocation can never reopen an interval an earlier one closed.
+    earliest = {b["content_address"]: b["revoked_at"] for b in bindings
+                if b.get("content_address") is not None and b.get("revoked_at") is not None}
     for r in revocations:
         cc, t = r["revokes_content_address"], r["revocation_anchor_time"]
         if cc not in earliest or t < earliest[cc]:
@@ -100,6 +106,13 @@ def project(evidence):
 
 def admit(bindings, consumer_cutoff, artifact):
     at = artifact["anchor_time"]
+    # UNPROVEN ARTIFACT ANCHOR. Every rule below is temporal, and anchor_time means nothing unless the
+    # anchor is proven. Without that proof no state is resolved and no cutoff applies: unverifiable,
+    # never verified. Checked first, as PQCutoffEnforcer.sol does (anchorTime == 0).
+    if artifact.get("anchored") is not True:
+        return {"resolved": None, "resolved_pq_pubkey": None, "resolution_reason": "anchor_unavailable",
+                "evidence": "unverifiable", "unverifiable_reason": "anchor_status_unknown",
+                "decision": project("unverifiable"), "rule": "anchor_unavailable"}
     # Fail-closed DEPENDENCY FAILURE: the chain could not be resolved (bindings is None / unavailable).
     # UNVERIFIABLE — never a silent admit. Distinct from a chain that resolved and is legitimately empty.
     if bindings is None:
@@ -121,6 +134,27 @@ def admit(bindings, consumer_cutoff, artifact):
         return {"resolved": None, "resolved_pq_pubkey": None, "resolution_reason": "chain_malformed",
                 "evidence": "unverifiable", "unverifiable_reason": "activation_before_anchor",
                 "decision": project("unverifiable"), "rule": "chain_malformed"}
+    # MALFORMED chain, second shape: a successor whose activation boundary is EARLIER than its anchored
+    # predecessor's. Rotation is forward-acting in activation as well as in anchor time; otherwise which
+    # binding governs depends on how the list happens to be ordered, not on the chain.
+    # Anchor time must move forward too, strictly, as PQCutoffEnforcer.sol enforces at registration
+    # (RotationNotForward): otherwise the same bindings listed in another order would be a different,
+    # equally acceptable chain.
+    prev_b = prev_anchor = None
+    for b in bindings:
+        if b.get("binding_anchor_time") is None:
+            continue
+        cur = activation_of(bindings, b)
+        bad = None
+        if prev_anchor is not None and b["binding_anchor_time"] <= prev_anchor:
+            bad = "anchor_not_forward"
+        elif prev_b is not None and cur < prev_b:
+            bad = "activation_not_forward"
+        if bad:
+            return {"resolved": None, "resolved_pq_pubkey": None, "resolution_reason": "chain_malformed",
+                    "evidence": "unverifiable", "unverifiable_reason": bad,
+                    "decision": project("unverifiable"), "rule": "chain_malformed"}
+        prev_b, prev_anchor = cur, b["binding_anchor_time"]
     resolved, reason = resolve_in_force(bindings, at)
     if resolved is None:
         # Chain resolved and non-empty; nothing ANCHORED governs at `at`. First the fail-closed cause
@@ -139,6 +173,15 @@ def admit(bindings, consumer_cutoff, artifact):
         # set {verified, refuted, unverifiable}; the legacy admission lives in resolution_reason + rule.
         baseline = min(anchored, key=lambda x: x["binding_anchor_time"])
         if at < activation_of(bindings, baseline):
+            # pre_baseline is admitted ONLY before the consumer cutoff. At or after the cutoff there is
+            # no binding in force to verify a companion under, so the artifact is refused, exactly as
+            # PQCutoffEnforcer.sol does. Without this check an attacker holding the classical key could
+            # anchor a late "genesis" binding and have every forged artifact anchored between the cutoff
+            # and that binding's B admitted classical-only.
+            if not at < consumer_cutoff:
+                return {"resolved": None, "resolved_pq_pubkey": None, "resolution_reason": "pre_baseline",
+                        "evidence": "refuted", "decision": project("refuted"),
+                        "rule": "post_cutoff_no_valid_companion"}
             # pre_baseline: NOT governed (resolved stays null) but ADMITTED under the legacy back-catalogue
             # rule. `verified` attests the TEMPORAL classification only — provably anchored before B (the
             # effective activation boundary), admitted classical-only. It does NOT assert a classical-
@@ -151,7 +194,6 @@ def admit(bindings, consumer_cutoff, artifact):
 
     base = {"resolved": resolved["name"], "resolved_pq_pubkey": resolved["pq_pubkey"],
             "resolution_reason": reason}
-    anchor_known = isinstance(artifact.get("anchored"), bool)
     pre_cutoff = artifact.get("anchored") is True and at < consumer_cutoff
     c = artifact.get("pq_companion") or {}
     present = bool(c.get("present"))
@@ -167,9 +209,6 @@ def admit(bindings, consumer_cutoff, artifact):
     if present and not checked:
         return {**base, "evidence": "unverifiable", "unverifiable_reason": "companion_not_checked",
                 "decision": project("unverifiable"), "rule": "post_cutoff_companion_unchecked"}
-    if (not present) and (not anchor_known) and at < consumer_cutoff:
-        return {**base, "evidence": "unverifiable", "unverifiable_reason": "anchor_status_unknown",
-                "decision": project("unverifiable"), "rule": "post_cutoff_anchor_status_unknown"}
     if present and checked and c.get("valid") is True and not binds_key:
         return {**base, "evidence": "refuted", "decision": project("refuted"),
                 "rule": "post_cutoff_no_valid_companion", "refuted_because": "companion_under_wrong_key"}
