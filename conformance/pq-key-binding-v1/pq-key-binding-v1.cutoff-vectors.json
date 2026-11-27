@@ -690,6 +690,136 @@
     "evidence": "verified",
     "decision": "ADMIT"
    }
+  },
+  {
+   "name": "pre_baseline before the cutoff (cutoff C < B, t == C-1): admitted classical-only",
+   "consumer_cutoff": 1780423299,
+   "artifact": {
+    "anchor_time": 1780423298,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "pre_baseline",
+    "rule": "pre_baseline_legacy_admit",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   }
+  },
+  {
+   "name": "pre_baseline AT the cutoff (cutoff C < B, t == C): refused, the cutoff comparison is strict",
+   "consumer_cutoff": 1780423299,
+   "artifact": {
+    "anchor_time": 1780423299,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "pre_baseline",
+    "rule": "post_cutoff_no_valid_companion",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "pre_baseline AFTER the cutoff (cutoff C < B, t == B-1000000): refused, no binding in force to verify a companion under",
+   "consumer_cutoff": 1780423299,
+   "artifact": {
+    "anchor_time": 1784423299,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "pre_baseline",
+    "rule": "post_cutoff_no_valid_companion",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "forged delayed genesis: binding anchored at 2000, activated_at 6000, after the cutoff (1000); forged artifact at 5000 is pre_baseline and refused",
+   "consumer_cutoff": 1000,
+   "bindings": [
+    {
+     "name": "late-genesis",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 2000,
+     "activated_at": 6000
+    }
+   ],
+   "artifact": {
+    "anchor_time": 5000,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "pre_baseline",
+    "rule": "post_cutoff_no_valid_companion",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "successor after revocation, gap: baseline revoked at 300, successor anchored at 500; artifact at 400 has no binding in force and is refused (pre-cutoff)",
+   "consumer_cutoff": 1000,
+   "bindings": [
+    {
+     "name": "baseline",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 100,
+     "revoked_at": 300
+    },
+    {
+     "name": "successor",
+     "pq_pubkey": "5e8c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 500
+    }
+   ],
+   "artifact": {
+    "anchor_time": 400,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": null,
+    "resolution_reason": "no_in_force_binding",
+    "rule": "no_in_force_binding",
+    "evidence": "refuted",
+    "decision": "REJECT"
+   }
+  },
+  {
+   "name": "successor after revocation, in force: artifact at 600, before the cutoff, is governed by the successor and admitted classical-only",
+   "consumer_cutoff": 1000,
+   "bindings": [
+    {
+     "name": "baseline",
+     "pq_pubkey": "638c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 100,
+     "revoked_at": 300
+    },
+    {
+     "name": "successor",
+     "pq_pubkey": "5e8c79a2210c85e8cb349fc72a6583b7ff82e003ff02117f8f7f9d8cc3fb92a33e7496d987beb05f22bf12ecf34bc7aa",
+     "binding_anchor_time": 500
+    }
+   ],
+   "artifact": {
+    "anchor_time": 600,
+    "anchored": true,
+    "pq_companion": null
+   },
+   "expected": {
+    "resolved": "successor",
+    "resolution_reason": "resolved_at_anchor_time",
+    "rule": "anchored_before_cutoff",
+    "evidence": "verified",
+    "decision": "ADMIT"
+   }
   }
  ]
 }

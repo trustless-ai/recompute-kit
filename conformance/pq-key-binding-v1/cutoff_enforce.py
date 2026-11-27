@@ -139,6 +139,15 @@ def admit(bindings, consumer_cutoff, artifact):
         # set {verified, refuted, unverifiable}; the legacy admission lives in resolution_reason + rule.
         baseline = min(anchored, key=lambda x: x["binding_anchor_time"])
         if at < activation_of(bindings, baseline):
+            # pre_baseline is admitted ONLY before the consumer cutoff. At or after the cutoff there is
+            # no binding in force to verify a companion under, so the artifact is refused, exactly as
+            # PQCutoffEnforcer.sol does. Without this check an attacker holding the classical key could
+            # anchor a late "genesis" binding and have every forged artifact anchored between the cutoff
+            # and that binding's B admitted classical-only.
+            if not at < consumer_cutoff:
+                return {"resolved": None, "resolved_pq_pubkey": None, "resolution_reason": "pre_baseline",
+                        "evidence": "refuted", "decision": project("refuted"),
+                        "rule": "post_cutoff_no_valid_companion"}
             # pre_baseline: NOT governed (resolved stays null) but ADMITTED under the legacy back-catalogue
             # rule. `verified` attests the TEMPORAL classification only — provably anchored before B (the
             # effective activation boundary), admitted classical-only. It does NOT assert a classical-
